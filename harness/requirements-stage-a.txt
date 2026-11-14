@@ -1,5 +1,6 @@
 # Verified Stage A local package versions (Linux x86_64, Python 3.13.5).
 # These are testing tool dependencies, NOT the intended CALYRA runtime.
+tinycss2==1.5.1
 weasyprint==68.0
 pymupdf==1.26.7
 lxml==6.1.1
