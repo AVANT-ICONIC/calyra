@@ -37,7 +37,7 @@ To use a system Chromium binary, set `CALYRA_CHROMIUM_EXECUTABLE`. The test runn
 
 ## Supported test assertions
 
-The smoke tests exercise active fixture selection, controls and state reset, dropdown Escape/focus restoration, scrollability, snapshot-state selection, responsive overflow at widths 320/390/650/900/1440 CSS pixels, and desktop/mobile screenshot capture. Passing them does not prove accessibility-tree conformance, IME, GPU rendering performance, native CSS parsing, or any native application integration.
+Eight local smoke test groups exercise actual static asset serving, active fixture selection, controls and state reset, dropdown Escape/focus restoration, scrollability, snapshot-state selection, responsive overflow at widths 320/390/650/900/1440 CSS pixels, and desktop/mobile screenshot capture. Passing them does not prove accessibility-tree conformance, IME, GPU rendering performance, native CSS parsing, or any native application integration.
 
 ## Fair comparison policy
 

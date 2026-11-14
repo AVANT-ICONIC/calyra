@@ -4,11 +4,19 @@ import os
 import shutil
 import unittest
 from pathlib import Path
+from functools import partial
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from threading import Thread
+from urllib.request import urlopen
 from urllib.parse import quote
 from playwright.sync_api import sync_playwright
 
 ROOT = Path(__file__).resolve().parents[1]
 MANIFEST = json.loads((ROOT / "fixtures/manifest.json").read_text())
+
+class QuietHandler(SimpleHTTPRequestHandler):
+    def log_message(self, format, *args):
+        pass
 
 class ReferenceFixtureTests(unittest.TestCase):
     @classmethod
@@ -52,6 +60,25 @@ class ReferenceFixtureTests(unittest.TestCase):
         self.assertEqual(set(MANIFEST["fixtures"]), {"controls", "dashboard", "visual", "interaction"})
         for name in MANIFEST["canonicalFiles"]:
             self.assertTrue((ROOT / "fixtures" / name).is_file())
+
+    def test_served_assets(self):
+        """Validate actual same-origin static assets even when Chromium navigation is blocked."""
+        server = ThreadingHTTPServer(
+            ("127.0.0.1", 0),
+            partial(QuietHandler, directory=str(ROOT / "fixtures")),
+        )
+        thread = Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            for asset in MANIFEST["canonicalFiles"] + ["manifest.json"]:
+                with self.subTest(asset=asset):
+                    with urlopen(f"http://127.0.0.1:{server.server_address[1]}/{asset}", timeout=3) as response:
+                        self.assertEqual(response.status, 200)
+                        self.assertEqual(response.read(), (ROOT / "fixtures" / asset).read_bytes())
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=3)
 
     def test_cases_only_one_visible(self):
         for fixture in MANIFEST["fixtures"]:
