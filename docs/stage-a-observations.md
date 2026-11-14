@@ -49,3 +49,7 @@ No CSS properties are scored `direct` merely because the rasterized page looks p
 ## Next narrow step
 
 Run the **actual** Blitz or RmlUi build on a machine with source/toolchain access. Integrate its rendering path into the same versioned contract and mark unsupported features honestly. Do not build CALYRA's own renderer to work around unverified guesses.
+
+## Additional native GTK3 CSS diagnostic
+
+A separate Linux GTK3 probe (`adapters/gtk3_css_probe.py`) successfully created native widgets, loaded a CSS subset through `GtkCssProvider`, confirmed the real computed button color against the canonical `--accent` value, emitted native GTK button signals, captured an 840×680 screenshot, and validated a restricted Stage A JSON record. Its four dedicated tests passed; the complete local Xvfb test suite passed 24/24. This is **not** one of the three intended native renderer candidates, a GPU result, or evidence of general web CSS compatibility. See `docs/gtk3-native-css-probe.md` for limitations and commands.

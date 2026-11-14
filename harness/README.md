@@ -32,3 +32,7 @@ The matrix runner enforces a timeout so unexpectedly slow or hanging paged layou
 8. Do not score unsupported or untested features as zero, or compare unavailable frame timings against measured ones.
 
 **Not yet provided:** Blitz/RmlUi/Electrobun adapters, hardware macOS GPU evidence, packaged Tauri reference, native accessibility/IME probes. They require compatible builds, executable backends, and appropriate OS access.
+
+## Optional GTK3 native CSS subset diagnostic (Linux only)
+
+The optional `adapters/gtk3_css_probe.py` exercises an actual **native GTK3 CSS parser and interactive widget stack** without Chromium. It does not claim unchanged web CSS, a native GPU backend, or equivalence to the named RmlUi/Blitz/Electrobun candidates. Its output is explicitly `restricted` and uses the common result schema. See `docs/gtk3-native-css-probe.md` for exact setup, evidence, and missing features.
