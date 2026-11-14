@@ -4,9 +4,10 @@ All tasks are **pending**. Checking them off requires actual evidence, not a pla
 
 ## 1. Candidate and contract validation
 
-- [ ] 1.1 Verify current revisions, licenses, build paths, platform capabilities, and exact native-versus-WebView execution mode for Tauri, Blitz, RmlUi, and Electrobun GPU UI.
-- [ ] 1.2 Define the stable adapter contract for fixture selection, viewport/scale, interaction replay, screenshots, logs, and metrics; document unsupported adapter capabilities.
-- [ ] 1.3 Decide and record one baseline OS/hardware/environment, process-accounting rules, cold/warm launch definitions, and measurement tools.
+- [ ] 1.1 Verify and pin current revisions, redistribution licenses, build paths, platform support, and exact rendering modes for Tauri, Blitz, RmlUi, and Electrobun (initial source research in design.md is not execution verification).
+- [ ] 1.2 Run Stage A minimal CSS/input preflight and classify each as full, restricted, or blocked with source and actual evidence; explicitly probe RmlUi Grid and Electrobun font/privilege limitations.
+- [ ] 1.3 Define the adapter contract for fixture selection, viewport/scale, interaction replay, screenshots, logs, and metrics; isolate and version every CSS translation.
+- [ ] 1.4 Record baseline macOS environment, framebuffer scaling/font policy, process-accounting rules, cold/warm launch definitions, readiness markers, and measurement tools.
 
 ## 2. Canonical fixture construction
 

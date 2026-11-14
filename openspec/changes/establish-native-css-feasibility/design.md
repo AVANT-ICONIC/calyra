@@ -33,6 +33,54 @@ results/                  generated raw records (do not commit large artifacts)
 reports/                  generated comparison summaries
 ```
 
+## Candidate research checkpoint (2026-11-14)
+
+This section records **documentation evidence**, not CALYRA benchmark results or successful local builds. Re-check exact versions before each implementation attempt.
+
+| Engine | Verified direction | Documented constraints | Evidence |
+| --- | --- | --- | --- |
+| Blitz | Modular Rust HTML/CSS stack, Stylo + Taffy, optional rendering and AccessKit integration | Official README calls it beta with missing features; no assumption of production-safe text/input behavior | [Blitz README](https://github.com/DioxusLabs/blitz) |
+| RmlUi | Native C++ application/game UI with CSS-like RCSS and pluggable rendering | Its property index lists Flexbox but **no CSS Grid**; CSS compatibility is intentionally limited; rendering backend choice must be specified | [RmlUi README](https://github.com/mikke89/RmlUi) · [RCSS index](https://mikke89.github.io/RmlUiDoc/pages/rcss/property_index.html) |
+| Electrobun GPU UI | Experimental Zig UI core with native Dawn/WebGPU drawing, distinct from bundled or system WebViews | Main-process privileged UI should handle trusted content only; no downloadable web fonts or network images; sticky/table/3D layout gaps; accessibility and text support vary by platform | [GPU UI guide](https://docs.electrobun.dev/electrobun/guides/electrobun-ui/) · [2.0.6 release](https://docs.electrobun.dev/electrobun/guides/changelog/v2-0-6/) |
+| Tauri 2 | Uses OS WebViews (WKWebView on macOS) as browser-backed reference | Binary size excludes system web-renderer resources; browser process accounting differs from native candidates | [Tauri architecture](https://v2.tauri.app/concept/webview/) |
+
+**Important:** RmlUi's missing Grid is a compatibility gap, not automatically a reason to exclude it from performance or adapter research. Never silently transform Grid into Flexbox and report direct compatibility. Electrobun's webview anchoring is not proof that its experimental GPU path itself runs in a webview.
+
+## Two-stage experiment
+
+### Stage A — compatibility preflight (cheap, documented)
+
+1. Pin a candidate revision, license, OS support and executable render path.
+2. Try a **minimal capability probe**: element tree, direct CSS cascade, Flexbox, Grid, variable, external font, SVG, text input, keyboard/focus, scrolling, and animation. Distinguish direct, adapted, partial, unsupported, blocked, and untested.
+3. Record one native screenshot and functional trace where executable, or exact blocker and source when not.
+4. Classify the candidate: **full benchmark eligible**, **restricted benchmark only**, or **blocked**. Keep all three categories in the report.
+
+**Stage A does not allow cherry-picking a better looking engine-specific design.** Use one canonical markup and stylesheet first, then declare any adapter-specific translations in an isolated layer.
+
+### Stage B — measured workloads (only where useful)
+
+Benchmark the baseline and Stage A eligible candidates on shared fixture states, preserving failed features, differences and warm/cold launch methods. Restricted engines may be benchmarked on a named shared subset but SHALL NOT be included in an all-features headline ranking.
+
+**Decision order:** evaluate correctness, text/input/accessibility, real CSS support, and integration risk before speed. A candidate with a spectacular animation but broken focus or IME is not a production foundation for general-purpose UI.
+
+## Fidelity and asset policy
+
+- Primary reference: browser HTML/CSS fixture using the system font stack available on all tested macOS implementations.
+- Secondary typography test: explicit font-face/fallback/weight probes, recorded separately. Never present fonts drawn from different assets as a fair pixel comparison.
+- The same CSS files and content are the primary comparison. Required translations are versioned patches/adapters, not modifications of source fixture.
+- Record CSS pixels, scale factor, physical framebuffer dimensions, color space, and screenshots before computing visual deltas.
+- Screenshot diffs need annotated regions and human review; antialiasing variance alone is not a broken layout.
+- Record deliberately difficult CSS features even when only browser-backed baseline supports them.
+- Trusted/local fixture content only in the initial evaluation. Do not treat privileged experimental UI as a sandbox for untrusted remote HTML.
+
+## Measurement interpretation and publication
+
+A performance report SHALL distinguish **app process RSS, process-tree RSS, GPU allocations when available, system WebView dependencies, and package-on-disk size**. Operating-system caches and memory sharing mean these numbers cannot be trivially added into a single universal RAM claim.
+
+Timing data must use clear readiness markers: window created, first meaningful frame, and first working input. No demo video substitutes for instrumented or independently checked events. Record failed runs, not merely the successful subset. If instrumentation cannot be made comparable, mark the metric unranked.
+
+Record the source revision and license for every linked framework. Verify build/download instructions without piping unreviewed remote scripts into a shell.
+
 ## Reference fixtures
 
 1. **Controls:** buttons, dropdown, input, focus indicator, disabled states; verify pointer and keyboard behavior.

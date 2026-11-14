@@ -56,3 +56,30 @@ CALYRA SHALL not enforce a presupposed memory, CPU, startup, binary-size, or vis
 - **WHEN** the report summarizes results
 - **THEN** that finding SHALL be included without selective omission
 - **AND** the recommendation SHALL reflect the tradeoff
+
+### Requirement: Stage-gated candidate evaluation
+
+CALYRA SHALL run a low-cost documentation/build/feature preflight before full benchmarking. Every candidate SHALL be classified as full-benchmark eligible, restricted-subset eligible, or blocked, with evidence for the classification.
+
+#### Scenario: Engine cannot parse CSS Grid
+- **GIVEN** a candidate supports Flexbox but lacks direct Grid layout
+- **WHEN** preflight results are reviewed
+- **THEN** the Grid feature SHALL remain marked unsupported or adapted
+- **AND** any restricted performance comparison SHALL be labeled by its supported fixture subset
+- **AND** the candidate SHALL NOT receive a full modern-CSS compatibility rating
+
+#### Scenario: Experimental UI executes privileged content
+- **GIVEN** a renderer executes UI inside the application main process
+- **WHEN** the implementation plan evaluates security implications
+- **THEN** it SHALL record trusted-content boundaries and injection risks
+- **AND** SHALL NOT treat untrusted HTML as safely isolated without evidence of a sandbox
+
+### Requirement: Fair readiness and frame measurement
+
+Launch measurements SHALL separately identify window creation, first meaningful frame, and first usable input where possible. Visual animation and scrolling SHALL be measured using actual frame timing rather than an assumed refresh rate.
+
+#### Scenario: Frame-time instrumentation unavailable
+- **GIVEN** a backend cannot expose reliable frame timings
+- **WHEN** benchmark results are compared
+- **THEN** its frame-time metric SHALL be reported as unavailable or via a documented independent method
+- **AND** SHALL NOT be assigned a fabricated FPS score

@@ -40,3 +40,29 @@ CALYRA SHALL record whether accessible names, roles, focus order, keyboard navig
 - **WHEN** its evaluation completes
 - **THEN** that limitation SHALL be visible in the results
 - **AND** visual fidelity SHALL NOT be treated as a substitute for accessibility
+
+### Requirement: Canonical CSS and asset provenance
+
+The fixture source SHALL be identical across targets where parsing is supported. Each engine-specific rewrite, preprocessing rule, substituted asset, or system-font fallback SHALL be versioned and reported separately from direct source execution.
+
+#### Scenario: Unsupported Grid syntax
+- **GIVEN** the canonical responsive fixture uses CSS Grid
+- **WHEN** an implementation substitutes Flexbox for Grid
+- **THEN** the report SHALL classify the Grid capability as adapted or unsupported, never direct
+- **AND** the unchanged source fixture SHALL remain available for comparison
+
+#### Scenario: Different font support
+- **GIVEN** an engine cannot load the reference web font
+- **WHEN** screenshots are compared
+- **THEN** CALYRA SHALL record the substitution and font metrics separately
+- **AND** SHALL NOT attribute font-specific pixel differences to the GPU renderer
+
+### Requirement: Visual and localization checkpoints
+
+Each fixture SHALL record its intended CSS viewport, device pixel ratio, screenshot timing, and action/state checkpoints. At least one typography-focused variation SHALL exercise longer translated labels and non-ASCII text, with IME/bidirectional text limitations recorded as such.
+
+#### Scenario: A visual diff is reviewed
+- **GIVEN** an automated screenshot diff detects differences
+- **WHEN** the result is included in a comparison
+- **THEN** its dimensions, scale, state, and relevant font setup SHALL be reported
+- **AND** layout or interaction errors SHALL be distinguished from expected rasterization differences
