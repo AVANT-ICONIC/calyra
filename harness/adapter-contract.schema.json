@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/AVANT-ICONIC/calyra/harness/adapter-contract.schema.json",
+  "title": "CALYRA Stage A adapter result, version 1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema", "adapter", "fixture", "source", "environment", "execution", "capture", "coverage", "eligibility", "limitations"],
+  "properties": {
+    "schema": {"const": "calyra.adapter-result.v1"},
+    "adapter": {
+      "type": "object", "additionalProperties": false,
+      "required": ["id", "version", "kind"],
+      "properties": {
+        "id": {"type": "string", "minLength": 1},
+        "version": {"type": "string", "minLength": 1},
+        "kind": {"enum": ["browserless-gpu", "browserless-software", "system-webview", "bundled-browser", "document-only"]}
+      }
+    },
+    "fixture": {
+      "type": "object", "additionalProperties": false,
+      "required": ["name", "version", "width_css_px", "height_css_px", "state", "motion"],
+      "properties": {
+        "name": {"enum": ["controls", "dashboard", "visual", "interaction"]},
+        "version": {"type": "string"},
+        "width_css_px": {"type": "integer", "minimum": 240, "maximum": 4096},
+        "height_css_px": {"type": "integer", "minimum": 240, "maximum": 4096},
+        "state": {"type": "string"},
+        "motion": {"enum": ["off", "on"]}
+      }
+    },
+    "source": {
+      "type": "object", "additionalProperties": false,
+      "required": ["html_sha256", "css_sha256", "js_sha256", "css_modified", "dom_patched", "js_executed", "external_network_used", "adaptations"],
+      "properties": {
+        "html_sha256": {"$ref": "#/$defs/hash"}, "css_sha256": {"$ref": "#/$defs/hash"}, "js_sha256": {"$ref": "#/$defs/hash"},
+        "css_modified": {"type": "boolean"}, "dom_patched": {"type": "boolean"}, "js_executed": {"type": "boolean"}, "external_network_used": {"type": "boolean"},
+        "adaptations": {"type": "array", "items": {"type": "string"}}
+      }
+    },
+    "environment": {
+      "type": "object", "additionalProperties": false,
+      "required": ["os", "architecture", "python_version"],
+      "properties": {"os": {"type": "string"}, "architecture": {"type": "string"}, "python_version": {"type": "string"}}
+    },
+    "execution": {
+      "type": "object", "additionalProperties": false,
+      "required": ["browser_engine", "gpu_backed", "interactive", "render_backend"],
+      "properties": {
+        "browser_engine": {"type": "boolean"}, "gpu_backed": {"type": "boolean"}, "interactive": {"type": "boolean"}, "render_backend": {"type": "string"}
+      }
+    },
+    "capture": {
+      "type": "object", "additionalProperties": false,
+      "required": ["success", "page_count", "png_paths", "pdf_path", "pixel_scale", "measured_performance"],
+      "properties": {
+        "success": {"type": "boolean"}, "page_count": {"type": "integer", "minimum": 0},
+        "png_paths": {"type": "array", "items": {"type": "string"}}, "pdf_path": {"type": ["string", "null"]},
+        "pixel_scale": {"type": "number", "minimum": 0.25}, "measured_performance": {"type": "boolean"}
+      }
+    },
+    "coverage": {
+      "type": "object", "additionalProperties": {"enum": ["direct", "adapted", "partial", "unsupported", "blocked", "untested"]}
+    },
+    "eligibility": {"enum": ["full", "restricted", "blocked"]},
+    "limitations": {"type": "array", "items": {"type": "string"}}
+  },
+  "$defs": {"hash": {"type": "string", "pattern": "^[a-f0-9]{64}$"}}
+}
