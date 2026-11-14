@@ -1,0 +1,25 @@
+schema: spec-driven
+
+context: |
+  CALYRA is a research-first project for CSS-authored native interfaces without a mandatory Chromium runtime.
+  No renderer, CSS coverage, memory advantage, portability, or production support is proven.
+  First deliverable: an evidence-backed feasibility comparison of browserless native UI engines against a Tauri system-WebView reference.
+  Core principle: CSS compatibility and rendering quality before inventing new syntax; reuse engines before building one.
+  Keep Materialism (layout/surface/material separation), universal UI-IR, C ABI, and standalone application SDK as deferred hypotheses until evidence supports them.
+  macOS is the first benchmark environment. Other platforms are follow-up validation, not implied by macOS results.
+  OpenSpec changes are the source of truth for scope, behavior, architecture, tasks, and acceptance.
+
+rules:
+  proposal:
+    - Explicitly distinguish hypothesis, decision, and out-of-scope possibility.
+    - State why a new implementation is justified instead of reusing existing capabilities.
+  specs:
+    - Use observable SHALL requirements and Given/When/Then scenarios.
+    - State how unsupported features and unavailable measurements are disclosed.
+    - Require reproducible, fair measurements rather than fixed marketing claims.
+  design:
+    - Document backend classification, tradeoffs, platform assumptions, and license constraints.
+    - Separate authored CSS from translated adapters and measure conversion cost.
+  tasks:
+    - Keep work in testable, reviewable vertical slices.
+    - Do not run unnecessary CI; prefer local focused tests and recorded reproduction steps.
