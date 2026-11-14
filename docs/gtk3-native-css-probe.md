@@ -1,5 +1,8 @@
 # Stage A diagnostic: GTK3 native CSS subset (Linux)
 
+![Actual native GTK3/Xvfb screenshot, 840×680](native-gtk3-probe.png)
+
+
 **Status:** locally executed; restricted; **not** Blitz, RmlUi, Electrobun GPU, or a modern-CSS candidate. This additional diagnostic does not replace or satisfy any named-engine task in OpenSpec.
 
 ## Why
