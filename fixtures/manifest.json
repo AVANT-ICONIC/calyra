@@ -1,0 +1,46 @@
+{
+  "schema": "calyra.fixtures.v1",
+  "version": "0.1.0",
+  "reference": "browser-based Chromium reference only, not a native engine result",
+  "entrypoint": "index.html",
+  "canonicalFiles": ["index.html", "reference.css", "reference.js"],
+  "targetCssPx": [1440, 900],
+  "mobileCssPx": [390, 844],
+  "fixtures": {
+    "controls": {
+      "path": "?fixture=controls&motion=off",
+      "features": ["cascade", "custom-properties", "grid", "flex", "inputs", "focus-visible", "range", "select", "checkbox"],
+      "actions": [
+        {"action": "fill", "target": "#person-name", "value": "Mara Novak"},
+        {"action": "select", "target": "#priority", "value": "quality"},
+        {"action": "click", "target": "#apply"},
+        {"assert": "#action-status", "contains": "Mara Novak · quality"}
+      ]
+    },
+    "dashboard": {
+      "path": "?fixture=dashboard&motion=off",
+      "features": ["grid", "flex", "media-queries", "minmax", "clamp", "svg", "unicode", "long-labels"],
+      "actions": [{"assert": ".metrics-grid", "visible": true}]
+    },
+    "visual": {
+      "path": "?fixture=visual&motion=off",
+      "features": ["radial-gradient", "linear-gradient", "clip-path", "mask-image", "backdrop-filter", "border-radius", "animation", "shadow"],
+      "actions": [{"assert": ".glass-surface", "visible": true}]
+    },
+    "interaction": {
+      "path": "?fixture=interaction&motion=off",
+      "features": ["pointer", "keyboard", "focus-order", "scroll", "aria-expanded", "escape", "input"],
+      "actions": [
+        {"action": "click", "target": "#menu-toggle"},
+        {"assert": "#menu-toggle", "attribute": "aria-expanded", "equals": "true"},
+        {"action": "key", "value": "Escape"},
+        {"assert": "#menu-toggle", "attribute": "aria-expanded", "equals": "false"}
+      ]
+    }
+  },
+  "requirements": {
+    "nativeCandidates": ["Blitz", "RmlUi", "Electrobun GPU"],
+    "referenceCandidate": "Tauri using OS WebView",
+    "featureStatus": ["direct", "adapted", "partial", "unsupported", "blocked", "untested"]
+  }
+}

@@ -1,6 +1,6 @@
 # Tasks: native CSS feasibility
 
-All tasks are **pending**. Checking them off requires actual evidence, not a planning document.
+A checked task requires implementation evidence, not merely a plan. Local fixture checks use Chromium only; no native candidate or performance result is verified.
 
 ## 1. Candidate and contract validation
 
@@ -11,9 +11,9 @@ All tasks are **pending**. Checking them off requires actual evidence, not a pla
 
 ## 2. Canonical fixture construction
 
-- [ ] 2.1 Implement a compact component and control fixture with keyboard/focus/input expectations.
-- [ ] 2.2 Implement responsive dashboard and visual challenge fixtures using versioned CSS/assets.
-- [ ] 2.3 Implement and document deterministic interaction traces and visual capture checkpoints.
+- [x] 2.1 Implement a compact component and control fixture with keyboard/focus/input expectations.
+- [x] 2.2 Implement responsive dashboard and visual challenge fixtures using versioned CSS/assets.
+- [x] 2.3 Implement and document deterministic interaction traces and visual capture checkpoints.
 
 ## 3. Engine adapters
 
