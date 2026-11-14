@@ -1,5 +1,10 @@
 # CALYRA canonical reference fixtures
 
+![Chromium reference screenshots for all four CALYRA fixtures](../docs/reference-preview.webp)
+
+*Screenshot composite from local Chromium execution. Not native GPU engine evidence.*
+
+
 These fixtures establish a browser baseline for the OpenSpec change `establish-native-css-feasibility`. They are **not** a CALYRA GPU renderer, engine adapter, Tauri baseline, or performance benchmark.
 
 ## Files
