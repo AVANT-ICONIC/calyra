@@ -1,0 +1,96 @@
+name: CALYRA Blitz document-level keydown regression
+
+# One-time experiment. The upstream checkout is patched only *after* verifying
+# its pinned clean SHA. No CALYRA reference assets or original JS are changed.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/native-blitz-keydown-patch-proof.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  linux-patched-dom:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install upstream build prerequisites
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends build-essential pkg-config libssl-dev libfontconfig-dev libx11-dev libxkbcommon-dev libwayland-dev libasound2-dev git ca-certificates
+      - name: Pin Rust
+        run: |
+          rustup toolchain install 1.91.0 --profile minimal
+          rustup default 1.91.0
+          rustc --version
+      - name: Pin canonical HTML, CSS and JS
+        run: |
+          set -euo pipefail
+          echo '04635269a8fbd790c87316a03c6469a157806201e58fd730212f632fc86b7b9c  fixtures/reference.css' | sha256sum -c -
+          echo '9d565203fc9c3450b0c61d7774cb2322b14ed3e3325926122b17f583e81cf3de  fixtures/reference.js' | sha256sum -c -
+      - name: Clone pinned clean upstream source
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none https://github.com/DioxusLabs/blitz.git "$RUNNER_TEMP/blitz"
+          git -C "$RUNNER_TEMP/blitz" checkout --detach 4f61cffacee50fe4f944ebe9d0470d9a5d3997e0
+          test "$(git -C "$RUNNER_TEMP/blitz" rev-parse HEAD)" = 4f61cffacee50fe4f944ebe9d0470d9a5d3997e0
+          test -z "$(git -C "$RUNNER_TEMP/blitz" status --porcelain --untracked-files=no)"
+      - name: Apply explicitly scoped experimental event-bubbling patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/native-stage-a/blitz-keydown
+          sha256sum native/blitz/patches/document-event-chain.patch native/blitz/reference_js_probe.rs > evidence/native-stage-a/blitz-keydown/source-sha256.txt
+          git -C "$RUNNER_TEMP/blitz" apply --check "$GITHUB_WORKSPACE/native/blitz/patches/document-event-chain.patch"
+          git -C "$RUNNER_TEMP/blitz" apply "$GITHUB_WORKSPACE/native/blitz/patches/document-event-chain.patch"
+          git -C "$RUNNER_TEMP/blitz" diff -- packages/blitz-dom/src/traversal.rs > evidence/native-stage-a/blitz-keydown/applied-upstream-diff.patch
+          cp native/blitz/reference_js_probe.rs "$RUNNER_TEMP/blitz/packages/blitz-vibey-script/tests/calyra_reference.rs"
+      - name: Run original CALYRA script against patched native engine
+        shell: bash
+        env:
+          CARGO_BUILD_JOBS: '2'
+          CARGO_TERM_COLOR: never
+        run: |
+          set -o pipefail
+          export CALYRA_CANONICAL_HTML="$GITHUB_WORKSPACE/fixtures/index.html"
+          export CALYRA_CANONICAL_CSS="$GITHUB_WORKSPACE/fixtures/reference.css"
+          export CALYRA_CANONICAL_JS="$GITHUB_WORKSPACE/fixtures/reference.js"
+          export CALYRA_JS_OUT="$GITHUB_WORKSPACE/evidence/native-stage-a/blitz-keydown"
+          cd "$RUNNER_TEMP/blitz"
+          cargo test --locked -p blitz-vibey-script --test calyra_reference -- --nocapture 2>&1 | tee "$CALYRA_JS_OUT/rust-test.log"
+      - name: Verify actual application handler and key event
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('evidence/native-stage-a/blitz-keydown')
+          report=json.loads((root/'calyra-js-escape-patched.json').read_text())
+          assert report['schema']=='calyra.blitz-js.v1'
+          assert report['reference_js_modified'] is False
+          assert report['js_error_count']==0
+          assert report['os_input_tested'] is False
+          assert report['gpu_tested'] is False
+          outcome=report['observations']
+          assert outcome['before']['expanded']=='true'
+          assert outcome['after']['expanded']=='false'
+          assert outcome['after']['hidden'] is True
+          assert any(x.get('key')=='Escape' for x in outcome['after']['trace'])
+          print('PASS: original CALYRA document listener received Escape and closed menu')
+          PY
+      - name: Preserve reproducibility and failed attempts
+        if: always()
+        run: |
+          echo '### CALYRA native Blitz / patched document bubbling' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Upstream 4f61cff, modified only in disposable CI checkout. Original CALYRA CSS/JS untouched.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Synthetic internal UI events, not real OS keyboard input, GPU or production fix.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-blitz-keydown-patched-experiment
+          path: evidence/native-stage-a/blitz-keydown/
+          retention-days: 7
+          if-no-files-found: warn
