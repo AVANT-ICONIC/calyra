@@ -72,7 +72,9 @@ jobs:
           export CALYRA_CANONICAL_HTML="$GITHUB_WORKSPACE/fixtures/index.html"
           export CALYRA_CANONICAL_CSS="$GITHUB_WORKSPACE/fixtures/reference.css"
           export CALYRA_CANONICAL_JS="$GITHUB_WORKSPACE/fixtures/reference.js"
-          export CALYRA_JS_OUT="$GITHUB_WORKSPACE/evidence/native-stage-a/blitz-select"
+          export CALYRA_JS_OUT="$GITHUB_WORKSPACE/evidence/native-stage-a/blitz-select-live"
+          test -d "$CALYRA_JS_OUT"
+          echo "CALYRA_EVIDENCE_DIR=$CALYRA_JS_OUT"
           cd "$RUNNER_TEMP/blitz"
           cargo test --locked -p blitz-vibey-script --test calyra_reference -- --nocapture 2>&1 | tee "$CALYRA_JS_OUT/rust-test.log"
       - name: Verify actual application handler and key event
@@ -81,7 +83,7 @@ jobs:
           python3 - <<'PY'
           import json
           from pathlib import Path
-          root=Path('evidence/native-stage-a/blitz-select')
+          root=Path('evidence/native-stage-a/blitz-select-live')
           report=json.loads((root/'calyra-js-escape-patched.json').read_text())
           assert report['schema']=='calyra.blitz-js.v1'
           assert report['reference_js_modified'] is False
