@@ -42,7 +42,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p evidence/native-stage-a/blitz-select
+          mkdir -p evidence/native-stage-a/blitz-select-live
           sha256sum native/blitz/patches/document-event-chain.patch native/blitz/patches/plain-button-focus.patch native/blitz/patches/select-ua-display.patch native/blitz/patches/select-default-value.patch native/blitz/patches/select-label-parley.patch native/blitz/patches/select-label-readonly.patch native/blitz/patches/select-state-store.patch native/blitz/patches/select-state-accessors.patch native/blitz/patches/select-live-form-controls.patch native/blitz/patches/select-live-label-sync.patch native/blitz/experiments/select_state.rs native/blitz/reference_js_probe.rs native/blitz/patches/patched_focus_regression.rs native/blitz/patches/patched_select_regression.rs native/blitz/patches/patched_label_paint_regression.rs native/blitz/patches/patched_live_select_regression.rs > evidence/native-stage-a/blitz-select-live/source-sha256.txt
           git -C "$RUNNER_TEMP/blitz" apply --check "$GITHUB_WORKSPACE/native/blitz/patches/document-event-chain.patch"
           git -C "$RUNNER_TEMP/blitz" apply "$GITHUB_WORKSPACE/native/blitz/patches/document-event-chain.patch"
