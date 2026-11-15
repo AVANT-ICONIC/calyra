@@ -83,10 +83,6 @@ class RmlUiStageATests(unittest.TestCase):
         self.assertNotIn('WebView', cmake)
         self.assertIn('std::unique_ptr<ApplyListener>', cpp)
 
-
-if __name__ == '__main__':
-    unittest.main()
-
 class RmlUiVerificationGuardTests(unittest.TestCase):
     """Runner-only negative tests. These don't certify an upstream RmlUi build."""
 
@@ -136,3 +132,81 @@ class RmlUiVerificationGuardTests(unittest.TestCase):
         self.assertIn('context->ProcessMouseButtonUp(0, 0)', cpp)
         self.assertIn('glGetString(GL_RENDERER)', cpp)
         self.assertIn('CALYRA_NATIVE_CLICK=1', cpp)
+
+class RmlUiRunnerMockBoundaryTests(unittest.TestCase):
+    """End-to-end runner state-machine tests using a FAKE binary.
+
+    These prove report classification only, not real native rendering.
+    """
+    def run_mock(self, renderer, clicked=True, stale_frame=False):
+        import argparse
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as directory:
+            d = Path(directory)
+            src = d / 'fake-source'
+            src.mkdir()
+            binary = d / 'fake-probe'
+            font = d / 'fake-font.ttf'
+            font.write_bytes(b'fake font; never loaded')
+            script = '''#!/usr/bin/env python3
+import sys
+from pathlib import Path
+p = Path(sys.argv[4])
+p.write_bytes(b'P6\\n800 500\\n255\\n' + b'\\x10\\x20\\x30' * 200000 + b'\\x80\\x70\\x60' * 200000)
+print('CALYRA_NATIVE_FRAME=800x500')
+print('CALYRA_GL_RENDERER=%s')
+print('CALYRA_GL_VENDOR=MockVendor')
+print('CALYRA_INPUT_SOURCE=synthetic_rmlui_event')
+%s
+print('CALYRA_NATIVE_RENDER_OK=1')
+''' % (renderer, "print('CALYRA_NATIVE_CLICK=1')" if clicked else 'pass')
+            binary.write_text(script)
+            binary.chmod(0o755)
+            (d / run_rmlui.PROVENANCE_FILE).write_text(json.dumps({
+                'upstream_sha': run_rmlui.UPSTREAM_SHA,
+                'source_root': str(src.resolve()),
+                'binary_path': str(binary.resolve()),
+                'binary_sha256': run_rmlui.hash_file(binary),
+            }))
+            if stale_frame:
+                (d / 'rmlui-direct-frame.ppm').write_bytes(b'old bogus frame')
+            args = argparse.Namespace(output=str(d), source=str(src), binary=str(binary),
+                                      font=str(font), mode='direct', build=False)
+            with patch.object(run_rmlui, 'is_pinned_checkout', return_value=(True, '')):
+                result = run_rmlui.run(args)
+            report = json.loads((d / 'rmlui-direct-result.json').read_text())
+            return result, report
+
+    def test_mocked_software_renderer_is_not_gpu(self):
+        rc, report = self.run_mock('llvmpipe (LLVM 17.0)')
+        self.assertEqual(rc, 0)
+        self.assertEqual(report['eligibility'], 'restricted')
+        self.assertEqual(report['adapter']['kind'], 'browserless-software')
+        self.assertFalse(report['execution']['gpu_backed'])
+        self.assertTrue(report['execution']['interactive'])
+        self.assertTrue(report['capture']['success'])
+
+    def test_mocked_success_without_click_must_fail_closed(self):
+        rc, report = self.run_mock('NVIDIA GeForce RTX 3060', clicked=False)
+        self.assertEqual(rc, 2)
+        self.assertEqual(report['eligibility'], 'blocked')
+        self.assertFalse(report['execution']['gpu_backed'])
+        self.assertFalse(report['execution']['interactive'])
+        self.assertFalse(report['capture']['success'])
+        self.assertTrue(any('click' in x.lower() for x in report['limitations']))
+
+    def test_unknown_renderer_rejected_even_with_valid_mocked_frame(self):
+        rc, report = self.run_mock('Generic OpenGL Renderer')
+        self.assertEqual(rc, 2)
+        self.assertEqual(report['eligibility'], 'blocked')
+        self.assertFalse(report['capture']['success'])
+        self.assertTrue(any('unknown GL renderer' in x for x in report['limitations']))
+
+    def test_stale_frame_cannot_rescue_missing_click(self):
+        rc, report = self.run_mock('NVIDIA GeForce RTX 3060', clicked=False, stale_frame=True)
+        self.assertEqual(rc, 2)
+        self.assertFalse(report['capture']['success'])
+
+
+if __name__ == '__main__':
+    unittest.main()
