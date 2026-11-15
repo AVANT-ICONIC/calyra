@@ -1,0 +1,98 @@
+name: CALYRA Blitz native input proof
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/native-blitz-input-proof.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  linux-native-dom-input:
+    name: Blitz pinned / real DOM events / headless CPU
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - name: Native prerequisites
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends build-essential pkg-config libssl-dev libfontconfig-dev libx11-dev libxkbcommon-dev libwayland-dev libasound2-dev git ca-certificates
+      - name: Pinned Rust
+        run: |
+          rustup toolchain install 1.91.0 --profile minimal
+          rustup default 1.91.0
+          rustc --version
+      - name: Pinned official Blitz checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none https://github.com/DioxusLabs/blitz.git "$RUNNER_TEMP/blitz"
+          git -C "$RUNNER_TEMP/blitz" checkout --detach 4f61cffacee50fe4f944ebe9d0470d9a5d3997e0
+          test "$(git -C "$RUNNER_TEMP/blitz" rev-parse HEAD)" = 4f61cffacee50fe4f944ebe9d0470d9a5d3997e0
+          test -z "$(git -C "$RUNNER_TEMP/blitz" status --porcelain --untracked-files=no)"
+      - name: Original CSS with documented static DOM states
+        run: |
+          python3 native/blitz/prepare_static.py --root . --output "$RUNNER_TEMP/calyra-snapshots" --fixture controls
+          python3 native/blitz/prepare_static.py --root . --output "$RUNNER_TEMP/calyra-snapshots" --fixture interaction
+      - name: Overlay CALYRA tests only in disposable Blitz checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp native/blitz/controls_probe.rs "$RUNNER_TEMP/blitz/tests/blitz-tests/tests/calyra_controls_probe.rs"
+          cat >> "$RUNNER_TEMP/blitz/tests/blitz-tests/Cargo.toml" <<'EOF'
+
+          [[test]]
+          name = "calyra-controls-probe"
+          path = "tests/calyra_controls_probe.rs"
+          EOF
+      - name: Run real Blitz internal event dispatch and retain logs
+        shell: bash
+        env:
+          CARGO_BUILD_JOBS: '2'
+          CARGO_TERM_COLOR: never
+        run: |
+          set -uo pipefail
+          mkdir -p evidence/native-stage-a/blitz-input
+          export CALYRA_CONTROLS_HTML="$RUNNER_TEMP/calyra-snapshots/controls/index.html"
+          export CALYRA_INTERACTION_HTML="$RUNNER_TEMP/calyra-snapshots/interaction/index.html"
+          export CALYRA_PROBE_OUT="$GITHUB_WORKSPACE/evidence/native-stage-a/blitz-input"
+          cd "$RUNNER_TEMP/blitz"
+          cargo test --locked -p blitz-tests --test calyra-controls-probe -- --nocapture 2>&1 | tee "$CALYRA_PROBE_OUT/rust-test.log"
+          exit "${PIPESTATUS[0]}"
+      - name: Validate fresh native evidence
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json,hashlib
+          from pathlib import Path
+          out=Path('evidence/native-stage-a/blitz-input')
+          reports={}
+          for scene in ('controls','interaction'):
+              payload=json.loads((out/f'calyra-{scene}-input.json').read_text())
+              assert payload['schema']=='calyra.blitz-input.v1'
+              assert payload['fixture']==scene
+              assert payload['input_source']=='blitz_test_harness_synthetic_native_events'
+              assert payload['css_modified'] is False
+              assert payload['javascript_executed'] is False
+              reports[scene]=payload
+          manifest={'schema':'calyra.blitz-input-evidence.v1',
+                    'upstream_git_commit':'4f61cffacee50fe4f944ebe9d0470d9a5d3997e0',
+                    'probe_sha256':hashlib.sha256(Path('native/blitz/controls_probe.rs').read_bytes()).hexdigest(),
+                    'canonical_css_sha256':hashlib.sha256(Path('fixtures/reference.css').read_bytes()).hexdigest(),
+                    'hardware_os_input_tested':False,'gpu_tested':False,
+                    'javascript_executed':False,'results':reports}
+          (out/'evidence-summary.json').write_text(json.dumps(manifest,indent=2)+'\n')
+          print(json.dumps(manifest,indent=2))
+          PY
+      - name: Preserve limitations in summary
+        if: always()
+        run: |
+          echo '### Blitz CALYRA native input probe' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Internal synthetic event dispatch only. OS input, JS, GPU and accessibility unverified.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-blitz-input-stage-a
+          path: evidence/native-stage-a/blitz-input/
+          if-no-files-found: warn
+          retention-days: 7
