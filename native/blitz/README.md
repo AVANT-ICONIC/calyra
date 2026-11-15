@@ -54,3 +54,8 @@ The script builds and runs the **unmodified upstream `screenshot` binary**. It s
 ## State
 
 The canonical CALYRA OpenSpec change is `openspec/changes/establish-native-css-feasibility/`. Do not check off task 3.2 until actual upstream Blitz execution (or a reproducible blocked build) is backed by logs. Keep the feature PR stacked on draft PR #1; do not silently turn this experiment into a production renderer.
+
+
+## Separate native ScriptDocument test variants
+
+A clean pinned upstream run injects only native/blitz/reference_js_probe.rs. The event-chain patched experiment first verifies the official upstream commit and applies native/blitz/patches/document-event-chain.patch inside its temporary checkout, then appends native/blitz/patches/patched_escape_regression.rs to the base probe. The concatenation was checked against the exact previously compiled and successful test-program Git blob. Neither approach edits canonical fixtures/reference.js, HTML or CSS. The experimental patch is not a production engine change.

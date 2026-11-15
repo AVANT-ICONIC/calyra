@@ -50,3 +50,12 @@ Blitz's packages/blitz-dom/src/traversal.rs BaseDocument::node_chain() retains o
 The patch affects document-level bubbling for **all event types**, not only keydown. Wider pointer/click/capture-phase regression tests, an upstream code review, and separate native OS input checks are required before shipping it as a runtime modification.
 
 Hardware GPU, IME, accessibility, event ordering, complete browser compatibility, memory/performance improvements and Apple Silicon native execution are unverified by this test. OpenSpec task 3.2 remains completed as a candidate experiment; task 4.1 remains unchecked. CALYRA PR #2 stays draft and stacked.
+
+
+## Adjacent focus-ordering hypothesis, not yet runtime-patched
+
+A separate upstream path deserves testing: in pinned packages/blitz-dom/src/events/pointer.rs, handle_click() runs its default action **after** the JavaScript click listener. For a non-submit button (CALYRA's menu-toggle is type=button), no branch marks the default action as handled; the final fallback uses clear_focus(). Thus the script's immediate command.focus() can plausibly be overwritten by the click default action. The observed late-focus success is consistent with this code path, but **no focus-specific engine repair has been verified**. The correct fix should preserve normal button focus, form submission and click-default semantics, not merely move CALYRA's own focus call into a timer.
+
+## Clean versus patched test isolation
+
+The shared reference_js_probe.rs is intended to execute against **clean pinned upstream Blitz**. The patch-specific Escape assertion lives in native/blitz/patches/patched_escape_regression.rs and is appended only in native-blitz-keydown-patch-proof.yml. This keeps a clean-upstream rerun from falsely failing an assertion that only a modified engine could satisfy. The two test files concatenate to the exact Git blob of the previously successful patched run. The split has its own CI validation and does not change the original CALYRA JavaScript.
