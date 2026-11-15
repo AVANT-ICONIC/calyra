@@ -5,7 +5,7 @@ on:
     paths: [.github/workflows/native-blitz-javascript-proof.yml]
   workflow_dispatch:
 
-# Focus diagnosis: compare late JS focus, forced native focus, and Escape routing.
+# Native keyboard routing diagnosis: compare UI event with explicit descendant/body/document DOM dispatch.
 permissions:
   contents: read
 jobs:
@@ -66,7 +66,7 @@ jobs:
           from pathlib import Path
           out=Path('evidence/native-stage-a/blitz-js')
           result={}
-          for scene in ('controls','interaction','focus-diagnostic'):
+          for scene in ('controls','interaction','focus-diagnostic','keyboard-routing'):
               p=out/f'calyra-js-{scene}.json'
               data=json.loads(p.read_text())
               assert data['schema']=='calyra.blitz-js.v1'

@@ -128,3 +128,93 @@ fn calyra_focus_dispatch_diagnostic() {
     );
     save("focus-diagnostic", &observations, &errors);
 }
+
+
+/// Compare native UI KeyDown routing with explicit DOM events at a focused
+/// descendant, body and document. The author's reference.js is untouched.
+/// The trace is instrumentation: its observations are not automatically
+/// interpreted as "keyboard support", nor are these physical OS key events.
+fn calyra_escape_key() -> BlitzKeyEvent {
+    BlitzKeyEvent {
+        key: Key::Named(NamedKey::Escape),
+        code: Code::Escape,
+        modifiers: Modifiers::empty(),
+        location: Location::Standard,
+        is_auto_repeating: false,
+        is_composing: false,
+        state: KeyState::Pressed,
+        text: None,
+    }
+}
+
+#[test]
+fn calyra_keyboard_routing_diagnostic() {
+    use blitz_traits::events::DomEventData;
+    let mut results = Vec::new();
+    let mut all_errors = Vec::new();
+
+    for route in ["ui", "dom-focused", "dom-body", "dom-document"] {
+        let mut doc = document("interaction");
+        // Add read-only listeners after original source script has executed.
+        // These probes do not alter CALYRA's original application listeners.
+        doc.eval(r#"
+            window.__calyraKeyTrace = [];
+            [
+              [document.querySelector('#menu-popover button'), 'command'],
+              [document.body, 'body'],
+              [document, 'document'],
+              [window, 'window']
+            ].forEach(([target, where]) => {
+              target.addEventListener('keydown', event => {
+                window.__calyraKeyTrace.push({
+                  where: where,
+                  key: event.key,
+                  target: event.target && event.target.id || '',
+                  bubbles: event.bubbles
+                });
+              });
+            });
+        "#);
+        click(&mut doc, "#menu-toggle");
+        doc.eval("document.querySelector('#menu-popover button').focus()");
+        doc.inner_mut().resolve(0.0);
+
+        let before = state(&mut doc, "({
+            expanded:document.getElementById('menu-toggle').getAttribute('aria-expanded'),
+            focused:document.activeElement&&document.activeElement.getAttribute('data-command'),
+            listeners:window.__calyraKeyTrace.length
+        })");
+
+        let key = calyra_escape_key();
+        match route {
+            "ui" => doc.handle_ui_event(UiEvent::KeyDown(key)),
+            "dom-focused" => {
+                let id = query(&doc, "#menu-popover button");
+                doc.dispatch_dom_event(DomEvent::new(id, DomEventData::KeyDown(key)));
+            }
+            "dom-body" => {
+                let id = query(&doc, "body");
+                doc.dispatch_dom_event(DomEvent::new(id, DomEventData::KeyDown(key)));
+            }
+            "dom-document" => {
+                let id = doc.inner().root_node().id;
+                doc.dispatch_dom_event(DomEvent::new(id, DomEventData::KeyDown(key)));
+            }
+            _ => unreachable!(),
+        }
+        doc.inner_mut().resolve(0.0);
+        let after = state(&mut doc, "({
+            expanded:document.getElementById('menu-toggle').getAttribute('aria-expanded'),
+            hidden:document.getElementById('menu-popover').hidden,
+            focused:document.activeElement&&document.activeElement.id,
+            trace:window.__calyraKeyTrace
+        })");
+        results.push(format!(
+            "{{\"route\":\"{route}\",\"before\":{before},\"after\":{after}}}"
+        ));
+        all_errors.extend(doc.take_js_errors());
+    }
+    let observations = format!("{{\"routes\":[{}]}}", results.join(","));
+    save("keyboard-routing", &observations, &all_errors);
+    assert!(all_errors.is_empty(), "instrumented keyboard routing must not throw JS exceptions");
+}
