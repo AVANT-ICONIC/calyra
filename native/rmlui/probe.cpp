@@ -5,6 +5,9 @@
 #include <RmlUi/Core/Event.h>
 #include <RmlUi/Core/EventListener.h>
 #include <RmlUi_Backend.h>
+#include <RmlUi_Renderer_GL3.h>
+#define GLFW_INCLUDE_NONE
+#include <GLFW/glfw3.h>
 #ifdef __APPLE__
 #include <OpenGL/gl3.h>
 #else
@@ -42,18 +45,19 @@ private:
   bool& clicked_;
 };
 
-bool SavePresentedFramePPM(const std::string& path, int& width, int& height) {
+bool SaveResolvedBackbufferPPM(const std::string& path, int& width, int& height) {
   GLint viewport[4] = {0,0,0,0};
   glGetIntegerv(GL_VIEWPORT, viewport);
   width = viewport[2]; height = viewport[3];
   if (width <= 0 || height <= 0 || width > 8192 || height > 8192) return false;
   std::vector<unsigned char> rgba(size_t(width) * size_t(height) * 4);
-  // RmlUi_GL3::BeginFrame renders into an internal FBO. Its EndFrame()
-  // resolves that FBO to the window backbuffer, then GLFW swaps buffers.
-  // Capture the just-presented GL_FRONT; GL_BACK before EndFrame is wrong.
+  // RmlUi GL3 draws into an internal FBO and resolves to the default
+  // backbuffer during EndFrame(). Read GL_BACK AFTER EndFrame() but BEFORE
+  // glfwSwapBuffers(). Reading earlier samples the wrong framebuffer, while
+  // reading GL_FRONT after swap returns a blank buffer on some Xvfb drivers.
   while (glGetError() != GL_NO_ERROR) {} // discard prior render errors
   glFinish();
-  glReadBuffer(GL_FRONT);
+  glReadBuffer(GL_BACK);
   glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
   const GLenum capture_error = glGetError();
   if (capture_error != GL_NO_ERROR) {
@@ -154,14 +158,18 @@ int main(int argc, char** argv) {
               }
               Backend::BeginFrame();
               context->Render();
-              Backend::PresentFrame(); // resolves the FBO and swaps the visible frame
+              // Upstream Backend::PresentFrame combines EndFrame + swap.
+              // Split those two operations solely to capture a resolved
+              // backbuffer before swapping (see upstream GLFW_GL3 backend).
+              static_cast<RenderInterface_GL3*>(Backend::GetRenderInterface())->EndFrame();
               if (!captured && frames >= 8 && capture_attempts < 3) {
                 ++capture_attempts;
                 int w=0, h=0;
-                captured = SavePresentedFramePPM(argv[4], w, h);
+                captured = SaveResolvedBackbufferPPM(argv[4], w, h);
                 if (captured) std::cout << "CALYRA_NATIVE_FRAME=" << w << "x" << h << "\n";
-                else std::cerr << "CALYRA_ERROR=presented_frame_capture_failed\n";
+                else std::cerr << "CALYRA_ERROR=resolved_backbuffer_capture_failed\n";
               }
+              glfwSwapBuffers(glfwGetCurrentContext());
               if (!captured && capture_attempts >= 3) break;
               ++frames;
               std::this_thread::sleep_for(std::chrono::milliseconds(16));

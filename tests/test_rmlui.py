@@ -291,12 +291,13 @@ if __name__ == '__main__':
 class RmlUiRealSourceRegressionTests(unittest.TestCase):
     """Review guards for bugs diagnosed from actual Actions RmlUi 6.3 logs."""
 
-    def test_capture_occurs_only_after_upstream_endframe_and_swap(self):
+    def test_capture_occurs_between_upstream_endframe_and_swap(self):
         cpp = (ROOT / 'native' / 'rmlui' / 'probe.cpp').read_text()
-        self.assertIn('glReadBuffer(GL_FRONT)', cpp)
-        self.assertNotIn('glReadBuffer(GL_BACK)', cpp)
-        self.assertIn('SavePresentedFramePPM', cpp)
-        self.assertLess(cpp.index('Backend::PresentFrame(); //'), cpp.index('SavePresentedFramePPM(argv[4]'))
+        self.assertIn('glReadBuffer(GL_BACK)', cpp)
+        self.assertNotIn('glReadBuffer(GL_FRONT)', cpp)
+        self.assertIn('SaveResolvedBackbufferPPM', cpp)
+        self.assertLess(cpp.index('->EndFrame();'), cpp.index('SaveResolvedBackbufferPPM(argv[4]'))
+        self.assertLess(cpp.index('SaveResolvedBackbufferPPM(argv[4]'), cpp.index('glfwSwapBuffers(glfwGetCurrentContext())'))
         self.assertIn('CALYRA_GL_CAPTURE_ERROR=', cpp)
 
     def test_font_file_is_registered_under_adapted_family(self):

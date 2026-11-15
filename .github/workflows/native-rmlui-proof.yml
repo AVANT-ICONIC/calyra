@@ -1,6 +1,6 @@
 name: CALYRA native RmlUi proof
 
-# Focused proof run after correcting capture order diagnosed from actual RmlUi logs.
+# Focused Linux proof after splitting upstream EndFrame and GLFW buffer swap.
 # Later source changes do not repeatedly consume runners.
 on:
   push:
