@@ -4,6 +4,8 @@ on:
     branches: [feat/reference-fixtures]
     paths: [.github/workflows/native-blitz-javascript-proof.yml]
   workflow_dispatch:
+
+# Focus diagnosis: compare late JS focus, forced native focus, and Escape routing.
 permissions:
   contents: read
 jobs:
@@ -64,7 +66,7 @@ jobs:
           from pathlib import Path
           out=Path('evidence/native-stage-a/blitz-js')
           result={}
-          for scene in ('controls','interaction'):
+          for scene in ('controls','interaction','focus-diagnostic'):
               p=out/f'calyra-js-{scene}.json'
               data=json.loads(p.read_text())
               assert data['schema']=='calyra.blitz-js.v1'

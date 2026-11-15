@@ -90,3 +90,41 @@ fn calyra_original_interaction_script() {
     let errors = doc.take_js_errors();
     save("interaction", &format!("{{\"before\":{before},\"after_click\":{opened},\"after_escape\":{closed}}}"), &errors);
 }
+
+
+#[test]
+fn calyra_focus_dispatch_diagnostic() {
+    // A separate *diagnostic* experiment. The original JS is unchanged.
+    // We intervene after the failing menu-open path to isolate whether
+    // focus() or keyboard-event propagation is responsible.
+    let mut doc = document("interaction");
+    click(&mut doc, "#menu-toggle");
+    let command = query(&doc, "#menu-popover button");
+    let focused_initial = doc.inner().get_focussed_node_id() == Some(command);
+    let before = state(&mut doc, "({expanded:document.getElementById('menu-toggle').getAttribute('aria-expanded'),focused:document.activeElement&&document.activeElement.id})");
+
+    // Attempt focus after the menu has become visible and layout updated.
+    doc.eval("document.querySelector('#menu-popover button').focus()");
+    doc.inner_mut().resolve(0.0);
+    let focused_after_delayed_js = doc.inner().get_focussed_node_id() == Some(command);
+    let after_js_focus = state(&mut doc, "({focused:document.activeElement&&document.activeElement.getAttribute('data-command')})");
+
+    // Distinguish failed JS focus from failed keyboard dispatch by making
+    // the native engine focus the same node directly. This is instrumentation,
+    // never counted as unmodified browser behavior.
+    doc.inner_mut().set_focus_to(command);
+    let focused_after_native = doc.inner().get_focussed_node_id() == Some(command);
+    doc.handle_ui_event(UiEvent::KeyDown(BlitzKeyEvent {
+        key: Key::Named(NamedKey::Escape), code: Code::Escape, modifiers: Modifiers::empty(),
+        location: Location::Standard, is_auto_repeating: false,
+        is_composing: false, state: KeyState::Pressed, text: None,
+    }));
+    doc.inner_mut().resolve(0.0);
+    let after_escape = state(&mut doc, "({expanded:document.getElementById('menu-toggle').getAttribute('aria-expanded'),hidden:document.getElementById('menu-popover').hidden,focused:document.activeElement&&document.activeElement.id})");
+    let errors = doc.take_js_errors();
+    let observations = format!(
+        "{{\"focused_after_original_open\":{},\"before\":{},\"focused_after_delayed_js_focus\":{},\"after_delayed_js_focus\":{},\"focused_after_forced_native_focus\":{},\"after_escape\":{}}}",
+        focused_initial, before, focused_after_delayed_js, after_js_focus, focused_after_native, after_escape
+    );
+    save("focus-diagnostic", &observations, &errors);
+}
