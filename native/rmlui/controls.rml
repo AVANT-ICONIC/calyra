@@ -1,0 +1,18 @@
+<rml>
+<head><title>CALYRA native controls probe</title></head>
+<body>
+  <div class="masthead"><div class="brand">CALYRA <span class="brand-sub">STAGE A / NATIVE</span></div><div class="head-meta">RmlUi 6.3 / GLFW GL3</div></div>
+  <div class="main">
+    <p class="eyebrow">CSS-NATIVE FEASIBILITY</p>
+    <h1>Control reference</h1>
+    <p class="lead">RML translation of the canonical browser controls. This is not full browser HTML compatibility.</p>
+    <div class="control-grid">
+      <div class="field"><label for="person-name">Operator name</label><input id="person-name" type="text" value="Mara Novak"/></div>
+      <div class="field"><label for="priority">Priority</label><select id="priority"><option value="quality">Quality</option><option value="speed">Speed</option></select></div>
+    </div>
+    <div class="actions"><button id="apply" class="action primary">Apply settings</button><button class="action secondary">Secondary action</button></div>
+    <p id="action-status">Waiting for native click event</p>
+    <p class="footnote">DOM/RCSS adapted. Full CSS, IME and accessibility remain unproven.</p>
+  </div>
+</body>
+</rml>
