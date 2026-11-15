@@ -1,0 +1,103 @@
+name: CALYRA Blitz real HTML/CSS proof
+
+# One focused native build: edits to regular source do NOT repeatedly spend CI.
+# Further attempts are explicit workflow_dispatch or a targeted workflow edit.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/native-blitz-proof.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: calyra-blitz-stage-a-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux-native-cpu-html:
+    name: Linux / Blitz 0.3-beta.4 / native HTML Vello CPU
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install upstream native build prerequisites
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends build-essential pkg-config python3-venv libssl-dev libfontconfig-dev libx11-dev libxkbcommon-dev libwayland-dev libasound2-dev ca-certificates git
+      - name: Select pinned Rust toolchain
+        run: |
+          rustup toolchain install 1.91.0 --profile minimal
+          rustup default 1.91.0
+          rustc --version
+          cargo --version
+      - name: Fetch exact upstream Blitz revision
+        shell: bash
+        run: |
+          git clone --filter=blob:none https://github.com/DioxusLabs/blitz.git "$RUNNER_TEMP/blitz"
+          git -C "$RUNNER_TEMP/blitz" checkout --detach 4f61cffacee50fe4f944ebe9d0470d9a5d3997e0
+          test "$(git -C "$RUNNER_TEMP/blitz" rev-parse HEAD)" = 4f61cffacee50fe4f944ebe9d0470d9a5d3997e0
+          test -z "$(git -C "$RUNNER_TEMP/blitz" status --porcelain --untracked-files=no)"
+      - name: Install isolated Python capture validator
+        run: |
+          python3 -m venv "$RUNNER_TEMP/calyra-verify"
+          "$RUNNER_TEMP/calyra-verify/bin/pip" install --disable-pip-version-check Pillow jsonschema
+      - name: Build and run real upstream native HTML screenshots
+        id: native
+        shell: bash
+        env:
+          CARGO_BUILD_JOBS: '2'
+          CARGO_TERM_COLOR: never
+        run: |
+          mkdir -p evidence/native-stage-a/blitz
+          set +e
+          "$RUNNER_TEMP/calyra-verify/bin/python" native/blitz/run_stage_a.py \
+            --source "$RUNNER_TEMP/blitz" --build --fixture controls 2>&1 | tee evidence/native-stage-a/blitz/ci-controls.log
+          controls_code=${PIPESTATUS[0]}
+          echo "controls=$controls_code" >> "$GITHUB_OUTPUT"
+          # Do not attempt further scenes if a native executable was never built.
+          if ! test -f "$RUNNER_TEMP/blitz/target/release/examples/screenshot"; then
+            exit "$controls_code"
+          fi
+          for scene in dashboard visual interaction; do
+            "$RUNNER_TEMP/calyra-verify/bin/python" native/blitz/run_stage_a.py \
+              --source "$RUNNER_TEMP/blitz" --fixture "$scene" 2>&1 | tee "evidence/native-stage-a/blitz/ci-${scene}.log"
+            echo "$scene=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+          done
+          "$RUNNER_TEMP/calyra-verify/bin/python" - <<'PY'
+          import json
+          from pathlib import Path
+          out = Path('evidence/native-stage-a/blitz')
+          captures = []
+          for name in ('controls', 'dashboard', 'visual', 'interaction'):
+              p = out / f'blitz-{name}-result.json'
+              if p.is_file():
+                  r = json.loads(p.read_text())
+                  if r['capture']['success'] and r['eligibility'] == 'restricted' and not r['execution']['gpu_backed'] and not r['execution']['interactive']:
+                      captures.append(name)
+          print('Verified actual Blitz CPU captures:', captures)
+          # A green run establishes at least one actual Blitz-native rendered frame,
+          # never an invented CSS compatibility / performance result.
+          if not captures:
+              raise SystemExit('No real Blitz CPU screenshot verified')
+          PY
+      - name: Record evidence summary
+        if: always()
+        shell: bash
+        run: |
+          echo '### CALYRA Blitz 0.3.0-beta.4 static HTML preflight' >> "$GITHUB_STEP_SUMMARY"
+          echo 'This uses the upstream Vello **CPU** screenshot renderer, not Chromium or a GPU.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'JavaScript disabled, DOM active-state patched, CSS text unchanged.' >> "$GITHUB_STEP_SUMMARY"
+          for file in evidence/native-stage-a/blitz/blitz-*-result.json; do
+            if test -f "$file"; then
+              python3 -c 'import json,sys; x=json.load(open(sys.argv[1])); print(x["fixture"]["name"], x["eligibility"], x["capture"]["success"], x["limitations"][-1])' "$file" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-blitz-real-stage-a
+          path: evidence/native-stage-a/blitz/
+          if-no-files-found: warn
+          retention-days: 7
