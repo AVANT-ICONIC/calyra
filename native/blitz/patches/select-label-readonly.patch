@@ -1,0 +1,19 @@
+diff --git a/packages/blitz-dom/src/events/keyboard.rs b/packages/blitz-dom/src/events/keyboard.rs
+--- a/packages/blitz-dom/src/events/keyboard.rs
++++ b/packages/blitz-dom/src/events/keyboard.rs
+@@ -66,8 +66,13 @@
+             return;
+         }
+ 
+-        let node = &mut doc.nodes[node_id];
+-        let Some(element_data) = node.element_data_mut() else {
++        let node = &mut doc.nodes[node_id];
++        // The select label reuses Parley's text paint path, not editing.
++        // Do not route text/keyboard defaults into the visual-only buffer.
++        if node.data.is_element_with_tag_name(&local_name!("select")) {
++            return;
++        }
++        let Some(element_data) = node.element_data_mut() else {
+             return;
+         };
+ 

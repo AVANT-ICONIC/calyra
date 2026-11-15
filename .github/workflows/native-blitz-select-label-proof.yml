@@ -1,0 +1,182 @@
+name: CALYRA Blitz selected-label native paint proof
+
+# One focused source-pinned experiment. Does not run on ordinary commits.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/native-blitz-select-label-proof.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  native-cpu-label:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install native and screenshot requirements
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends build-essential pkg-config libssl-dev libfontconfig-dev libx11-dev libxkbcommon-dev libwayland-dev libasound2-dev git ca-certificates python3-venv
+          python3 -m venv "$RUNNER_TEMP/calyra-verify"
+          "$RUNNER_TEMP/calyra-verify/bin/pip" install --disable-pip-version-check Pillow
+      - name: Pin Rust and original author assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustup toolchain install 1.91.0 --profile minimal
+          rustup default 1.91.0
+          echo '04635269a8fbd790c87316a03c6469a157806201e58fd730212f632fc86b7b9c  fixtures/reference.css' | sha256sum -c -
+          echo '9d565203fc9c3450b0c61d7774cb2322b14ed3e3325926122b17f583e81cf3de  fixtures/reference.js' | sha256sum -c -
+      - name: Clone official pinned Blitz revision
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none https://github.com/DioxusLabs/blitz.git "$RUNNER_TEMP/blitz"
+          git -C "$RUNNER_TEMP/blitz" checkout --detach 4f61cffacee50fe4f944ebe9d0470d9a5d3997e0
+          test "$(git -C "$RUNNER_TEMP/blitz" rev-parse HEAD)" = 4f61cffacee50fe4f944ebe9d0470d9a5d3997e0
+          test -z "$(git -C "$RUNNER_TEMP/blitz" status --porcelain --untracked-files=no)"
+      - name: Apply exact isolated engine experiments
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/native-stage-a/blitz-select-label
+          for f in document-event-chain.patch plain-button-focus.patch select-ua-display.patch select-default-value.patch select-label-parley.patch select-label-readonly.patch; do
+            path="$GITHUB_WORKSPACE/native/blitz/patches/$f"
+            git -C "$RUNNER_TEMP/blitz" apply --check "$path"
+            git -C "$RUNNER_TEMP/blitz" apply "$path"
+          done
+          git -C "$RUNNER_TEMP/blitz" diff -- packages/blitz-dom/src/traversal.rs packages/blitz-dom/src/events/pointer.rs packages/blitz-dom/assets/default.css packages/blitz-dom/src/layout/construct.rs packages/blitz-dom/src/events/keyboard.rs packages/blitz-vibey-script/src/dom/element/form_controls.rs > evidence/native-stage-a/blitz-select-label/applied-upstream-diff.patch
+          sha256sum native/blitz/patches/*.patch native/blitz/reference_js_probe.rs native/blitz/patches/patched_focus_regression.rs native/blitz/patches/patched_select_regression.rs native/blitz/patches/patched_label_paint_regression.rs > evidence/native-stage-a/blitz-select-label/source-sha256.txt
+          cp native/blitz/reference_js_probe.rs "$RUNNER_TEMP/blitz/packages/blitz-vibey-script/tests/calyra_reference.rs"
+          cat native/blitz/patches/patched_focus_regression.rs native/blitz/patches/patched_select_regression.rs native/blitz/patches/patched_label_paint_regression.rs >> "$RUNNER_TEMP/blitz/packages/blitz-vibey-script/tests/calyra_reference.rs"
+      - name: Run real Rust/Boa DOM, Parley and keyboard tests
+        shell: bash
+        env:
+          CARGO_BUILD_JOBS: '2'
+          CARGO_TERM_COLOR: never
+        run: |
+          set -euo pipefail
+          export CALYRA_CANONICAL_HTML="$GITHUB_WORKSPACE/fixtures/index.html"
+          export CALYRA_CANONICAL_CSS="$GITHUB_WORKSPACE/fixtures/reference.css"
+          export CALYRA_CANONICAL_JS="$GITHUB_WORKSPACE/fixtures/reference.js"
+          export CALYRA_JS_OUT="$GITHUB_WORKSPACE/evidence/native-stage-a/blitz-select-label"
+          cd "$RUNNER_TEMP/blitz"
+          cargo test --locked -p blitz-vibey-script --test calyra_reference -- --nocapture 2>&1 | tee "$CALYRA_JS_OUT/rust-tests.log"
+      - name: Verify real Parley label and original JS state
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('evidence/native-stage-a/blitz-select-label')
+          for label in ('select-patched','select-label','focus-patched','destination-focus-patched','escape-patched'):
+            j=json.loads((root/f'calyra-js-{label}.json').read_text())
+            assert j['schema']=='calyra.blitz-js.v1'
+            assert j['reference_js_modified'] is False
+            assert j['js_error_count']==0
+            assert j['os_input_tested'] is False and j['gpu_tested'] is False
+          o=json.loads((root/'calyra-js-select-label.json').read_text())['observations']
+          assert o['parley_label']=='Balanced'
+          assert o['parley_line'] is True
+          assert o['js_value']=={'value':'balanced'}
+          print('PASS: native Parley label buffer exists; screenshot paint still pending')
+          PY
+      - name: Build official Blitz Vello CPU screenshot example
+        shell: bash
+        env:
+          CARGO_BUILD_JOBS: '2'
+          CARGO_TERM_COLOR: never
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/blitz"
+          cargo build --locked --release --example screenshot -j 2 2>&1 | tee "$GITHUB_WORKSPACE/evidence/native-stage-a/blitz-select-label/cargo-screenshot.log"
+          test -x target/release/examples/screenshot
+      - name: Capture two genuine native snapshots and compare label pixels
+        shell: bash
+        run: |
+          set -euo pipefail
+          export CALYRA_UPSTREAM_SOURCE="$RUNNER_TEMP/blitz"
+          export CALYRA_LABEL_OUT="$GITHUB_WORKSPACE/evidence/native-stage-a/blitz-select-label"
+          "$RUNNER_TEMP/calyra-verify/bin/python" - <<'PY'
+          import hashlib, json, os, subprocess, sys
+          from pathlib import Path
+          from PIL import Image, ImageChops
+          sys.path.insert(0,str(Path('native/blitz').resolve()))
+          from prepare_static import generate
+          from run_stage_a import expected_png_location, verify_render
+          repo=Path.cwd()
+          source=Path(os.environ['CALYRA_UPSTREAM_SOURCE'])
+          out=Path(os.environ['CALYRA_LABEL_OUT'])
+          binary=source/'target/release/examples/screenshot'
+          assert binary.is_file()
+          static=out/'snapshots'
+          default_meta=generate(repo,static,'controls')
+          assert default_meta['css_bytes_changed'] is False and default_meta['javascript_executed'] is False
+          default=static/'controls/index.html'
+          selected=static/'selected-quality/index.html'
+          selected.parent.mkdir(parents=True,exist_ok=True)
+          text=default.read_text()
+          needle='<option value="quality">Visual fidelity</option>'
+          assert text.count(needle)==1
+          selected.write_text(text.replace(needle,'<option value="quality" selected>Visual fidelity</option>'))
+          captures={}
+          for key,html in [('balanced',default),('quality',selected)]:
+            uri=html.resolve().as_uri()
+            upstream=expected_png_location(source,uri)
+            upstream.parent.mkdir(parents=True,exist_ok=True)
+            upstream.unlink(missing_ok=True)
+            proc=subprocess.run([str(binary),uri,'1060'],cwd=source,text=True,capture_output=True,timeout=180)
+            (out/f'{key}-renderer.log').write_text(proc.stdout+'\n'+proc.stderr)
+            assert proc.returncode==0,(key,proc.returncode,proc.stderr[-800:])
+            assert upstream.is_file(),f'no native screenshot for {key}'
+            raw=out/f'{key}-native-raw.png'
+            raw.write_bytes(upstream.read_bytes())
+            normalized=out/f'{key}-native-viewport.png'
+            captures[key]=verify_render(raw,normalized)
+          with Image.open(out/'balanced-native-viewport.png') as a:
+            with Image.open(out/'quality-native-viewport.png') as b:
+              rgb_a=a.convert('RGB');rgb_b=b.convert('RGB')
+              diff=ImageChops.difference(rgb_a,rgb_b)
+              changed=sum(1 for pixel in diff.getdata() if max(pixel)>=12)
+              bbox=diff.getbbox()
+              diff.save(out/'selected-label-pixel-diff.png')
+          # Differently selected option labels must affect actual native pixels,
+          # not merely change a Rust-side text field.
+          assert changed>=40,(changed,bbox)
+          assert bbox is not None and bbox[2]-bbox[0]<600 and bbox[3]-bbox[1]<140,(changed,bbox)
+          report={
+            'schema':'calyra.blitz-selected-label-paint.v1',
+            'renderer':'Official Blitz 0.3.0-beta.4 Vello CPU screenshot example',
+            'upstream_pin':'4f61cffacee50fe4f944ebe9d0470d9a5d3997e0',
+            'engine_patched':True,'original_css_modified':False,
+            'original_js_modified':False,'js_executed':False,
+            'hardware_gpu':False,'os_input_tested':False,
+            'selected_option_dom_patch_for_second_frame':True,
+            'candidate_variants':['Balanced','Visual fidelity'],
+            'changed_pixels_at_12':changed,'diff_bbox':bbox,
+            'images':captures,'binary_sha256':hashlib.sha256(binary.read_bytes()).hexdigest()
+          }
+          (out/'selected-label-paint-result.json').write_text(json.dumps(report,indent=2)+'\n')
+          print('Native selected label ink verified:',changed,'pixels bbox',bbox)
+          PY
+      - name: Preserve logs even on failure
+        if: always()
+        shell: bash
+        run: |
+          echo '### Blitz selected-label CPU paint experiment' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Pinned source, 6 explicit engine patches, author CSS/JS unchanged.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Two static DOM snapshots differ only by selected option attribute.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'No dropdown popup, pointer/keyboard selection, GPU, OS input, a11y or production parity claim.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-blitz-selected-label-native-proof
+          path: evidence/native-stage-a/blitz-select-label/
+          retention-days: 7
+          if-no-files-found: warn
