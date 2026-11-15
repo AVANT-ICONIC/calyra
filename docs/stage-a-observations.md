@@ -117,3 +117,8 @@ The captured images were independently inspected against an actual Chromium rend
 **Decision implication:** RmlUi is an operationally viable *restricted native renderer* for manually adapted RCSS/markup, but this experiment provides no basis for selecting it as CALYRA's primary modern-browser-CSS-compatible backend. Evaluate an HTML/CSS-native engine such as Blitz next. Keep RmlUi as a narrow native candidate rather than investing in hand rewriting every canonical CSS feature.
 
 **Evidence retention:** GitHub Actions binary artifacts expire after their configured retention (7 days). The URLs, report schema, runner source, logs, exact pinned source SHA and output interpretation remain recorded here; reproduce the captures using the CI-free runner or by rerunning the workflow on a suitable Linux host. Do not silently promote a missing or expired artifact into a verified current screenshot.
+
+
+## Blitz Vello-CPU native HTML/CSS proof (2026-11-15)
+
+[Authentic Actions run #43671027217](https://github.com/AVANT-ICONIC/calyra/actions/runs/43671027217) compiled Blitz 0.3.0-beta.4 and captured all four unchanged-CSS HTML scenes. Verified full-size PNG hashes and local Chromium-image diagnostics show approximate macro-layout compatibility, but a missing native select control, incomplete range styling and font differences. **CPU only, static DOM adaptation, no JS, GPU or input verification.** See [Blitz observations](blitz-stage-a-observations.md). Task 3.2 is completed as an *attempt with real evidence*, not as a full CSS or feature pass.
