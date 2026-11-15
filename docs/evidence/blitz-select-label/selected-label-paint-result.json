@@ -1,0 +1,60 @@
+{
+  "schema": "calyra.blitz-selected-label-paint.v1",
+  "renderer": "Official Blitz 0.3.0-beta.4 Vello CPU screenshot example",
+  "upstream_pin": "4f61cffacee50fe4f944ebe9d0470d9a5d3997e0",
+  "engine_patched": true,
+  "original_css_modified": false,
+  "original_js_modified": false,
+  "js_executed": false,
+  "hardware_gpu": false,
+  "os_input_tested": false,
+  "selected_option_dom_patch_for_second_frame": true,
+  "candidate_variants": [
+    "Balanced",
+    "Visual fidelity"
+  ],
+  "changed_pixels_at_12": 1012,
+  "diff_bbox": [
+    685,
+    489,
+    796,
+    510
+  ],
+  "images": {
+    "balanced": {
+      "raw_size": [
+        2120,
+        2222
+      ],
+      "viewport_px": [
+        1060,
+        800
+      ],
+      "mean_rgb": [
+        21.47,
+        26.81,
+        31.89
+      ],
+      "raw_sha256": "ce3622277ba3338e342829f981335a18948e944ec6e0e073b146389d92d7e29b",
+      "normalized_sha256": "b331a392a3a20594283d25cc08e5db81b12657524befcd419a4008fbbb211c1b"
+    },
+    "quality": {
+      "raw_size": [
+        2120,
+        2222
+      ],
+      "viewport_px": [
+        1060,
+        800
+      ],
+      "mean_rgb": [
+        21.49,
+        26.83,
+        31.92
+      ],
+      "raw_sha256": "89ec93e63635f65349d1087f11f32bcd233fd1c1cff7f3587441f5e28304662a",
+      "normalized_sha256": "0a9fbc495df35a779347c48cf4b754ff7bce234ad55d08b6c3a520ce6051bd27"
+    }
+  },
+  "binary_sha256": "9c9000798983108c914275c790f63e211f505dec7b246e59ff5e3e5f2a89cd10"
+}
