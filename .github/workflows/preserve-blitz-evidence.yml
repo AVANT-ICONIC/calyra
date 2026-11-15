@@ -37,7 +37,7 @@ jobs:
           out = Path('docs/evidence/blitz')
           expected = {
               'controls': 'fdf2e6da16e292dca88b2837b78f26a79697b704920c7d8bad09473abcb4bc19',
-              'dashboard': 'f58ee32b7258c5ab36b5619757f3ee2a98869023bbee616e1c3',
+              'dashboard': 'f58ee32b7258c5ab36b5619757f3ee2ac3af29b872e2a98869023bbee616e1c3',
               'visual': '98fd043c4fddabfe1b4a69e871e96badd920a5fd1d8e784a0c104a7c336d6b62',
               'interaction': '76d32b4b396324d6002997ae270745495f56f2f40bd6573348ce2508ed89cb61'
           }
@@ -45,6 +45,7 @@ jobs:
           css = '04635269a8fbd790c87316a03c6469a157806201e58fd730212f632fc86b7b9c'
           for scene, checksum in expected.items():
               img = inp / f'blitz-{scene}-viewport.png'
+              assert len(checksum) == 64, 'invalid sha256 length: ' + scene
               data = img.read_bytes()
               assert hashlib.sha256(data).hexdigest() == checksum, scene
               assert data[:8] == b'\x89PNG\r\n\x1a\n', scene
