@@ -22,6 +22,12 @@ UPSTREAM_SHA = 'ba95ffe8bfb6370efb2cdcca927eaad4710c5413'
 PROVENANCE_FILE = 'rmlui-build-provenance.json'
 
 
+def adapter_build_source_hashes():
+    # The upstream revision alone does not prove the CALYRA native adapter
+    # compiled today is the source currently checked out in this repository.
+    return {name: hash_file(NATIVE / name) for name in ('CMakeLists.txt', 'probe.cpp')}
+
+
 def hash_file(path):
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
@@ -125,6 +131,8 @@ def read_provenance(outdir, source, binary):
             return False, 'Build manifest executable path mismatch'
         if payload.get('binary_sha256') != hash_file(binary):
             return False, 'Built executable was changed after recorded CMake build'
+        if payload.get('adapter_build_source_hashes') != adapter_build_source_hashes():
+            return False, 'CALYRA adapter source changed since last native build; run with --build'
         return True, ''
     except (OSError, ValueError, KeyError) as e:
         return False, f'Build provenance invalid: {e}'
@@ -176,6 +184,7 @@ def run(args):
                     'source_root': str(src),
                     'binary_path': str(binary),
                     'binary_sha256': hash_file(binary),
+                    'adapter_build_source_hashes': adapter_build_source_hashes(),
                 }, indent=2) + '\n')
     # Re-use a genuine multi-config build (e.g. macOS Xcode Release/) on the
     # second pass without --build. Do not accept arbitrary pre-existing binaries.

@@ -9,6 +9,27 @@
 - `adapted`: uses a separate `controls.rcss` authored for RmlUi from the same design colors. This is **not CSS parity**. Rendering success must never be counted as direct CSS support.
 - Neither mode executes browser JavaScript. Native control events are handled by RmlUi and C++.
 
+## Single-command Apple Silicon preflight and opt-in run
+
+From CALYRA's root:
+
+```bash
+# Read-only check. Does not clone sources, install packages, create outputs, or run CI.
+python3 native/rmlui/bootstrap_macos.py
+
+# Install missing development dependencies yourself only if preflight requests them:
+brew install cmake glfw freetype pkg-config
+
+# Explicit opt-in: clone official source, verify pinned clean commit, compile, then run direct/adapted probes.
+python3 native/rmlui/bootstrap_macos.py --run
+```
+
+Use `--font /absolute/path/to/font.ttf` if Arial is absent, `--source` for an existing official checkout, or `--output` for an alternate evidence directory. The script captures failures as a `blocked` JSON report. It never installs dependencies, runs remote shell scripts, or reuses a modified upstream tree. On success it writes `evidence/native-stage-a/rmlui/macos-preflight-summary.json` together with the two independent adapter reports and captures.
+
+**Important:** `--run` is a real, opt-in native build request that needs a working macOS desktop and an internet connection for the initial Git clone. It can legitimately fail on unsupported source APIs, missing graphics drivers, or unavailable fonts. Neither the script nor its Linux preflight tests are evidence that the native GPU renderer has worked.
+
+**Freshness invariant:** the native build manifest now pins both the upstream commit and the SHA-256 of `native/rmlui/probe.cpp` and `native/rmlui/CMakeLists.txt`. Updating native adapter source invalidates prior binaries until `--build` succeeds again. An unchanged binary digest alone would have accepted stale builds.
+
 ## macOS setup (no GitHub Actions)
 
 Prerequisites: CMake 3.21+, C++17 compiler, GLFW 3.3+, FreeType, macOS OpenGL 3.3 Core support, Git, Python + Pillow + jsonschema.

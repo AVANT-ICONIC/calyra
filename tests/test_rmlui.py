@@ -113,6 +113,7 @@ class RmlUiVerificationGuardTests(unittest.TestCase):
                 'source_root': str(src.resolve()),
                 'binary_path': str(exe.resolve()),
                 'binary_sha256': run_rmlui.hash_file(exe),
+                'adapter_build_source_hashes': run_rmlui.adapter_build_source_hashes(),
             }))
             self.assertTrue(run_rmlui.read_provenance(d, src, exe)[0])
             exe.write_bytes(b'executable B')
@@ -168,6 +169,7 @@ print('CALYRA_NATIVE_RENDER_OK=1')
                 'source_root': str(src.resolve()),
                 'binary_path': str(binary.resolve()),
                 'binary_sha256': run_rmlui.hash_file(binary),
+                'adapter_build_source_hashes': run_rmlui.adapter_build_source_hashes(),
             }))
             if stale_frame:
                 (d / 'rmlui-direct-frame.ppm').write_bytes(b'old bogus frame')
@@ -253,6 +255,7 @@ class RmlUiMacRegressionTests(unittest.TestCase):
                 'source_root': str(src.resolve()),
                 'binary_path': str(exe.resolve()),
                 'binary_sha256': run_rmlui.hash_file(exe),
+                'adapter_build_source_hashes': run_rmlui.adapter_build_source_hashes(),
             }))
             args = argparse.Namespace(output=str(d), source=str(src), binary=None,
                                       font=str(font), mode='adapted', build=False)
