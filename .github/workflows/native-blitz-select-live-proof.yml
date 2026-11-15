@@ -53,6 +53,7 @@ jobs:
             git -C "$RUNNER_TEMP/blitz" apply "$GITHUB_WORKSPACE/native/blitz/patches/$patch"
           done
           for patch in select-label-parley.patch select-label-readonly.patch select-state-store.patch select-state-accessors.patch select-live-form-controls.patch select-live-label-sync.patch; do
+            echo "CALYRA_APPLY_PATCH=$patch"
             git -C "$RUNNER_TEMP/blitz" apply --check "$GITHUB_WORKSPACE/native/blitz/patches/$patch"
             git -C "$RUNNER_TEMP/blitz" apply "$GITHUB_WORKSPACE/native/blitz/patches/$patch"
           done
