@@ -1,0 +1,104 @@
+name: CALYRA Blitz original JavaScript proof
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/native-blitz-javascript-proof.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  linux-boa-dom:
+    name: Blitz ScriptDocument / original CALYRA JS / no WebView
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install source build prerequisites
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends build-essential pkg-config libssl-dev libfontconfig-dev libx11-dev libxkbcommon-dev libwayland-dev libasound2-dev git ca-certificates
+      - name: Pin Rust 1.91
+        run: |
+          rustup toolchain install 1.91.0 --profile minimal
+          rustup default 1.91.0
+          rustc --version
+      - name: Verify canonical CSS and JS hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '04635269a8fbd790c87316a03c6469a157806201e58fd730212f632fc86b7b9c  fixtures/reference.css' | sha256sum -c -
+          echo '9d565203fc9c3450b0c61d7774cb2322b14ed3e3325926122b17f583e81cf3de  fixtures/reference.js' | sha256sum -c -
+      - name: Clone pinned official Blitz ScriptDocument source
+        shell: bash
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none https://github.com/DioxusLabs/blitz.git "$RUNNER_TEMP/blitz"
+          git -C "$RUNNER_TEMP/blitz" checkout --detach 4f61cffacee50fe4f944ebe9d0470d9a5d3997e0
+          test "$(git -C "$RUNNER_TEMP/blitz" rev-parse HEAD)" = 4f61cffacee50fe4f944ebe9d0470d9a5d3997e0
+          test -z "$(git -C "$RUNNER_TEMP/blitz" status --porcelain --untracked-files=no)"
+      - name: Inject CALYRA-only JS test into disposable Blitz checkout
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp native/blitz/reference_js_probe.rs "$RUNNER_TEMP/blitz/packages/blitz-vibey-script/tests/calyra_reference.rs"
+      - name: Execute unmodified JS with actual Boa DOM/event runtime
+        shell: bash
+        env:
+          CARGO_BUILD_JOBS: '2'
+          CARGO_TERM_COLOR: never
+        run: |
+          set -uo pipefail
+          mkdir -p evidence/native-stage-a/blitz-js
+          export CALYRA_CANONICAL_HTML="$GITHUB_WORKSPACE/fixtures/index.html"
+          export CALYRA_CANONICAL_CSS="$GITHUB_WORKSPACE/fixtures/reference.css"
+          export CALYRA_CANONICAL_JS="$GITHUB_WORKSPACE/fixtures/reference.js"
+          export CALYRA_JS_OUT="$GITHUB_WORKSPACE/evidence/native-stage-a/blitz-js"
+          cd "$RUNNER_TEMP/blitz"
+          cargo test --locked -p blitz-vibey-script --test calyra_reference -- --nocapture 2>&1 | tee "$CALYRA_JS_OUT/rust-test.log"
+          exit "${PIPESTATUS[0]}"
+      - name: Verify fresh JavaScript observations and limitations
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json,hashlib
+          from pathlib import Path
+          out=Path('evidence/native-stage-a/blitz-js')
+          result={}
+          for scene in ('controls','interaction'):
+              p=out/f'calyra-js-{scene}.json'
+              data=json.loads(p.read_text())
+              assert data['schema']=='calyra.blitz-js.v1'
+              assert data['fixture']==scene
+              assert data['reference_js_modified'] is False
+              assert data['javascript_execution_attempted'] is True
+              assert data['os_input_tested'] is False
+              assert data['gpu_tested'] is False
+              assert isinstance(data['js_error_count'],int)
+              assert isinstance(data['observations'],dict)
+              result[scene]=data
+          manifest={
+              'schema':'calyra.blitz-js-evidence.v1',
+              'upstream_git_commit':'4f61cffacee50fe4f944ebe9d0470d9a5d3997e0',
+              'canonical_js_sha256':hashlib.sha256(Path('fixtures/reference.js').read_bytes()).hexdigest(),
+              'test_overlay_sha256':hashlib.sha256(Path('native/blitz/reference_js_probe.rs').read_bytes()).hexdigest(),
+              'dom_and_style_asset_delivery_adapted':True,
+              'reference_js_modified':False,
+              'os_input_tested':False,
+              'gpu_tested':False,
+              'results':result
+          }
+          (out/'evidence-summary.json').write_text(json.dumps(manifest,indent=2)+'\n')
+          print(json.dumps(manifest,indent=2))
+          PY
+      - name: Explicit evidence limitations
+        if: always()
+        run: |
+          echo '### CALYRA original JS in Blitz Boa' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Original JS unchanged. Inline asset delivery and fixture query instrumented. No browser, GPU or physical keyboard; run reports each JS error and observable separately.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-blitz-original-js-stage-a
+          path: evidence/native-stage-a/blitz-js/
+          if-no-files-found: warn
+          retention-days: 7
