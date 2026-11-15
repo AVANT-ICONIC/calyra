@@ -1,0 +1,21 @@
+diff --git a/packages/blitz-dom/assets/default.css b/packages/blitz-dom/assets/default.css
+--- a/packages/blitz-dom/assets/default.css
++++ b/packages/blitz-dom/assets/default.css
+@@ -116,11 +116,12 @@
+ 
+ /* https://html.spec.whatwg.org/multipage/rendering.html#the-select-element-2
+    (select only has native appearance here) */
+-select {
+-    letter-spacing: initial;
+-    word-spacing: initial;
+-    line-height: initial;
+-}
++select {
++    display: inline-block; /* CALYRA experiment: native appearance still unimplemented */
++    letter-spacing: initial;
++    word-spacing: initial;
++    line-height: initial;
++}
+ 
+ input:focus,
+ textarea:focus {

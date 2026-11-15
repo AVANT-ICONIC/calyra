@@ -1,0 +1,71 @@
+diff --git a/packages/blitz-vibey-script/src/dom/element/form_controls.rs b/packages/blitz-vibey-script/src/dom/element/form_controls.rs
+--- a/packages/blitz-vibey-script/src/dom/element/form_controls.rs
++++ b/packages/blitz-vibey-script/src/dom/element/form_controls.rs
+@@ -65,26 +65,47 @@
+     Ok(JsValue::undefined())
+ }
+ 
+-pub(super) fn get_value(this: &JsValue, _: &[JsValue], context: &mut Context) -> JsResult<JsValue> {
+-    let ctx = dom_ctx(context)?;
+-    let node_id = this_node_id(this)?;
+-    let value = {
+-        let doc = ctx.doc.borrow();
+-        doc.get_node(node_id)
+-            .and_then(|node| node.element_data())
+-            .map(|element| match element.text_input_data() {
+-                Some(input_data) => input_data.editor.raw_text().to_string(),
+-                None => element
+-                    .attrs()
+-                    .iter()
+-                    .find(|attr| &*attr.name.local == "value")
+-                    .map(|attr| attr.value.clone())
+-                    .unwrap_or_default(),
+-            })
+-            .unwrap_or_default()
+-    };
+-    Ok(js_str(&value))
+-}
++pub(super) fn get_value(this: &JsValue, _: &[JsValue], context: &mut Context) -> JsResult<JsValue> {
++    let ctx = dom_ctx(context)?;
++    let node_id = this_node_id(this)?;
++    let value = {
++        let doc = ctx.doc.borrow();
++        doc.get_node(node_id)
++            .map(|node| {
++                let Some(element) = node.element_data() else {
++                    return String::new();
++                };
++                // CALYRA Stage A experiment: read an explicit selected option,
++                // else the first option. This deliberately does not implement
++                // HTMLSelectElement's full live selectedness/value setter.
++                if element.name.local == blitz_dom::local_name!("select") {
++                    let mut first = None;
++                    for &child in &node.children {
++                        let Some(option) = doc.get_node(child) else { continue };
++                        let Some(opt) = option.element_data() else { continue };
++                        if opt.name.local != blitz_dom::local_name!("option") { continue; }
++                        let val = opt.attr(blitz_dom::local_name!("value"))
++                            .map(str::to_string)
++                            .unwrap_or_else(|| option.text_content().trim().to_string());
++                        if first.is_none() { first = Some(val.clone()); }
++                        if opt.attr(blitz_dom::local_name!("selected")).is_some() {
++                            return val;
++                        }
++                    }
++                    return first.unwrap_or_default();
++                }
++                match element.text_input_data() {
++                    Some(input_data) => input_data.editor.raw_text().to_string(),
++                    None => element.attrs().iter()
++                        .find(|attr| &*attr.name.local == "value")
++                        .map(|attr| attr.value.clone())
++                        .unwrap_or_default(),
++                }
++            })
++            .unwrap_or_default()
++    };
++    Ok(js_str(&value))
++}
+ 
+ pub(super) fn set_value(
+     this: &JsValue,
