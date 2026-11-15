@@ -287,3 +287,20 @@ class RmlUiMacRegressionTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+class RmlUiRealSourceRegressionTests(unittest.TestCase):
+    """Review guards for bugs diagnosed from actual Actions RmlUi 6.3 logs."""
+
+    def test_capture_occurs_only_after_upstream_endframe_and_swap(self):
+        cpp = (ROOT / 'native' / 'rmlui' / 'probe.cpp').read_text()
+        self.assertIn('glReadBuffer(GL_FRONT)', cpp)
+        self.assertNotIn('glReadBuffer(GL_BACK)', cpp)
+        self.assertIn('SavePresentedFramePPM', cpp)
+        self.assertLess(cpp.index('Backend::PresentFrame(); //'), cpp.index('SavePresentedFramePPM(argv[4]'))
+        self.assertIn('CALYRA_GL_CAPTURE_ERROR=', cpp)
+
+    def test_font_file_is_registered_under_adapted_family(self):
+        cpp = (ROOT / 'native' / 'rmlui' / 'probe.cpp').read_text()
+        self.assertIn('Rml::LoadFontFace(argv[3], "Arial"', cpp)
+        self.assertIn('FontWeight::Normal', cpp)
+        self.assertIn('FontWeight::Bold', cpp)

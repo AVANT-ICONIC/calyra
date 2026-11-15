@@ -1,6 +1,6 @@
 name: CALYRA native RmlUi proof
 
-# One automatic run upon adding or editing this workflow on PR #2.
+# Focused proof run after correcting capture order diagnosed from actual RmlUi logs.
 # Later source changes do not repeatedly consume runners.
 on:
   push:

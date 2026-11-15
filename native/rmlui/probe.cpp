@@ -42,16 +42,24 @@ private:
   bool& clicked_;
 };
 
-bool SaveBackbufferPPM(const std::string& path, int& width, int& height) {
+bool SavePresentedFramePPM(const std::string& path, int& width, int& height) {
   GLint viewport[4] = {0,0,0,0};
   glGetIntegerv(GL_VIEWPORT, viewport);
   width = viewport[2]; height = viewport[3];
   if (width <= 0 || height <= 0 || width > 8192 || height > 8192) return false;
   std::vector<unsigned char> rgba(size_t(width) * size_t(height) * 4);
+  // RmlUi_GL3::BeginFrame renders into an internal FBO. Its EndFrame()
+  // resolves that FBO to the window backbuffer, then GLFW swaps buffers.
+  // Capture the just-presented GL_FRONT; GL_BACK before EndFrame is wrong.
+  while (glGetError() != GL_NO_ERROR) {} // discard prior render errors
   glFinish();
-  glReadBuffer(GL_BACK);
+  glReadBuffer(GL_FRONT);
   glReadPixels(0, 0, width, height, GL_RGBA, GL_UNSIGNED_BYTE, rgba.data());
-  if (glGetError() != GL_NO_ERROR) return false;
+  const GLenum capture_error = glGetError();
+  if (capture_error != GL_NO_ERROR) {
+    std::cerr << "CALYRA_GL_CAPTURE_ERROR=" << static_cast<unsigned>(capture_error) << "\n";
+    return false;
+  }
   std::ofstream dst(path, std::ios::binary);
   if (!dst) return false;
   dst << "P6\n" << width << " " << height << "\n255\n";
@@ -93,7 +101,11 @@ int main(int argc, char** argv) {
   bool native_click_received = false;
   std::unique_ptr<ApplyListener> listener;  // Must outlive RmlUi document teardown.
   {
-    if (!Rml::LoadFontFace(argv[3])) {
+    // Map the platform-provided TTF to the fixture's explicit Arial family.
+    // This is a documented font adaptation, not evidence of CSS font parity.
+    const bool font_regular = Rml::LoadFontFace(argv[3], "Arial", Rml::Style::FontStyle::Normal, Rml::Style::FontWeight::Normal);
+    const bool font_bold = Rml::LoadFontFace(argv[3], "Arial", Rml::Style::FontStyle::Normal, Rml::Style::FontWeight::Bold);
+    if (!font_regular || !font_bold) {
       std::cerr << "CALYRA_ERROR=font_load_failed\n";
       result = 5;
     } else if (Rml::Context* context = Rml::CreateContext("calyra", Rml::Vector2i(width, height))) {
@@ -113,6 +125,7 @@ int main(int argc, char** argv) {
             int frames = 0;
             bool captured = false;
             bool simulated_click_attempted = false;
+            int capture_attempts = 0;
             bool computed_style_recorded = false;
             while (std::chrono::steady_clock::now() - started < std::chrono::seconds(7)) {
               if (!Backend::ProcessEvents(context, nullptr, false)) break;
@@ -141,13 +154,15 @@ int main(int argc, char** argv) {
               }
               Backend::BeginFrame();
               context->Render();
-              if (!captured && frames >= 8) {
+              Backend::PresentFrame(); // resolves the FBO and swaps the visible frame
+              if (!captured && frames >= 8 && capture_attempts < 3) {
+                ++capture_attempts;
                 int w=0, h=0;
-                captured = SaveBackbufferPPM(argv[4], w, h);
+                captured = SavePresentedFramePPM(argv[4], w, h);
                 if (captured) std::cout << "CALYRA_NATIVE_FRAME=" << w << "x" << h << "\n";
-                else std::cerr << "CALYRA_ERROR=gl_capture_failed\n";
+                else std::cerr << "CALYRA_ERROR=presented_frame_capture_failed\n";
               }
-              Backend::PresentFrame();
+              if (!captured && capture_attempts >= 3) break;
               ++frames;
               std::this_thread::sleep_for(std::chrono::milliseconds(16));
             }
