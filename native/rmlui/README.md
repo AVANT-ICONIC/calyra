@@ -48,3 +48,37 @@ Stage A distinguishes four separate observations: **native build**, **native fra
 - No comparison can report FPS, GPU memory, native CSS fidelity, or accessibility success from this small probe. It is Stage A restricted evidence only.
 
 **Current outcome:** local unit tests verify these negative and provenance paths; an actual upstream RmlUi C++ build, real window, real framebuffer, and GPU vendor string remain unexecuted because the pinned source and GLFW development headers are not available in the current container. The CI-free macOS build above is still the way to obtain a first genuine execution result.
+
+
+## Verification corrections (v0.7)
+
+Two cross-platform failure cases were identified and fixed by inspecting the
+runner and upstream RmlUi 6.3 APIs. **Neither fix represents a successful
+RmlUi native build in this sandbox.**
+
+1. **Xcode/multi-config reuse:** on an Apple machine using the Xcode CMake
+   generator, the built executable may be at `build/Release/calyra_rmlui_probe`.
+   The second invocation without `--build` now detects that path and still
+   verifies its SHA-256 against the existing build provenance.
+2. **Actual CSS application:** the C++ probe reads the primary button's
+   `GetComputedValues().background_color()` (public RmlUi 6.3 API) and writes
+   the observed RGBA channels to a log marker. Both modes require a real style
+   marker. Adapted RCSS additionally requires the fixture color
+   `198,219,116,255` (`#C6DB74`). Direct CSS makes no promise that this
+   specific rule matches the adapted RML tree. A nonuniform screenshot without
+   a computed-style marker is **not** sufficient evidence of RCSS execution.
+3. **Stale screenshots:** failed or blocked invocations remove prior PPM/PNG
+   paths so leftover pixels can never be read as the current run's capture.
+
+The runner's `capture.success` reports only the small Stage A native frame +
+RmlUi-internal click probe with classified OpenGL renderer. It does not mean
+full CSS compatibility, accessible OS controls, verified physical mouse input,
+IME, performance superiority, or hardware GPU rendering on every machine.
+
+### macOS reproduction
+
+After verifying the pinned upstream checkout is clean, run the two commands
+above in the same `--output` directory. Review both result JSONs and the
+separate `runtime-direct.log` and `runtime-adapted.log` before comparing
+frames. Explicitly record the GPU vendor/renderer and screen pixel scale.
+Do not copy an adapted RCSS success into a direct CSS compatibility score.

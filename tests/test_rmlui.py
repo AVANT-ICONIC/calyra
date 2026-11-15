@@ -138,7 +138,7 @@ class RmlUiRunnerMockBoundaryTests(unittest.TestCase):
 
     These prove report classification only, not real native rendering.
     """
-    def run_mock(self, renderer, clicked=True, stale_frame=False):
+    def run_mock(self, renderer, clicked=True, stale_frame=False, style="198,219,116,255", mode="direct"):
         import argparse
         from unittest.mock import patch
         with tempfile.TemporaryDirectory() as directory:
@@ -156,10 +156,11 @@ p.write_bytes(b'P6\\n800 500\\n255\\n' + b'\\x10\\x20\\x30' * 200000 + b'\\x80\\
 print('CALYRA_NATIVE_FRAME=800x500')
 print('CALYRA_GL_RENDERER=%s')
 print('CALYRA_GL_VENDOR=MockVendor')
+%s
 print('CALYRA_INPUT_SOURCE=synthetic_rmlui_event')
 %s
 print('CALYRA_NATIVE_RENDER_OK=1')
-''' % (renderer, "print('CALYRA_NATIVE_CLICK=1')" if clicked else 'pass')
+''' % (renderer, ("print('CALYRA_COMPUTED_PRIMARY_BG=" + style + "')" if style is not None else 'pass'), "print('CALYRA_NATIVE_CLICK=1')" if clicked else 'pass')
             binary.write_text(script)
             binary.chmod(0o755)
             (d / run_rmlui.PROVENANCE_FILE).write_text(json.dumps({
@@ -171,10 +172,10 @@ print('CALYRA_NATIVE_RENDER_OK=1')
             if stale_frame:
                 (d / 'rmlui-direct-frame.ppm').write_bytes(b'old bogus frame')
             args = argparse.Namespace(output=str(d), source=str(src), binary=str(binary),
-                                      font=str(font), mode='direct', build=False)
+                                      font=str(font), mode=mode, build=False)
             with patch.object(run_rmlui, 'is_pinned_checkout', return_value=(True, '')):
                 result = run_rmlui.run(args)
-            report = json.loads((d / 'rmlui-direct-result.json').read_text())
+            report = json.loads((d / f'rmlui-{mode}-result.json').read_text())
             return result, report
 
     def test_mocked_software_renderer_is_not_gpu(self):
@@ -202,11 +203,84 @@ print('CALYRA_NATIVE_RENDER_OK=1')
         self.assertFalse(report['capture']['success'])
         self.assertTrue(any('unknown GL renderer' in x for x in report['limitations']))
 
+
+    def test_mocked_missing_computed_style_is_rejected(self):
+        rc, report = self.run_mock('NVIDIA GeForce RTX 3060', style=None)
+        self.assertEqual(rc, 2)
+        self.assertFalse(report['capture']['success'])
+        self.assertTrue(any('computed style marker missing' in x for x in report['limitations']))
+
+    def test_mocked_adapted_computed_color_mismatch_is_rejected(self):
+        rc, report = self.run_mock('NVIDIA GeForce RTX 3060', style='1,2,3,255', mode='adapted')
+        self.assertEqual(rc, 2)
+        self.assertFalse(report['capture']['success'])
+        self.assertTrue(any('adapted primary color not applied' in x for x in report['limitations']))
+
     def test_stale_frame_cannot_rescue_missing_click(self):
         rc, report = self.run_mock('NVIDIA GeForce RTX 3060', clicked=False, stale_frame=True)
         self.assertEqual(rc, 2)
         self.assertFalse(report['capture']['success'])
 
+
+
+class RmlUiMacRegressionTests(unittest.TestCase):
+    """Verify multi-config reuse and strict style evidence, with mocked executables."""
+
+    def test_release_build_binary_reused_without_rebuild(self):
+        import argparse
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as directory:
+            d = Path(directory)
+            src = d / 'source'
+            src.mkdir()
+            release = d / 'build' / 'Release'
+            release.mkdir(parents=True)
+            exe = release / 'calyra_rmlui_probe'
+            exe.write_text('#!/usr/bin/env python3\nimport sys\nfrom pathlib import Path\n'
+                           'p=Path(sys.argv[4]);p.write_bytes(b"P6\\n800 500\\n255\\n"+b"\\x10\\x20\\x30"*200000+b"\\x80\\x70\\x60"*200000)\n'
+                           'print("CALYRA_GL_RENDERER=Apple M1 Max")\n'
+                           'print("CALYRA_GL_VENDOR=Apple")\n'
+                           'print("CALYRA_NATIVE_FRAME=800x500")\n'
+                           'print("CALYRA_COMPUTED_PRIMARY_BG=198,219,116,255")\n'
+                           'print("CALYRA_NATIVE_CLICK=1")\n'
+                           'print("CALYRA_INPUT_SOURCE=synthetic_rmlui_event")\n'
+                           'print("CALYRA_NATIVE_RENDER_OK=1")\n')
+            exe.chmod(0o755)
+            font = d / 'font.ttf'
+            font.write_text('mock')
+            (d / run_rmlui.PROVENANCE_FILE).write_text(json.dumps({
+                'upstream_sha': run_rmlui.UPSTREAM_SHA,
+                'source_root': str(src.resolve()),
+                'binary_path': str(exe.resolve()),
+                'binary_sha256': run_rmlui.hash_file(exe),
+            }))
+            args = argparse.Namespace(output=str(d), source=str(src), binary=None,
+                                      font=str(font), mode='adapted', build=False)
+            with patch.object(run_rmlui, 'is_pinned_checkout', return_value=(True, '')):
+                rc = run_rmlui.run(args)
+            report = json.loads((d / 'rmlui-adapted-result.json').read_text())
+            self.assertEqual(rc, 0)
+            self.assertTrue(report['capture']['success'])
+            self.assertTrue(any('198,219,116,255' in x for x in report['limitations']))
+
+    def test_blocked_run_deletes_old_png(self):
+        import argparse
+        with tempfile.TemporaryDirectory() as directory:
+            d = Path(directory)
+            stale = d / 'rmlui-direct-frame.png'
+            stale.write_bytes(b'not real image')
+            args = argparse.Namespace(output=str(d), source=None, binary=None,
+                                      font=None, mode='direct', build=False)
+            self.assertEqual(run_rmlui.run(args), 2)
+            self.assertFalse(stale.exists())
+            self.assertFalse((d / 'rmlui-direct-frame.ppm').exists())
+
+    def test_computed_style_guard_in_runtime(self):
+        script = (ROOT / 'harness' / 'run_rmlui.py').read_text()
+        cpp = (ROOT / 'native' / 'rmlui' / 'probe.cpp').read_text()
+        self.assertIn('CALYRA_COMPUTED_PRIMARY_BG', cpp)
+        self.assertIn('computed style marker missing or malformed', script)
+        self.assertIn("args.mode == 'adapted' and style_marker", script)
 
 if __name__ == '__main__':
     unittest.main()

@@ -113,9 +113,18 @@ int main(int argc, char** argv) {
             int frames = 0;
             bool captured = false;
             bool simulated_click_attempted = false;
+            bool computed_style_recorded = false;
             while (std::chrono::steady_clock::now() - started < std::chrono::seconds(7)) {
               if (!Backend::ProcessEvents(context, nullptr, false)) break;
               context->Update();
+              if (!computed_style_recorded) {
+                if (Rml::Element* button = document->GetElementById("apply")) {
+                  const auto color = button->GetComputedValues().background_color();
+                  std::cout << "CALYRA_COMPUTED_PRIMARY_BG=" << int(color.red) << "," << int(color.green)
+                            << "," << int(color.blue) << "," << int(color.alpha) << "\n";
+                  computed_style_recorded = true;
+                }
+              }
               // Smoke-test RmlUi's own event dispatch via synthetic input. This
               // does NOT certify the operating-system keyboard/IME input path.
               if (!simulated_click_attempted && frames >= 3) {

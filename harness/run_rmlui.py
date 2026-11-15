@@ -177,6 +177,12 @@ def run(args):
                     'binary_path': str(binary),
                     'binary_sha256': hash_file(binary),
                 }, indent=2) + '\n')
+    # Re-use a genuine multi-config build (e.g. macOS Xcode Release/) on the
+    # second pass without --build. Do not accept arbitrary pre-existing binaries.
+    if not issue and not args.build and not args.binary:
+        previously_built = find_built_executable(outdir / 'build')
+        if previously_built:
+            binary = previously_built
     if not issue and not binary.is_file():
         issue = f'BLOCKED: executable does not exist ({binary}); build with --build'
     if not issue:
@@ -188,9 +194,12 @@ def run(args):
     if not issue and not Path(args.font).is_file():
         issue = f'BLOCKED: font file not found ({args.font})'
     ppm = outdir / f'rmlui-{args.mode}-frame.ppm'
+    png = outdir / f'rmlui-{args.mode}-frame.png'
+    # A failed/blocked attempt must not leave an old screenshot masquerading
+    # as this run's evidence, even when source or build validation fails.
+    ppm.unlink(missing_ok=True)
+    png.unlink(missing_ok=True)
     if not issue:
-        # Never accept a frame left by an earlier attempt.
-        ppm.unlink(missing_ok=True)
         css = FIXTURES / 'reference.css' if args.mode == 'direct' else NATIVE / 'controls.rcss'
         cmd = [str(binary), str(NATIVE / 'controls.rml'), str(css), str(Path(args.font).resolve()), str(ppm)]
         try:
@@ -201,6 +210,7 @@ def run(args):
             vendor = marker(output, 'CALYRA_GL_VENDOR')
             frame_marker = marker(output, 'CALYRA_NATIVE_FRAME')
             click_marker = marker(output, 'CALYRA_NATIVE_CLICK')
+            style_marker = marker(output, 'CALYRA_COMPUTED_PRIMARY_BG')
             if p.returncode or marker(output, 'CALYRA_NATIVE_RENDER_OK') != '1':
                 issue = f'BLOCKED: native executable failed: exit={p.returncode}; inspect runtime log'
             elif not renderer or not vendor:
@@ -209,6 +219,10 @@ def run(args):
                 issue = 'BLOCKED: success marker without matching native framebuffer capture'
             elif click_marker != '1' or marker(output, 'CALYRA_INPUT_SOURCE') != 'synthetic_rmlui_event':
                 issue = 'BLOCKED: native RmlUi programmatic click not independently recorded'
+            elif not style_marker or not re.fullmatch(r'(?:\d{1,3},){3}\d{1,3}', style_marker):
+                issue = 'BLOCKED: RmlUi computed style marker missing or malformed'
+            elif args.mode == 'adapted' and style_marker != '198,219,116,255':
+                issue = f'BLOCKED: adapted primary color not applied: {style_marker} (expected 198,219,116,255)'
             else:
                 from PIL import Image
                 with Image.open(ppm) as img:
@@ -220,7 +234,6 @@ def run(args):
                     rgb = img.convert('RGB')
                     if all(lo == hi for lo, hi in rgb.getextrema()):
                         raise ValueError('native frame is uniform color (blank or unrendered)')
-                    png = outdir / f'rmlui-{args.mode}-frame.png'
                     rgb.save(png)
                 kind = gl_renderer_class(renderer)
                 if kind == 'unknown':
@@ -233,11 +246,15 @@ def run(args):
                                              png_paths=[str(png.relative_to(ROOT))] if png.is_relative_to(ROOT) else [str(png)],
                                              pixel_scale=width / 1060)
                     report['eligibility'] = 'restricted'
+                    report['limitations'].append(f'RmlUi computed primary background RGBA: {style_marker}; no color-space calibration')
                     report['limitations'].append('Synthetic RmlUi click passed; native OS input, IME and a11y still unverified')
                     report['limitations'].append(f'OpenGL renderer classified: {kind}; framebuffer {width}x{height}; no FPS metrics')
         except (OSError, subprocess.SubprocessError, ValueError) as e:
             issue = f'BLOCKED: native execution or image verification failed: {e}'
     if issue:
+        # Fail closed: no stale or unverified capture should be exported.
+        png.unlink(missing_ok=True)
+        ppm.unlink(missing_ok=True)
         report['limitations'].append(issue)
     resultpath = outdir / f'rmlui-{args.mode}-result.json'
     resultpath.write_text(json.dumps(report, indent=2) + '\n')

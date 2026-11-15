@@ -57,3 +57,21 @@ A separate Linux GTK3 probe (`adapters/gtk3_css_probe.py`) successfully created 
 ### RmlUi v0.6 evidence boundaries (2026-11-15)
 
 The RmlUi integration runner previously reported `interactive: true` from any successful framebuffer capture, even without an interaction event, and inferred `gpu_backed: true` from using OpenGL despite potential software rasterizers. Both were incorrect evidence classifications and have been fixed. The native probe now emits a programmatic button-click marker and GL vendor/renderer strings. The runner distinguishes hardware and software GL, checks native build provenance, and rejects blank frames, stale frames, unknown renderers, missing click markers, or modified binaries. Verified local Python/Xvfb tests are guard tests only: **no RmlUi build, GPU screenshot, hardware claim, or CSS parity score was produced in this environment**.
+
+
+## v0.7 audit: macOS Xcode binary and computed style provenance
+
+The local runner previously failed to resolve a `Release/` multi-config
+executable on a follow-up run without `--build`. Now it resolves an existing
+built target and still checks the pinned Git checkout and manifest SHA-256.
+The RmlUi 6.3 probe now records the actual computed primary-button background
+RGBA through the RmlUi computed-values API; the adapted RCSS case must observe
+`198,219,116,255`. Unknown/missing computed style or a stale image can no
+longer count as a captured successful frame.
+
+**Verification scope:** 45 local Xvfb Python tests passed, including mocked
+native executable boundary tests and the existing browser/GTK/static checks.
+**Unverified:** compilation and execution against RmlUi 6.3, GL hardware,
+macOS GPU evidence, screenshot parity, and real OS-level interactions. The
+container's DNS and outbound connections to GitHub are unavailable; official
+upstream source and GLFW headers cannot be fetched here.
