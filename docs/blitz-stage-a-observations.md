@@ -36,3 +36,8 @@ These values are **not CSS property support rates**, nor performance or user-per
 Blitz is a more credible **candidate for CALYRA's original browser-style CSS authoring model** than the separately adapted RmlUi RCSS sample. It still needs isolated `<select>` and `<input type=range>` tests, narrow/mobile viewport checks, and native Blitz `blitz-test-harness` input event validation. GPU-based window rendering is a separate gate.
 
 Reproduce with `native/blitz/README.md`, `.github/workflows/native-blitz-proof.yml` and `native/blitz/compare_static.py`. Preserve original artifact hashes; do not turn low image differences into fictional CSS-property or GPU compliance claims.
+
+
+## Durable source-backed screenshots
+
+The source captures were subsequently copied from [successful run #43671027217](https://github.com/AVANT-ICONIC/calyra/actions/runs/43671027217) by the [one-time verification archive run #43675908339](https://github.com/AVANT-ICONIC/calyra/actions/runs/43675908339). The first archival attempt failed safely because the dashboard SHA-256 transcription was accidentally truncated; the corrected run verified all four full SHA-256 digests and pinned-source metadata before committing. The four exact native 1060x800 PNGs and eight corresponding JSON files are now permanent in [`docs/evidence/blitz/`](evidence/blitz/), with Git blob IDs checked against local original bytes. See [controls](evidence/blitz/blitz-controls-viewport.png), [dashboard](evidence/blitz/blitz-dashboard-viewport.png), [visual](evidence/blitz/blitz-visual-viewport.png), and [interaction](evidence/blitz/blitz-interaction-viewport.png). This does not alter the restricted/CPU-only assessment.
