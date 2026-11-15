@@ -43,7 +43,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p evidence/native-stage-a/blitz-select-live
-          sha256sum native/blitz/patches/document-event-chain.patch native/blitz/patches/plain-button-focus.patch native/blitz/patches/select-ua-display.patch native/blitz/patches/select-default-value.patch native/blitz/patches/select-label-parley.patch native/blitz/patches/select-label-readonly.patch native/blitz/patches/select-state-store.patch native/blitz/patches/select-state-accessors.patch native/blitz/patches/select-live-form-controls.patch native/blitz/patches/select-live-label-sync.patch native/blitz/experiments/select_state.rs native/blitz/reference_js_probe.rs native/blitz/patches/patched_focus_regression.rs native/blitz/patches/patched_select_regression.rs native/blitz/patches/patched_label_paint_regression.rs native/blitz/patches/patched_live_select_regression.rs > evidence/native-stage-a/blitz-select-live/source-sha256.txt
+          sha256sum native/blitz/patches/document-event-chain.patch native/blitz/patches/plain-button-focus.patch native/blitz/patches/select-ua-display.patch native/blitz/patches/select-default-value.patch native/blitz/patches/select-label-parley.patch native/blitz/patches/select-label-readonly.patch native/blitz/patches/select-state-store.patch native/blitz/patches/select-state-accessors.patch native/blitz/patches/select-live-form-controls.patch native/blitz/patches/select-live-label-sync.patch native/blitz/experiments/select_state.rs native/blitz/reference_js_probe.rs native/blitz/patches/patched_focus_regression.rs native/blitz/patches/patched_label_paint_regression.rs native/blitz/patches/patched_live_select_regression.rs > evidence/native-stage-a/blitz-select-live/source-sha256.txt
           git -C "$RUNNER_TEMP/blitz" apply --check "$GITHUB_WORKSPACE/native/blitz/patches/document-event-chain.patch"
           git -C "$RUNNER_TEMP/blitz" apply "$GITHUB_WORKSPACE/native/blitz/patches/document-event-chain.patch"
           git -C "$RUNNER_TEMP/blitz" apply --check "$GITHUB_WORKSPACE/native/blitz/patches/plain-button-focus.patch"
@@ -61,7 +61,7 @@ jobs:
           git -C "$RUNNER_TEMP/blitz" diff -- packages/blitz-dom/src/traversal.rs packages/blitz-dom/src/events/pointer.rs packages/blitz-dom/src/document.rs packages/blitz-dom/src/events/keyboard.rs packages/blitz-dom/src/layout/construct.rs packages/blitz-dom/assets/default.css packages/blitz-vibey-script/src/state.rs packages/blitz-vibey-script/src/dom/element.rs packages/blitz-vibey-script/src/dom/element/form_controls.rs > evidence/native-stage-a/blitz-select-live/applied-upstream-diff.patch
           cp native/blitz/reference_js_probe.rs "$RUNNER_TEMP/blitz/packages/blitz-vibey-script/tests/calyra_reference.rs"
           cat native/blitz/patches/patched_focus_regression.rs >> "$RUNNER_TEMP/blitz/packages/blitz-vibey-script/tests/calyra_reference.rs"
-          cat native/blitz/patches/patched_select_regression.rs native/blitz/patches/patched_label_paint_regression.rs native/blitz/patches/patched_live_select_regression.rs >> "$RUNNER_TEMP/blitz/packages/blitz-vibey-script/tests/calyra_reference.rs"
+          cat native/blitz/patches/patched_label_paint_regression.rs native/blitz/patches/patched_live_select_regression.rs >> "$RUNNER_TEMP/blitz/packages/blitz-vibey-script/tests/calyra_reference.rs"
       - name: Run original CALYRA script against patched native engine
         shell: bash
         env:
@@ -109,17 +109,13 @@ jobs:
           d=json.loads((root/'calyra-js-destination-focus-patched.json').read_text())['observations']
           assert d['native_destination_focused'] is True
           assert d['after_click']['focused']=='destination'
-          c=json.loads((root/'calyra-js-select-patched.json').read_text())
-          assert c['reference_js_modified'] is False
-          assert c['js_error_count']==0
-          assert c['os_input_tested'] is False
-          assert c['gpu_tested'] is False
-          v=c['observations']
-          assert v['layout']['width']>1 and v['layout']['height']>1
-          assert v['before']=={'value':'balanced','options':3}
-          assert v['after_apply']['value']=='balanced'
-          assert 'balanced' in v['after_apply']['status']
-          assert v['explicit_selected']=={'value':'quality'}
+          # The earlier attribute-backed probe intentionally expected
+          # setAttribute('selected') to change live current selection.
+          # Chromium's current/default separation supersedes that expectation.
+          label=json.loads((root/'calyra-js-select-label.json').read_text())
+          assert label['reference_js_modified'] is False
+          assert label['js_error_count']==0
+          assert label['observations']['parley_label']=='Balanced'
           live=json.loads((root/'calyra-js-select-live.json').read_text())
           assert live['schema']=='calyra.blitz-js.v1'
           assert live['reference_js_modified'] is False
