@@ -53,3 +53,7 @@ Run the **actual** Blitz or RmlUi build on a machine with source/toolchain acces
 ## Additional native GTK3 CSS diagnostic
 
 A separate Linux GTK3 probe (`adapters/gtk3_css_probe.py`) successfully created native widgets, loaded a CSS subset through `GtkCssProvider`, confirmed the real computed button color against the canonical `--accent` value, emitted native GTK button signals, captured an 840×680 screenshot, and validated a restricted Stage A JSON record. Its four dedicated tests passed; the complete local Xvfb test suite passed 24/24. This is **not** one of the three intended native renderer candidates, a GPU result, or evidence of general web CSS compatibility. See `docs/gtk3-native-css-probe.md` for limitations and commands.
+
+### RmlUi v0.6 evidence boundaries (2026-11-15)
+
+The RmlUi integration runner previously reported `interactive: true` from any successful framebuffer capture, even without an interaction event, and inferred `gpu_backed: true` from using OpenGL despite potential software rasterizers. Both were incorrect evidence classifications and have been fixed. The native probe now emits a programmatic button-click marker and GL vendor/renderer strings. The runner distinguishes hardware and software GL, checks native build provenance, and rejects blank frames, stale frames, unknown renderers, missing click markers, or modified binaries. Verified local Python/Xvfb tests are guard tests only: **no RmlUi build, GPU screenshot, hardware claim, or CSS parity score was produced in this environment**.
