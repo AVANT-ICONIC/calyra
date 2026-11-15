@@ -1,0 +1,87 @@
+name: Preserve CALYRA Blitz CPU evidence
+
+# One-time archival of four SHA-256-verified PNGs from completed native run 43671027217.
+# This workflow only triggers when its own YAML is pushed on the draft PR branch.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/preserve-blitz-evidence.yml]
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  preserve:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Fetch exact successful Blitz proof artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: calyra-blitz-real-stage-a
+          run-id: 43671027217
+          github-token: ${{ github.token }}
+          path: authentic-blitz
+      - name: Verify native pixels, provenance and honest classification
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, shutil, struct
+          from pathlib import Path
+          inp = Path('authentic-blitz')
+          out = Path('docs/evidence/blitz')
+          expected = {
+              'controls': 'fdf2e6da16e292dca88b2837b78f26a79697b704920c7d8bad09473abcb4bc19',
+              'dashboard': 'f58ee32b7258c5ab36b5619757f3ee2a98869023bbee616e1c3',
+              'visual': '98fd043c4fddabfe1b4a69e871e96badd920a5fd1d8e784a0c104a7c336d6b62',
+              'interaction': '76d32b4b396324d6002997ae270745495f56f2f40bd6573348ce2508ed89cb61'
+          }
+          pin = '4f61cffacee50fe4f944ebe9d0470d9a5d3997e0'
+          css = '04635269a8fbd790c87316a03c6469a157806201e58fd730212f632fc86b7b9c'
+          for scene, checksum in expected.items():
+              img = inp / f'blitz-{scene}-viewport.png'
+              data = img.read_bytes()
+              assert hashlib.sha256(data).hexdigest() == checksum, scene
+              assert data[:8] == b'\x89PNG\r\n\x1a\n', scene
+              assert struct.unpack('>II', data[16:24]) == (1060, 800), scene
+              provenance = json.loads((inp / f'blitz-{scene}-provenance.json').read_text())
+              result = json.loads((inp / f'blitz-{scene}-result.json').read_text())
+              assert provenance['upstream_commit'] == pin
+              assert provenance['image']['normalized_sha256'] == checksum
+              assert provenance['snapshot']['canonical_sha256']['reference.css'] == css
+              assert provenance['snapshot']['css_bytes_changed'] is False
+              assert provenance['snapshot']['html_patched'] is True
+              assert result['capture']['success'] is True
+              assert result['eligibility'] == 'restricted'
+              assert result['execution']['gpu_backed'] is False
+              assert result['execution']['interactive'] is False
+              assert result['source']['css_modified'] is False
+              assert result['source']['js_executed'] is False
+              assert result['fixture']['name'] == scene
+              assert result['adapter']['kind'] == 'browserless-software'
+          # Only copy after all four candidates validate successfully.
+          out.mkdir(parents=True, exist_ok=True)
+          for scene in expected:
+              for suffix in ('viewport.png', 'result.json', 'provenance.json'):
+                  filename = f'blitz-{scene}-{suffix}'
+                  shutil.copyfile(inp / filename, out / filename)
+          print('Verified and preserved 4 exact native PNGs + 8 result/provenance records')
+          PY
+      - name: Commit only verified evidence to existing draft PR
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f docs/evidence/blitz/*.png docs/evidence/blitz/*.json
+          if git diff --cached --quiet; then
+            echo "Already preserved"
+            exit 0
+          fi
+          git commit -m "docs(evidence): preserve SHA-verified Blitz native CPU frames"
+          git push origin HEAD:feat/reference-fixtures
