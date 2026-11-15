@@ -1,0 +1,73 @@
+name: Preserve CALYRA Blitz select evidence
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/preserve-blitz-select-evidence.yml]
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  archive:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Retrieve authentic native select experiment artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: calyra-blitz-select-patched-experiment
+          run-id: 43687941941
+          github-token: ${{ github.token }}
+          path: original
+      - name: Verify hashes, source and observed select semantics
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib,json,shutil
+          from pathlib import Path
+          source=Path('original')
+          expected={
+              'calyra-js-select-patched.json':'518f0eecf9f711bc12d40f18f11943bd6d739889b6671ebbda08202002664eff',
+              'applied-upstream-diff.patch':'6370622d2010da7f9bb309b875e84bdeb10b007e3a8bfc98bcf39bfef1be28b0',
+              'source-sha256.txt':'77c0667562932ec97447a1bab1cd7248740834d2e13f2b81e52fb210ee2a08a2'
+          }
+          for name,digest in expected.items():
+              assert len(digest)==64
+              assert hashlib.sha256((source/name).read_bytes()).hexdigest()==digest,name
+          j=json.loads((source/'calyra-js-select-patched.json').read_text())
+          assert j['schema']=='calyra.blitz-js.v1'
+          assert j['reference_js_modified'] is False
+          assert j['os_input_tested'] is False and j['gpu_tested'] is False
+          assert j['js_error_count']==0
+          o=j['observations']
+          assert o['layout']=={'width':139,'height':48}
+          assert o['before']=={'value':'balanced','options':3}
+          assert o['after_apply']['value']=='balanced'
+          assert o['after_apply']['status']=='Applied: Alex Rivera · balanced · 64% · on'
+          assert o['explicit_selected']=={'value':'quality'}
+          diff=(source/'applied-upstream-diff.patch').read_text()
+          assert 'packages/blitz-dom/assets/default.css' in diff
+          assert 'packages/blitz-vibey-script/src/dom/element/form_controls.rs' in diff
+          assert 'packages/blitz-dom/src/events/pointer.rs' in diff
+          assert 'packages/blitz-dom/src/traversal.rs' in diff
+          assert hashlib.sha256(Path('fixtures/reference.css').read_bytes()).hexdigest()=='04635269a8fbd790c87316a03c6469a157806201e58fd730212f632fc86b7b9c'
+          assert hashlib.sha256(Path('fixtures/reference.js').read_bytes()).hexdigest()=='9d565203fc9c3450b0c61d7774cb2322b14ed3e3325926122b17f583e81cf3de'
+          dest=Path('docs/evidence/blitz-select')
+          dest.mkdir(parents=True,exist_ok=True)
+          for name in expected:
+              shutil.copyfile(source/name,dest/name)
+          print('PASS: authentic native select geometry and JS-value evidence preserved')
+          PY
+      - name: Commit three verified originals only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f docs/evidence/blitz-select/
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "docs(evidence): archive verified native Blitz select trial"
+          git push origin HEAD:feat/reference-fixtures
