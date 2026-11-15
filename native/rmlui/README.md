@@ -19,14 +19,19 @@ python3 native/rmlui/bootstrap_macos.py
 
 # Install missing development dependencies yourself only if preflight requests them:
 brew install cmake glfw freetype pkg-config
+# Use an isolated Python environment. No installation into system Python.
+python3 -m venv .local/venv
+.local/venv/bin/python -m pip install -r native/rmlui/requirements-macos.txt
 
 # Explicit opt-in: clone official source, verify pinned clean commit, compile, then run direct/adapted probes.
-python3 native/rmlui/bootstrap_macos.py --run
+.local/venv/bin/python native/rmlui/bootstrap_macos.py --run
 ```
 
 Use `--font /absolute/path/to/font.ttf` if Arial is absent, `--source` for an existing official checkout, or `--output` for an alternate evidence directory. The script captures failures as a `blocked` JSON report. It never installs dependencies, runs remote shell scripts, or reuses a modified upstream tree. On success it writes `evidence/native-stage-a/rmlui/macos-preflight-summary.json` together with the two independent adapter reports and captures.
 
 **Important:** `--run` is a real, opt-in native build request that needs a working macOS desktop and an internet connection for the initial Git clone. It can legitimately fail on unsupported source APIs, missing graphics drivers, or unavailable fonts. Neither the script nor its Linux preflight tests are evidence that the native GPU renderer has worked.
+
+**Renderer-selection note:** GLFW_GL3 is a compatibility smoke test using the OpenGL API. It is not a Metal backend. The upstream 6.3 tree also includes an SDL3 GPU backend suitable for a later Metal/D3D/Vulkan comparison, but CALYRA has not built or verified that backend.
 
 **Freshness invariant:** the native build manifest now pins both the upstream commit and the SHA-256 of `native/rmlui/probe.cpp` and `native/rmlui/CMakeLists.txt`. Updating native adapter source invalidates prior binaries until `--build` succeeds again. An unchanged binary digest alone would have accepted stale builds.
 

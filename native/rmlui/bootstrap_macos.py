@@ -7,6 +7,7 @@ checkout and native build; never installs software or runs remote scripts.
 from __future__ import annotations
 
 import argparse
+from importlib.util import find_spec
 import json
 import os
 import platform
@@ -95,12 +96,16 @@ def check_environment(font):
                 issues.append(f"missing pkg-config dependency: {package}")
     else:
         packages = {"glfw3": None, "freetype2": None}
+    python_modules = {name: find_spec(name) is not None for name in ("PIL", "jsonschema")}
+    for name, present in python_modules.items():
+        if not present:
+            issues.append(f"missing Python dependency: {name}; install native/rmlui/requirements-macos.txt in a virtual environment")
     if font is None or not font.is_file() or font.suffix.lower() != ".ttf":
         issues.append("missing local .ttf font (use --font <path>)")
     return {
         "system": osname, "arch": arch, "commands": tools, "packages": packages,
-        "font": str(font) if font else None, "issues": issues,
-        "ready": not issues,
+        "python_modules": python_modules, "font": str(font) if font else None,
+        "issues": issues, "ready": not issues,
     }, env
 
 

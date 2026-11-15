@@ -45,6 +45,18 @@ class MacOsBootstrapTests(unittest.TestCase):
             self.assertFalse(source.exists())
             self.assertFalse(json.loads(result.stdout)['attempted_native_build'])
 
+    def test_private_vendor_checkout_is_gitignored(self):
+        ignores = (ROOT / '.gitignore').read_text().splitlines()
+        self.assertIn('.local/', ignores)
+        self.assertIn('evidence/', ignores)
+
+    def test_missing_python_dependencies_are_fail_closed(self):
+        with patch.object(bootstrap_macos, 'find_spec', side_effect=lambda name: None if name == 'PIL' else object()):
+            record, _ = bootstrap_macos.check_environment(Path('/nonexistent/font.ttf'))
+        self.assertFalse(record['python_modules']['PIL'])
+        self.assertFalse(record['ready'])
+        self.assertIn('missing Python dependency: PIL', ' '.join(record['issues']))
+
     def test_upstream_verification_rejects_impersonated_source(self):
         with tempfile.TemporaryDirectory() as tmp:
             fake = Path(tmp)

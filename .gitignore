@@ -5,3 +5,4 @@ evidence/
 results/
 reports/generated/
 .DS_Store
+.local/
