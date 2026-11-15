@@ -17,6 +17,12 @@ add_subdirectory("${CALYRA_RMLUI_SOURCE}" "${CMAKE_BINARY_DIR}/rmlui_upstream" E
 add_executable(calyra_rmlui_probe probe.cpp)
 target_include_directories(calyra_rmlui_probe PRIVATE "${CALYRA_RMLUI_SOURCE}/Backends")
 target_link_libraries(calyra_rmlui_probe PRIVATE RmlUi::RmlUi rmlui_backend_GLFW_GL3)
+# Our probe itself calls glGetString/glReadPixels. The upstream GLFW_GL3
+# backend loads most GL entrypoints dynamically, so it does not provide
+# the link dependency for the probe's direct OpenGL API calls.
 if(APPLE)
   target_link_libraries(calyra_rmlui_probe PRIVATE "-framework OpenGL")
+else()
+  find_package(OpenGL REQUIRED)
+  target_link_libraries(calyra_rmlui_probe PRIVATE OpenGL::GL)
 endif()

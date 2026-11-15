@@ -75,3 +75,12 @@ native executable boundary tests and the existing browser/GTK/static checks.
 macOS GPU evidence, screenshot parity, and real OS-level interactions. The
 container's DNS and outbound connections to GitHub are unavailable; official
 upstream source and GLFW headers cannot be fetched here.
+
+## First actual RmlUi 6.3 native GitHub runner attempt (2026-11-15)
+
+[Actions run #43664566957](https://github.com/AVANT-ICONIC/calyra/actions/runs/43664566957) executed pinned, clean RmlUi 6.3 sources at `ba95ffe8bfb6370efb2cdcca927eaad4710c5413` on Linux and an actual macOS 15 ARM64 runner. These results are **real build and runtime observations**, unlike the earlier mocked runner tests.
+
+- **Apple Silicon: C++ native build SUCCEEDED.** An executable with SHA-256 `785d0bbcd497a96e9c29ba6e376d72052aa71200721626aa5f0361ca8088316b` and verified upstream/build-source provenance was generated. Both UI modes then returned `exit=4` from GLFW, reporting `GLFW error (0x10009): NSGL: Failed to find a suitable pixel format`. The CI host could not provide a suitable OpenGL context, so **no framebuffer, GPU support claim, or CSS result** exists. [Raw macOS artifact](https://github.com/AVANT-ICONIC/calyra/actions/runs/43664566957/artifacts/14141765920).
+- **Linux: RmlUi core and debugger compiled, but final CALYRA executable link FAILED.** The linker reported undefined `glGetString`, `glGetIntegerv`, `glFinish`, `glReadBuffer`, `glReadPixels`, `glGetError` from CALYRA's `probe.cpp`. Root cause: direct OpenGL calls lacked an explicit `OpenGL::GL` link dependency, although the upstream GLFW backend dynamically loads its own GL symbols. [Raw Linux artifact](https://github.com/AVANT-ICONIC/calyra/actions/runs/43664566957/artifacts/14141403045).
+
+**Next constrained repair:** link OpenGL explicitly on non-Apple platforms and run the Linux framebuffer probe once more. The Apple Silicon runner is deliberately skipped on this follow-up push: its source compilation is already proven, while its headless GL-context issue requires a separately justified experiment. No speed or CSS compatibility score can be derived from this first run.

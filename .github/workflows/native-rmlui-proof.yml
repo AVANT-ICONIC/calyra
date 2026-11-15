@@ -79,6 +79,10 @@ jobs:
           retention-days: 7
 
   macos-arm64-native:
+    # Already proven buildable on Apple Silicon in run 43664566957.
+    # Skip redundant Mac billing on the focused Linux GL linker repair.
+    # Run manually for a future display/context change.
+    if: github.event_name == 'workflow_dispatch'
     name: Apple Silicon macOS 15 / compile and native frame attempt
     runs-on: macos-15
     timeout-minutes: 30
