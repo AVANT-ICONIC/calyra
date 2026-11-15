@@ -135,3 +135,21 @@ Do not import proprietary code, copyrighted assets, licensed shaders, or an engi
 ## Review gate
 
 This OpenSpec change is **proposed, not implemented**. Implementation must not begin automatically from the existence of these files. Complete review of scope and test fixtures first; then apply as a separate activity with evidence.
+
+
+## Blitz select semantics and reactive painting (targeted Stage A probe, 2026-11-15)
+
+**Problem demonstrated:** Authored HTML/CSS/JS renders the initial label with six isolated upstream patches, but Blitz's headless select implementation has no live selection state or repaint contract. The existing \`TextInputData\` workaround is paint evidence only, not a safe select widget.
+
+**Minimum reference contract (single-select, three direct options):**
+
+1. Default selection is the first enabled option if no option is explicitly selected: \`selectedIndex=0\`, \`value="balanced"\`, visual label "Balanced". An explicit selected option wins on initial load.
+2. Assigning \`select.value="quality"\` or \`select.selectedIndex=1\` updates selectedness and its label to "Visual fidelity" in the **same document**, without rebuilding the DOM or editing canonical assets. The identity of the select's node must remain unchanged. An unmatched value yields no selection (\`selectedIndex=-1\`, empty string), subject to Chromium baseline verification.
+3. Assigning \`option.selected=true\` updates its owning select. Getter and visual label must agree. \`option.defaultSelected\` remains distinct from *current selectedness* when that model exists; an attribute-reflection approximation must be labeled restricted.
+4. **Programmatic** selection changes must not generate \`input\` or \`change\` events. A **user-initiated** committed selection should dispatch \`input\` then \`change\`, each with consistent selectedness, but this is a separate physical/input simulation gate, not a requirement for the property-setter probe to masquerade as interaction.
+5. Selected-label raster paint should update from a live model, not from a fresh static HTML snapshot. After a mutation and style/layout resolve, a genuine Vello CPU capture should show the change in localized pixels. Framebuffer dimensions, fonts, engine patch list and source SHA must be recorded.
+6. A production solution needs noneditable select-specific state and a text-shaping/painting path that cannot receive ordinary text edits, cut/paste or IME. A temporary editor-buffer repaint experiment **may** be used to establish the state/invalidation path but cannot satisfy the production architecture gate.
+
+**Measurement:** Record an untouched Chromium baseline on identical minimal HTML, then run native Rust/Boa behavior tests on clean pinned Blitz plus explicit patch set. Preserve failures, actual results, and both DOM and bitmap evidence. Do not claim UI popup, keyboard navigation, accessibility or OS-device input from these headless checks.
+
+**Scope:** This probe stays within the current candidate evaluation. It does not authorize building a general HTMLSelectElement implementation or merging experimental Blitz source patches into CALYRA's main or upstream repository.

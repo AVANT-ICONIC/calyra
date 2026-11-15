@@ -66,3 +66,22 @@ Each fixture SHALL record its intended CSS viewport, device pixel ratio, screens
 - **WHEN** the result is included in a comparison
 - **THEN** its dimensions, scale, state, and relevant font setup SHALL be reported
 - **AND** layout or interaction errors SHALL be distinguished from expected rasterization differences
+
+
+### Requirement: Distinguish static select paint from live select behavior
+
+CALYRA SHALL evaluate a select control's DOM state, JavaScript value/selectedIndex properties, selected option, event dispatch and native pixels as separate observables. Programmatic changes SHALL be compared with an independent Chromium baseline and SHALL NOT be counted as native user input.
+
+#### Scenario: Programmatic selection changes
+- **GIVEN** the canonical single-select fixture with "balanced", "quality" and "performance" options
+- **WHEN** JavaScript assigns \`select.value\`, \`select.selectedIndex\` or \`option.selected\`
+- **THEN** CALYRA SHALL record the selectedIndex, value, selected option and painted label after each operation
+- **AND** SHALL report whether changes were reflected in the same existing native document
+- **AND** SHALL separately check that property-only mutations do not dispatch user \`input\` or \`change\` events
+- **AND** SHALL not claim compliance if only a freshly generated HTML snapshot changes the initial label
+
+#### Scenario: Select implementation borrows an editable text engine
+- **GIVEN** a candidate renders select labels using a text-input editor as an internal buffer
+- **WHEN** native painting succeeds
+- **THEN** CALYRA SHALL distinguish painted-label feasibility from a production-safe noneditable select model
+- **AND** SHALL keep IME, clipboard, keyboard, option popup and native accessibility marked unverified until tested
