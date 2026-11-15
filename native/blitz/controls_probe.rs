@@ -2,7 +2,7 @@
 //! Uses Blitz's actual internal DOM event dispatcher, not browser JavaScript.
 use blitz_test_harness::{Harness, HarnessOptions};
 use blitz_traits::shell::ColorScheme;
-use keyboard_types::Key;
+use keyboard_types::{Key, NamedKey};
 use std::{env, fs, path::Path};
 
 fn html(path_var: &str) -> String {
@@ -94,7 +94,7 @@ fn calyra_interaction_probe() {
     let expanded_after_click = h.attr("#menu-toggle", "aria-expanded") == Some("true".into());
     // Browser JS was removed from the snapshot; we intentionally do not
     // conflate missing script behavior with broken native pointer dispatch.
-    h.press(Key::Escape);
+    h.press(Key::Named(NamedKey::Escape));
     let expanded_after_escape = h.attr("#menu-toggle", "aria-expanded") == Some("true".into());
     let report = format!(
         "{{\"schema\":\"calyra.blitz-input.v1\",\"fixture\":\"interaction\",\"input_source\":\"blitz_test_harness_synthetic_native_events\",\"css_modified\":false,\"javascript_executed\":false,\"scroll_box_width\":{},\"scroll_box_height\":{},\"scroll_offset_before\":{},\"scroll_offset_after\":{},\"scroll_moved_after_wheel\":{},\"button_focused_after_click\":{},\"menu_expanded_without_javascript\":{},\"menu_expanded_after_escape_without_javascript\":{}}}",

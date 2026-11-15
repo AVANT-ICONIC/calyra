@@ -4,6 +4,8 @@ on:
     branches: [feat/reference-fixtures]
     paths: [.github/workflows/native-blitz-input-proof.yml]
   workflow_dispatch:
+
+# Retry #2: use upstream keyboard-types::NamedKey::Escape.
 permissions:
   contents: read
 jobs:
