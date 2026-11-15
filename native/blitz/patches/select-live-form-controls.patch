@@ -1,9 +1,7 @@
 diff --git a/packages/blitz-vibey-script/src/dom/element/form_controls.rs b/packages/blitz-vibey-script/src/dom/element/form_controls.rs
 --- a/packages/blitz-vibey-script/src/dom/element/form_controls.rs
 +++ b/packages/blitz-vibey-script/src/dom/element/form_controls.rs
-@@ -65,10 +65,13 @@
-     Ok(JsValue::undefined())
- }
+@@ -67,6 +67,9 @@
  
 -pub(super) fn get_value(this: &JsValue, _: &[JsValue], context: &mut Context) -> JsResult<JsValue> {
 -    let ctx = dom_ctx(context)?;
@@ -17,11 +15,7 @@ diff --git a/packages/blitz-vibey-script/src/dom/element/form_controls.rs b/pack
 +    }
 +    let value = {
          let doc = ctx.doc.borrow();
-         doc.get_node(node_id)
-             .and_then(|node| node.element_data())
-@@ -86,13 +89,18 @@
-     Ok(js_str(&value))
- }
+@@ -88,9 +91,14 @@
  
 -pub(super) fn set_value(
 -    this: &JsValue,
@@ -43,5 +37,3 @@ diff --git a/packages/blitz-vibey-script/src/dom/element/form_controls.rs b/pack
 +    attr_setter("value", this, args, context)
 +}
  
- pub(super) fn get_checked(
-     this: &JsValue,
