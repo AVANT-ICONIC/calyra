@@ -1,0 +1,77 @@
+name: Preserve CALYRA Blitz keydown evidence
+
+# One-shot copy; never runs for ordinary source changes.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/preserve-blitz-keydown-evidence.yml]
+permissions:
+  contents: write
+  actions: read
+jobs:
+  archive:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: calyra-blitz-original-js-stage-a
+          run-id: 43684009049
+          github-token: ${{ github.token }}
+          path: original
+      - uses: actions/download-artifact@v4
+        with:
+          name: calyra-blitz-keydown-patched-experiment
+          run-id: 43684229853
+          github-token: ${{ github.token }}
+          path: patched
+      - name: Verify exact originals and expected event change
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib,json,shutil
+          from pathlib import Path
+          files={
+          'unpatched-routing.json':('original/calyra-js-keyboard-routing.json','e9eb2b0fb8c173641a0a87721be4502d6bd92625eae49da1b8ef38f5c1f15e92'),
+          'patched-routing.json':('patched/calyra-js-keyboard-routing.json','e7d65be71cd98f333cb450e8e734b75500c36c078bb8946586f1caf249082c4f'),
+          'patched-original-interaction.json':('patched/calyra-js-interaction.json','21d6c0101857db7bc13283a064fabf70d9aac8d41421969e2c4b5f695f7c27db'),
+          'patched-escape.json':('patched/calyra-js-escape-patched.json','0fc1e754481f65737451114669895f4b77f12e3eb5a3ceb3e4b0cd0f0116441b'),
+          'patched-diff.patch':('patched/applied-upstream-diff.patch','9f52e05db2d807adab7ce1f2992c7efd090f242a490df84a959d25e570419fb3')
+          }
+          data={}
+          for name,(src,digest) in files.items():
+            raw=Path(src).read_bytes()
+            assert hashlib.sha256(raw).hexdigest()==digest,name
+            if name.endswith('.json'):
+              data[name]=json.loads(raw)
+              assert data[name]['js_error_count']==0
+              assert data[name]['reference_js_modified'] is False
+              assert data[name]['os_input_tested'] is False
+          before={x['route']:x for x in data['unpatched-routing.json']['observations']['routes']}
+          after={x['route']:x for x in data['patched-routing.json']['observations']['routes']}
+          assert before['ui']['after']['expanded']=='true'
+          assert not any(e['where']=='document' for e in before['ui']['after']['trace'])
+          assert after['ui']['after']['expanded']=='false'
+          assert any(e['where']=='document' for e in after['ui']['after']['trace'])
+          assert data['patched-original-interaction.json']['observations']['after_escape']['expanded']=='false'
+          assert data['patched-original-interaction.json']['observations']['after_escape']['hidden'] is True
+          assert data['patched-escape.json']['observations']['after']['hidden'] is True
+          assert hashlib.sha256(Path('fixtures/reference.js').read_bytes()).hexdigest()=='9d565203fc9c3450b0c61d7774cb2322b14ed3e3325926122b17f583e81cf3de'
+          assert hashlib.sha256(Path('fixtures/reference.css').read_bytes()).hexdigest()=='04635269a8fbd790c87316a03c6469a157806201e58fd730212f632fc86b7b9c'
+          dest=Path('docs/evidence/blitz-keydown')
+          dest.mkdir(parents=True,exist_ok=True)
+          for name,(src,_) in files.items():
+            shutil.copyfile(src,dest/name)
+          print('All five original files verified before copying')
+          PY
+      - name: Commit verified evidence only
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f docs/evidence/blitz-keydown/*.json docs/evidence/blitz-keydown/*.patch
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "docs(evidence): preserve native Blitz keydown before-after proof"
+          git push origin HEAD:feat/reference-fixtures
