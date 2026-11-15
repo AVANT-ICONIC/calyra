@@ -1,0 +1,117 @@
+name: Preserve CALYRA selected-label native pixel evidence
+
+# One-shot archival of real, SHA-256-checked original CI artifacts.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/preserve-blitz-selected-label-evidence.yml]
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  archive:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Retrieve exactly the successful native Blitz run
+        uses: actions/download-artifact@v4
+        with:
+          name: calyra-blitz-selected-label-native-proof
+          run-id: 43692125454
+          github-token: ${{ github.token }}
+          path: original
+      - name: Verify all original bytes and honest evidence classification
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib,json,shutil,struct
+          from pathlib import Path
+          src=Path('original')
+          expected={
+            'balanced-native-viewport.png':'b331a392a3a20594283d25cc08e5db81b12657524befcd419a4008fbbb211c1b',
+            'quality-native-viewport.png':'0a9fbc495df35a779347c48cf4b754ff7bce234ad55d08b6c3a520ce6051bd27',
+            'balanced-native-raw.png':'ce3622277ba3338e342829f981335a18948e944ec6e0e073b146389d92d7e29b',
+            'quality-native-raw.png':'89ec93e63635f65349d1087f11f32bcd233fd1c1cff7f3587441f5e28304662a',
+            'selected-label-pixel-diff.png':'a82571f197cd00c63d9d53c346dae4e9257911834238d07fe843a63bfcbd5194',
+            'selected-label-paint-result.json':'eeacdc233e78af4bf9820f158f5ffa4fa7787df66dbb36cdde5b663488f4e319',
+            'calyra-js-select-label.json':'e7e212140422af600cf0df82ae2705d27aeeacf00ed01a4c76f043074610b400',
+            'applied-upstream-diff.patch':'40e24fdc5061a2b8f20da25757bd979bf4aeed5eade1dada57d48e7c990772dd',
+            'source-sha256.txt':'5226705bbbc1eaa6786efc2727e2fe167c9fa8506cc8d4637d340e387fd35ca4',
+            'snapshots/controls/index.html':'b49e6fdd217c38dba705602a68526f01c797072986401d92b4bf7fe5b9b62a72',
+            'snapshots/selected-quality/index.html':'99b5adfc7044beddd4c4c5a01432fe23598a1169eba43d8fd87d2fcee9a7c00d',
+            'rust-tests.log':'ee6b9630a0dd5fc1daeb5b7c1b61197c80e0a4a0ca49e134d148dd0ac8176c2e',
+            'cargo-screenshot.log':'47dfc771aedd1a997e5cbe5931c937bc7cdd772707cdc198de7098080bb8162f'
+          }
+          for filename,sha in expected.items():
+            assert len(sha)==64,(filename,len(sha))
+            file=src/filename
+            assert file.is_file(),filename
+            assert hashlib.sha256(file.read_bytes()).hexdigest()==sha,filename
+          result=json.loads((src/'selected-label-paint-result.json').read_text())
+          assert result['schema']=='calyra.blitz-selected-label-paint.v1'
+          assert result['upstream_pin']=='4f61cffacee50fe4f944ebe9d0470d9a5d3997e0'
+          assert result['engine_patched'] is True
+          assert result['original_css_modified'] is False
+          assert result['original_js_modified'] is False
+          assert result['js_executed'] is False
+          assert result['hardware_gpu'] is False
+          assert result['os_input_tested'] is False
+          assert result['selected_option_dom_patch_for_second_frame'] is True
+          assert result['candidate_variants']==['Balanced','Visual fidelity']
+          assert result['changed_pixels_at_12']==1012
+          assert result['diff_bbox']==[685,489,796,510]
+          assert result['images']['balanced']['normalized_sha256']==expected['balanced-native-viewport.png']
+          assert result['images']['quality']['normalized_sha256']==expected['quality-native-viewport.png']
+          assert result['images']['balanced']['raw_sha256']==expected['balanced-native-raw.png']
+          assert result['images']['quality']['raw_sha256']==expected['quality-native-raw.png']
+          for mode in ['balanced','quality']:
+            data=(src/f'{mode}-native-viewport.png').read_bytes()
+            assert data[:8]==b'\x89PNG\r\n\x1a\n'
+            assert struct.unpack('>II',data[16:24])==(1060,800)
+          rust=json.loads((src/'calyra-js-select-label.json').read_text())
+          assert rust['schema']=='calyra.blitz-js.v1'
+          assert rust['reference_js_modified'] is False
+          assert rust['js_error_count']==0
+          assert rust['os_input_tested'] is False and rust['gpu_tested'] is False
+          assert rust['observations']=={
+            'parley_label':'Balanced','parley_line':True,'js_value':{'value':'balanced'}
+          }
+          before=(src/'snapshots/controls/index.html').read_text()
+          after=(src/'snapshots/selected-quality/index.html').read_text()
+          needle='<option value="quality">Visual fidelity</option>'
+          assert before.count(needle)==1
+          assert after==before.replace(needle,'<option value="quality" selected>Visual fidelity</option>')
+          assert hashlib.sha256(Path('fixtures/reference.css').read_bytes()).hexdigest()=='04635269a8fbd790c87316a03c6469a157806201e58fd730212f632fc86b7b9c'
+          assert hashlib.sha256(Path('fixtures/reference.js').read_bytes()).hexdigest()=='9d565203fc9c3450b0c61d7774cb2322b14ed3e3325926122b17f583e81cf3de'
+          diff=(src/'applied-upstream-diff.patch').read_text()
+          for path in ('packages/blitz-dom/src/layout/construct.rs',
+                       'packages/blitz-dom/src/events/keyboard.rs',
+                       'packages/blitz-vibey-script/src/dom/element/form_controls.rs'):
+            assert path in diff,path
+          # Only after validating every original and all crucial claims,
+          # archive exact bytes, without modification.
+          dest=Path('docs/evidence/blitz-select-label')
+          dest.mkdir(parents=True,exist_ok=True)
+          for filename in expected:
+            target=dest/filename
+            target.parent.mkdir(parents=True,exist_ok=True)
+            shutil.copyfile(src/filename,target)
+          print('PASS: 13 exact evidence files, 2 authentic native 1060x800 frames, 1012 changed pixels')
+          PY
+      - name: Commit only original SHA-256-verified evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f docs/evidence/blitz-select-label/
+          if git diff --cached --quiet; then
+            echo "Already archived"
+            exit 0
+          fi
+          git commit -m "docs(evidence): preserve actual native Blitz selected-label pixels"
+          git push origin HEAD:feat/reference-fixtures
