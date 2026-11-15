@@ -43,11 +43,12 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p evidence/native-stage-a/blitz-keydown
-          sha256sum native/blitz/patches/document-event-chain.patch native/blitz/reference_js_probe.rs > evidence/native-stage-a/blitz-keydown/source-sha256.txt
+          sha256sum native/blitz/patches/document-event-chain.patch native/blitz/reference_js_probe.rs native/blitz/patches/patched_escape_regression.rs > evidence/native-stage-a/blitz-keydown/source-sha256.txt
           git -C "$RUNNER_TEMP/blitz" apply --check "$GITHUB_WORKSPACE/native/blitz/patches/document-event-chain.patch"
           git -C "$RUNNER_TEMP/blitz" apply "$GITHUB_WORKSPACE/native/blitz/patches/document-event-chain.patch"
           git -C "$RUNNER_TEMP/blitz" diff -- packages/blitz-dom/src/traversal.rs > evidence/native-stage-a/blitz-keydown/applied-upstream-diff.patch
           cp native/blitz/reference_js_probe.rs "$RUNNER_TEMP/blitz/packages/blitz-vibey-script/tests/calyra_reference.rs"
+          cat native/blitz/patches/patched_escape_regression.rs >> "$RUNNER_TEMP/blitz/packages/blitz-vibey-script/tests/calyra_reference.rs"
       - name: Run original CALYRA script against patched native engine
         shell: bash
         env:
