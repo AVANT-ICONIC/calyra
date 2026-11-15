@@ -1,0 +1,43 @@
+diff --git a/packages/blitz-vibey-script/src/dom/element.rs b/packages/blitz-vibey-script/src/dom/element.rs
+--- a/packages/blitz-vibey-script/src/dom/element.rs
++++ b/packages/blitz-vibey-script/src/dom/element.rs
+@@ -7,8 +7,9 @@
+ use super::{define_accessor, define_method, dom_ctx, js_str, node_wrapper, this_node_id};
+ 
+ mod attributes;
+-mod form_controls;
+-mod geometry;
++mod form_controls;
++mod select_state;
++mod geometry;
+ mod markup;
+ mod scrolling;
+ mod selectors;
+@@ -41,13 +42,20 @@
+         Some(form_controls::set_value),
+         context,
+     );
+-    define_accessor(
+-        proto,
+-        "checked",
+-        Some(form_controls::get_checked),
+-        Some(form_controls::set_checked),
+-        context,
+-    );
++    // CALYRA single-select Stage A experiment: current vs default selectedness.
++    define_accessor(proto, "selectedIndex", Some(select_state::get_selected_index),
++        Some(select_state::set_selected_index), context);
++    define_accessor(proto, "selected", Some(select_state::get_selected),
++        Some(select_state::set_selected), context);
++    define_accessor(proto, "defaultSelected", Some(select_state::get_default_selected),
++        Some(select_state::set_default_selected), context);
++    define_accessor(
++        proto,
++        "checked",
++        Some(form_controls::get_checked),
++        Some(form_controls::set_checked),
++        context,
++    );
+     define_accessor(
+         proto,
+         "disabled",
