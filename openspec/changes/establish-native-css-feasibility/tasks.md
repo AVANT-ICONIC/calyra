@@ -1,6 +1,6 @@
 # Tasks: native CSS feasibility
 
-A checked task requires implementation evidence, not merely a plan. Local fixture checks use Chromium only; no native candidate or performance result is verified.
+A checked task requires executable evidence. Chromium reference fixtures were verified locally; RmlUi 6.3 has now been compiled and executed on a Linux OpenGL software renderer and produced real, restricted Stage A captures. No hardware-GPU, CSS parity, accessibility, or performance result is verified.
 
 ## 1. Candidate and contract validation
 
@@ -19,7 +19,7 @@ A checked task requires implementation evidence, not merely a plan. Local fixtur
 
 - [ ] 3.1 Run the Tauri/system-WebView reference and confirm fixture behavior.
 - [ ] 3.2 Attempt Blitz adapter, preserving unsupported features and integration notes.
-- [ ] 3.3 Attempt RmlUi adapter with explicit CSS-subset accounting.
+- [x] 3.3 Attempt RmlUi adapter with explicit CSS-subset accounting. Real RmlUi 6.3 GLFW_GL3 execution, synthetic click, computed RCSS color, and both 1060x740 captured frames: [run #43665651869](https://github.com/AVANT-ICONIC/calyra/actions/runs/43665651869). Direct CSS is visibly incompatible; engine is restricted, hardware GPU unverified.
 - [ ] 3.4 Attempt Electrobun experimental GPU adapter while verifying its rendering path is not a WebView.
 - [ ] 3.5 For blocked candidates, record reproducible failure and version; do not invent results.
 

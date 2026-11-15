@@ -135,3 +135,13 @@ The summary includes both status records, their exit codes and output tails.
 Local unit tests verify the important failure path: direct CSS blocked while
 adapted RCSS succeeds. These tests use mocked runner responses and are **not**
 native RmlUi execution.
+
+## First real execution evidence
+
+[GitHub Actions run #43665651869](https://github.com/AVANT-ICONIC/calyra/actions/runs/43665651869) was **successful on Linux** with the pinned 6.3 RmlUi sources. Both direct and adapted modes generated actual 1060x740 PNGs through the native GLFW_GL3 renderer using Mesa **llvmpipe**, explicitly classified as **software OpenGL**. The synthetic native RmlUi click and adapted computed color `#C6DB74` were verified. [Native screenshots and JSON evidence (7-day retention)](https://github.com/AVANT-ICONIC/calyra/actions/runs/43665651869/artifacts/14142142998).
+
+The actual images show **major CSS compatibility failures**, especially for the unchanged browser CSS mode. Adapting markup and RCSS can make an interactive interface appear, but that is not direct CSS compatibility. See `docs/stage-a-observations.md` for the visual comparison and caveats.
+
+On **macOS 15 ARM64**, [run #43664566957](https://github.com/AVANT-ICONIC/calyra/actions/runs/43664566957) did compile a real executable, but the GitHub runner's GLFW OpenGL context failed with `NSGL: Failed to find a suitable pixel format`; no Apple-Silicon native frame was obtained. Test on a real macOS desktop with working windowing/OpenGL before claiming Apple Silicon rendering support.
+
+The native C++ probe now explicitly splits the upstream GLFW_GL3 backend's `EndFrame` and `glfwSwapBuffers` calls to read the resolved GL_BACK buffer between them. This is a diagnostic capture hook and not a CALYRA rendering backend implementation.
