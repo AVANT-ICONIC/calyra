@@ -87,3 +87,73 @@ class MacOsBootstrapTests(unittest.TestCase):
 
 if __name__ == '__main__':
     unittest.main()
+
+class MacOsDualModeEvidenceTests(unittest.TestCase):
+    """Exercise the actual macOS entrypoint orchestration without native GPU claims."""
+
+    def test_direct_css_failure_does_not_skip_adapted_native_renderer(self):
+        from types import SimpleNamespace
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = root / 'pinned-upstream'
+            source.mkdir()
+            output = root / 'out'
+            calls = []
+
+            def native_runner(cmd, *, timeout, env):
+                mode = cmd[cmd.index('--mode') + 1]
+                calls.append(mode)
+                outcome = mode == 'adapted'
+                (output / f'rmlui-{mode}-result.json').write_text(json.dumps({
+                    'eligibility': 'restricted' if outcome else 'blocked',
+                    'capture': {'success': outcome},
+                    'execution': {'render_backend': 'RmlUi / real test would report GL'},
+                }))
+                return subprocess.CompletedProcess(cmd, 0 if outcome else 2, stdout='', stderr='')
+
+            args = SimpleNamespace(run=True, source=str(source), output=str(output),
+                                   font=None, timeout=20)
+            with patch.object(bootstrap_macos, 'check_environment',
+                              return_value=({'ready': True}, {})), \
+                 patch.object(bootstrap_macos, 'verify_upstream', return_value=True), \
+                 patch.object(bootstrap_macos, 'execute', side_effect=native_runner), \
+                 patch.object(bootstrap_macos, 'choose_font', return_value=root / 'font.ttf'):
+                self.assertEqual(bootstrap_macos.run(args), 1)
+            self.assertEqual(calls, ['direct', 'adapted'])
+            summary = json.loads((output / 'macos-preflight-summary.json').read_text())
+            self.assertEqual(summary['status'], 'partial')
+            self.assertEqual(summary['successful_modes'], 1)
+            self.assertFalse(summary['modes']['direct']['native_capture'])
+            self.assertTrue(summary['modes']['adapted']['native_capture'])
+
+    def test_stale_report_and_nonzero_runner_never_count_as_native_capture(self):
+        from types import SimpleNamespace
+        with tempfile.TemporaryDirectory() as temp:
+            root = Path(temp)
+            source = root / 'pinned-upstream'
+            source.mkdir()
+            output = root / 'out'
+            output.mkdir()
+            for mode in ('direct', 'adapted'):
+                (output / f'rmlui-{mode}-result.json').write_text(json.dumps({
+                    'eligibility': 'restricted', 'capture': {'success': True},
+                    'execution': {'render_backend': 'fabricated'},
+                }))
+            calls = []
+            def failing_runner(cmd, *, timeout, env):
+                calls.append(cmd[cmd.index('--mode') + 1])
+                return subprocess.CompletedProcess(cmd, 2, stdout='', stderr='')
+            args = SimpleNamespace(run=True, source=str(source), output=str(output),
+                                   font=None, timeout=20)
+            with patch.object(bootstrap_macos, 'check_environment',
+                              return_value=({'ready': True}, {})), \
+                 patch.object(bootstrap_macos, 'verify_upstream', return_value=True), \
+                 patch.object(bootstrap_macos, 'execute', side_effect=failing_runner), \
+                 patch.object(bootstrap_macos, 'choose_font', return_value=root / 'font.ttf'):
+                self.assertEqual(bootstrap_macos.run(args), 2)
+            self.assertEqual(calls, ['direct', 'adapted'])
+            self.assertFalse((output / 'rmlui-direct-result.json').exists())
+            self.assertFalse((output / 'rmlui-adapted-result.json').exists())
+            summary = json.loads((output / 'macos-preflight-summary.json').read_text())
+            self.assertEqual(summary['status'], 'blocked')
+            self.assertEqual(summary['successful_modes'], 0)

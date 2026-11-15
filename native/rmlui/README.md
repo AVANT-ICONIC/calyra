@@ -108,3 +108,30 @@ above in the same `--output` directory. Review both result JSONs and the
 separate `runtime-direct.log` and `runtime-adapted.log` before comparing
 frames. Explicitly record the GPU vendor/renderer and screen pixel scale.
 Do not copy an adapted RCSS success into a direct CSS compatibility score.
+
+
+## Independent CSS mode results (Stage A v0.9)
+
+The macOS bootstrap deliberately attempts **both** rendering modes, even if
+a native build succeeded but the direct canonical CSS test failed. This is
+essential: a parser or selector mismatch in the direct mode must not conceal
+an otherwise viable RmlUi render path with explicitly adapted RCSS.
+
+The two modes have separate result JSON files. Every invocation first removes
+its previous result JSON; a subprocess exit code must agree with a fresh
+`capture.success=true` and `eligibility=restricted`. Previous screenshots are
+already discarded by the native runner, so a crash cannot leave behind a
+seemingly successful comparison.
+
+The summary now distinguishes:
+
+- **`restricted` (exit 0):** direct and adapted captured independently. This
+  still does **not** establish CSS parity or accessibility.
+- **`partial` (exit 1):** exactly one mode captured; inspect its evidence, keep
+  the other failure visible, and do not claim a paired comparison.
+- **`blocked` (exit 2):** neither mode captured, or preflight failed.
+
+The summary includes both status records, their exit codes and output tails.
+Local unit tests verify the important failure path: direct CSS blocked while
+adapted RCSS succeeds. These tests use mocked runner responses and are **not**
+native RmlUi execution.

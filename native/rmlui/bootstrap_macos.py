@@ -169,27 +169,45 @@ def run(args):
         if mode == "direct":
             command.append("--build")
         # Pass locally discovered Homebrew CMake/package paths, never modify the user shell.
+        # Never accept the previous run's JSON if this invocation crashes or
+        # times out before writing a new result. The runner owns its own image
+        # cleanup; the bootstrap owns the lifecycle of its result summary.
+        record = out / f"rmlui-{mode}-result.json"
+        record.unlink(missing_ok=True)
         try:
             proc = execute(command, timeout=args.timeout, env=env)
-            record = out / f"rmlui-{mode}-result.json"
             result = json.loads(record.read_text()) if record.is_file() else None
-            info["modes"][mode] = {"exit_code": proc.returncode,
-                                  "report": str(record) if result else None,
-                                  "status": result["eligibility"] if result else "blocked",
-                                  "native_capture": bool(result and result["capture"]["success"]),
-                                  "render_backend": result["execution"]["render_backend"] if result else None,
-                                  "stderr_tail": proc.stderr[-800:]}
-        except (OSError, subprocess.TimeoutExpired, ValueError, KeyError) as exc:
-            info["modes"][mode] = {"status": "blocked", "error": str(exc)}
-        if info["modes"][mode]["status"] == "blocked":
-            break
+            # A valid-looking stale or forged result must not hide a nonzero
+            # runner exit code. Both the process and the new report must agree.
+            captured = bool(proc.returncode == 0 and isinstance(result, dict)
+                            and result.get("eligibility") == "restricted"
+                            and isinstance(result.get("capture"), dict)
+                            and result["capture"].get("success") is True)
+            info["modes"][mode] = {
+                "exit_code": proc.returncode,
+                "report": str(record) if result else None,
+                "status": "restricted" if captured else "blocked",
+                "native_capture": captured,
+                "render_backend": (result.get("execution") or {}).get("render_backend")
+                                  if isinstance(result, dict) else None,
+                "stderr_tail": proc.stderr[-800:],
+                "stdout_tail": proc.stdout[-800:],
+            }
+        except (OSError, subprocess.TimeoutExpired, ValueError, TypeError, KeyError) as exc:
+            info["modes"][mode] = {"status": "blocked", "native_capture": False, "error": str(exc)}
+        # Deliberately attempt the adapted RCSS path even if direct CSS fails.
+        # A failure to parse canonical CSS must not hide an otherwise working
+        # native RmlUi renderer. The two modes are independent evidence.
 
-    info["status"] = "restricted" if len(info["modes"]) == 2 and all(
-        item.get("native_capture") for item in info["modes"].values()) else "blocked"
+    completed = sum(bool(item.get("native_capture")) for item in info["modes"].values())
+    info["successful_modes"] = completed
+    info["status"] = "restricted" if completed == 2 else ("partial" if completed else "blocked")
     report = out / "macos-preflight-summary.json"
     report.write_text(json.dumps(info, indent=2) + "\n")
     print(json.dumps({"status": info["status"], "report": str(report), "modes": info["modes"]}, indent=2))
-    return 0 if info["status"] == "restricted" else 2
+    # 0 = both, 1 = one usable native mode, 2 = neither. No partial result
+    # is mislabeled as a completely successful paired comparison.
+    return 0 if completed == 2 else (1 if completed else 2)
 
 
 if __name__ == "__main__":
