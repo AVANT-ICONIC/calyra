@@ -35,3 +35,18 @@ The static `blitz` HTML wrapper is not interactive; Blitz's optional `blitz-vibe
 Still **NOT demonstrated**: complete DOM/browser behavior, native OS input, default native select widget, range styling, focus/key semantics parity, GPU hardware acceleration, IME, accessibility, memory, binary size or performance. Do not check OpenSpec task 4.1 yet; it requires broader input/focus and visual fidelity evidence.
 
 **Next precise diagnostic:** after a menu opens, attempt an explicitly delayed `.focus()` after a style/layout flush, then repeat Escape event routing, to distinguish focus timing from event dispatch or JS listener errors. Separately isolate select-option value lookup.
+
+
+## Additional focus versus Escape isolation
+
+A third **real compiled test** in [run 43680469821](https://github.com/AVANT-ICONIC/calyra/actions/runs/43680469821) succeeded against the same pinned upstream. This is a *diagnostic intervention*, not a claim that original CALYRA JavaScript worked unchanged in every step. Its [raw focus evidence](evidence/blitz-js/calyra-js-focus-diagnostic.json) records:
+
+- After original menu-open click: command **not** focused.
+- After explicitly calling JavaScript `.focus()` **later**, after the menu is visible and layout has resolved: command **focused**, with `data-command=inspect`.
+- After forcing the same DOM node to focus via native `BaseDocument::set_focus_to`: command **focused**.
+- After dispatching a synthetic native `KeyDown(Escape)` with focus set: menu **still expanded and visible** (`aria-expanded=true`, `hidden=false`).
+- JavaScript errors: **0**.
+
+**Interpretation:** ScriptDocument's `.focus()` and native focus API are functional; focus does not survive the initial original click path, suggesting an event-ordering or state-lifecycle discrepancy. Escape failure persists even with correct focus, so it needs a separate keyboard event-name, propagation or document-listener test. Do not infer the exact internal cause from these observations alone. No OS-keyboard input or physical window was involved.
+
+The next narrow experiment should attach a diagnostic `document.addEventListener('keydown', ...)` listener to report the received `event.key` and bubble target, then compare synthetic `UiEvent::KeyDown` and explicit `DomEvent::KeyDown` paths. A separate select-option value implementation is still needed.
