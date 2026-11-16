@@ -1,0 +1,26 @@
+{
+  "schema": "calyra.blitz-readonly-select-paint.v1",
+  "upstream_commit": "4f61cffacee50fe4f944ebe9d0470d9a5d3997e0",
+  "renderer": "native Blitz AnyRender/Vello CPU",
+  "control_state": "native noneditable SelectData",
+  "same_document": true,
+  "original_css_modified": false,
+  "original_js_modified": false,
+  "javascript_executed": true,
+  "hardware_gpu": false,
+  "os_input_tested": false,
+  "old_label": "Balanced",
+  "new_label": "Visual fidelity",
+  "changed_pixels_at_12": 731,
+  "diff_bbox": [
+    687,
+    490,
+    794,
+    505
+  ],
+  "images": {
+    "live-before-balanced.png": "485552ed102b35a3934fa3aeb0adac00bb974ef876f932a2a0c5fd374a39188a",
+    "live-after-quality.png": "8e8a14bb94d812856244081376afae8eada0b1d776f24f57d83c9fadf41faffe",
+    "live-paint-pixel-diff.png": "35e021790e09c9ff3a82df020762d3b4d8c7f9e667fa9a0327cb16ff2a6a0425"
+  }
+}
