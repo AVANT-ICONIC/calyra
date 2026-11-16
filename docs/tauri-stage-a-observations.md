@@ -35,6 +35,18 @@ A separate lightweight PIL verifier recomputed direct absolute RGB differences. 
 
 The [macOS bundle workflow](../.github/workflows/tauri-macos-arm64-reference.yml) would produce an unsigned debug `.app` if a runner is assigned and the build succeeds. An app bundle alone does **not** establish successful first frame, macOS `innerWidth` parity, user input, accessibility, IME, GPU behavior or comparative startup/memory performance. The actual target remains Apple Silicon WKWebView on the same hardware as eligible native engines.
 
+## Mac compile failure and corrected reproducible retry
+
+The original [macOS job #43936544580](https://github.com/AVANT-ICONIC/calyra/actions/runs/43936544580) was manually rerun once after the first attempt timed out while queued. The **second attempt obtained a genuine ARM64 macOS 15 runner**, verified original CALYRA source, built the macOS `.icns` icon, installed Tauri CLI, and compiled macOS dependencies up to the Tauri application proc macro. It **failed** with exact compiler error:
+
+```
+error: proc macro panicked
+  --> src/main.rs:7:14
+   = help: message: failed to open icon .../src-tauri/icons/icon.png: No such file or directory (os error 2)
+```
+
+This was a missing conventional **Tauri macro icon**, not a verified macOS platform blocker. `prepare_macos_icon.py` now creates deterministic default `icons/icon.png` alongside the existing `icons/icon.icns`, byte-identical to the original generated PNG. Independent [source/icon preflight #43942204867](https://github.com/AVANT-ICONIC/calyra/actions/runs/43942204867) **PASSED** actual 1024×1024 PNG header, byte equality, and original source hashes. Updated macOS CI uses pinned `npm ci` and Tauri `--locked` build, and checks both icons explicitly: [corrected macOS run #43941982471](https://github.com/AVANT-ICONIC/calyra/actions/runs/43941982471). **Do not represent that run as a working `.app` or macOS WKWebView without verifying its final result.** Failed original logs retained.
+
 ## Decision
 
 - **Verified:** original source unchanged; pinned Tauri 2 dependencies; real native Linux Tauri compile/link/start; verified real X11 GTK/WebKitGTK window pixels; safe archival of genuine source and image evidence.
