@@ -178,3 +178,16 @@ This verifies **live reactive pixels** for the restricted direct-option case, no
 **Fail-closed gate:** all four states must load the unchanged source, execute canonical JavaScript, pass state assertions and save real 1060×800 screenshots. If a package, Wayland/X11 display, file URI, API or rendering path is unavailable, archive its exact failure and label this candidate restricted/blocked. Never call a Chromium fallback WebKitGTK.
 
 **Follow-up:** actual Tauri 2 shell and WKWebView on a Mac, trusted OS input, repeatable memory/process measurements, and comparative differences to Blitz/RmlUi. Keep tasks 3.1, 4.1 and 4.2 unchecked until those distinct gates really pass.
+
+
+## Stage A Tauri 2 macOS ARM64 packaged reference (2026-11-16)
+
+**Authorized scope:** implement a minimal **Tauri 2 desktop host** in `adapters/tauri-reference/` on the existing research branch, using the **original** `fixtures/index.html`, `fixtures/reference.css` and `fixtures/reference.js` as its `frontendDist`. No Vite compiler, transpilation, rewritten CSS or parallel fixture source. This adds a real system **WKWebView-based** app packaging path, not a new CALYRA rendering engine.
+
+**Gate method:** GitHub's `macos-15` Apple Silicon runner generates a Tauri `.app` with `tauri build --bundles app` (debug build permitted for Stage A), checks its executable and `Info.plist`, validates the direct asset path and SHA-256 before building, and archives manifest/bundle evidence. Runner OS, Apple target, Rust, Tauri CLI/Core versions, checksum, code-signing identity and app-bundle size must be recorded. Do not present an unsigned CI bundle as notarized software.
+
+**Window contract:** initial window 1060×800 content pixels, default `controls` fixture with `motion=off` query; further fixture URLs remain exact canonical links. No native Rust commands or privileged API bridges are needed. The `app` must only load trusted embedded local UI; avoid remote networking and avoid introducing extra WebView processes for no reason.
+
+**Evidence boundaries:** packaging and an executable existing are **build verification**, not first real frame, working native keyboard, accessibility or resource measurement. The runner may lack a logged-in macOS WindowServer. If runtime launch/screenshot tests are unavailable, explicitly record **not verified** rather than infer success from a bundle. macOS ARM64 CI success is distinct from testing on Marc's M1 Max. OpenSpec task 3.1 remains pending until at least the app actually executes original JavaScript and renders first meaningful frame under macOS WKWebView. Real OS input and the five-run matched resource protocol are separate gates.
+
+**Failure protocol:** preserve exact compiler and bundler logs; do not silently replace the Tauri shell with Swift WKWebView/Chromium or a web-only screenshot. Avoid costly reruns after evidence is archived. This is the next contained unit of the existing `establish-native-css-feasibility` change, not a new OpenSpec project.
