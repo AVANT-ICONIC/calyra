@@ -1,0 +1,174 @@
+name: CALYRA actual Tauri 2 macOS ARM64 .app reference
+
+# Single Stage A build proof. Real Tauri packaging on macOS, not Linux WebKitGTK.
+# Triggered once when this workflow is introduced; switch to manual after proof.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/tauri-macos-arm64-reference.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tauri-apple-silicon:
+    runs-on: macos-15
+    timeout-minutes: 65
+    env:
+      CARGO_BUILD_JOBS: '3'
+      CARGO_TERM_COLOR: never
+      RUST_BACKTRACE: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Collect exact Apple Silicon runner and toolchain metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/tauri-macos-arm64
+          {
+            echo "OS:"
+            sw_vers
+            echo "CPU:"
+            uname -m
+            echo "SDK:"
+            xcrun --show-sdk-version
+            echo "Xcode:"
+            xcodebuild -version
+            echo "Rust:"
+            rustc --version
+            cargo --version
+            echo "Node:"
+            node --version
+            npm --version
+          } | tee evidence/tauri-macos-arm64/environment.txt
+          test "$(uname -m)" = "arm64"
+      - name: Verify canonical CALYRA source contract and original assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 adapters/tauri-reference/verify_source.py \
+            | tee evidence/tauri-macos-arm64/source-contract.json
+          grep -Fq '"pass": true' evidence/tauri-macos-arm64/source-contract.json
+          shasum -a 256 fixtures/index.html fixtures/reference.css fixtures/reference.js \
+            adapters/tauri-reference/src-tauri/tauri.conf.json \
+            adapters/tauri-reference/src-tauri/src/main.rs \
+            adapters/tauri-reference/src-tauri/Cargo.toml \
+            adapters/tauri-reference/package.json \
+            adapters/tauri-reference/prepare_macos_icon.py \
+            adapters/tauri-reference/verify_source.py \
+            > evidence/tauri-macos-arm64/source-sha256.txt
+      - name: Create deterministic icon resource for actual macOS app bundle
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 adapters/tauri-reference/prepare_macos_icon.py \
+            | tee evidence/tauri-macos-arm64/app-icon-build.log
+          test -s adapters/tauri-reference/src-tauri/icons/icon.icns
+          shasum -a 256 adapters/tauri-reference/src-tauri/icons/icon.icns \
+            > evidence/tauri-macos-arm64/icon-sha256.txt
+      - name: Install pinned Tauri CLI from npm and log dependency resolution
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd adapters/tauri-reference
+          npm install --no-audit --no-fund 2>&1 | tee "$GITHUB_WORKSPACE/evidence/tauri-macos-arm64/npm-install.log"
+          ./node_modules/.bin/tauri --version \
+            | tee "$GITHUB_WORKSPACE/evidence/tauri-macos-arm64/tauri-cli-version.txt"
+          grep -Fq 'tauri-cli 2.12.4' "$GITHUB_WORKSPACE/evidence/tauri-macos-arm64/tauri-cli-version.txt"
+          cp package-lock.json "$GITHUB_WORKSPACE/evidence/tauri-macos-arm64/package-lock.json"
+      - name: Compile and bundle actual Tauri WKWebView macOS .app
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd adapters/tauri-reference
+          npm run build:macos -- --debug 2>&1 \
+            | tee "$GITHUB_WORKSPACE/evidence/tauri-macos-arm64/tauri-build.log"
+          test -s src-tauri/Cargo.lock
+          cp src-tauri/Cargo.lock "$GITHUB_WORKSPACE/evidence/tauri-macos-arm64/Cargo.lock"
+          shasum -a 256 src-tauri/Cargo.lock package-lock.json \
+            > "$GITHUB_WORKSPACE/evidence/tauri-macos-arm64/dependency-lock-sha256.txt"
+      - name: Inspect genuine arm64 native .app bundle and embedded fixture metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib,json,platform,plistlib,subprocess
+          from pathlib import Path
+          root=Path('adapters/tauri-reference/src-tauri/target/debug/bundle/macos')
+          candidates=list(root.glob('*.app'))
+          assert len(candidates)==1,candidates
+          app=candidates[0]
+          info_path=app/'Contents/Info.plist'
+          info=plistlib.loads(info_path.read_bytes())
+          exe=app/'Contents/MacOS'/info['CFBundleExecutable']
+          assert exe.is_file(),exe
+          assert info['CFBundleIdentifier']=='com.avanticonic.calyra.stagea',info
+          archs=subprocess.check_output(['lipo','-archs',str(exe)],text=True).strip().split()
+          assert 'arm64' in archs,archs
+          assets=['index.html','reference.css','reference.js']
+          present=all((Path('fixtures')/x).is_file() for x in assets)
+          assert present
+          def digest(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+          result={
+            'schema':'calyra.tauri-macos-actual-bundle.v1',
+            'bundle_exists':True,
+            'tauri_app_bundle':str(app),
+            'executable':str(exe),
+            'executable_sha256':digest(exe),
+            'executable_bytes':exe.stat().st_size,
+            'archs':archs,
+            'macos':platform.platform(),
+            'bundle_identifier':info['CFBundleIdentifier'],
+            'app_binary_produced_by_actual_tauri_cli':True,
+            'canonical_asset_directly_embedded_by_frontendDist':True,
+            'canonical_source_modified':False,
+            'bundle_code_signed_and_notarized_for_distribution':False,
+            'first_meaningful_frame_verified':False,
+            'wkwebview_js_execution_verified_on_macos':False,
+            'physical_os_input_tested':False,
+            'hardware_gpu_verified':False,
+            'matched_performance_benchmark':False,
+            'build_profile':'debug',
+          }
+          dest=Path('evidence/tauri-macos-arm64')
+          (dest/'bundle-report.json').write_text(json.dumps(result,indent=2)+'\n')
+          (dest/'app-path.txt').write_text(str(app)+'\n')
+          print('PASS: real Tauri macOS .app bundle:',app)
+          print('PASS: native architecture:',archs)
+          PY
+          APP="$(cat evidence/tauri-macos-arm64/app-path.txt)"
+          ditto -c -k --keepParent "$APP" evidence/tauri-macos-arm64/calyra-tauri-macos-arm64-debug.app.zip
+          test -s evidence/tauri-macos-arm64/calyra-tauri-macos-arm64-debug.app.zip
+          shasum -a 256 evidence/tauri-macos-arm64/calyra-tauri-macos-arm64-debug.app.zip \
+            > evidence/tauri-macos-arm64/bundle-zip-sha256.txt
+          du -sk "$APP" | tee evidence/tauri-macos-arm64/bundle-disk-kib.txt
+          codesign -dv "$APP" > evidence/tauri-macos-arm64/code-signing.log 2>&1 || true
+      - name: Best-effort launch actual macOS application; not a GUI acceptance gate
+        shell: bash
+        run: |
+          set -uo pipefail
+          APP="$(cat evidence/tauri-macos-arm64/app-path.txt)"
+          {
+            echo 'Attempting to launch real Tauri app through macOS Launch Services'
+            /usr/bin/open -a "$APP" 2>&1
+            echo "open_exit_code=$?"
+            sleep 5
+            echo 'Observed matching process names (may be absent on CI WindowServer):'
+            pgrep -fl 'calyra-tauri-reference|CALYRA Stage A' || true
+            echo 'This is a diagnostic only: a successful open is NOT first-frame, WKWebView DOM, or trusted OS input verification.'
+          } 2>&1 | tee evidence/tauri-macos-arm64/launch-attempt.log
+          exit 0
+      - name: Report constrained successful output
+        if: always()
+        shell: bash
+        run: |
+          echo '### CALYRA actual Tauri 2 macOS ARM64 app baseline' >> "$GITHUB_STEP_SUMMARY"
+          echo 'If build succeeded, native macOS ARM64 .app/Info.plist/executable and a zipped app are available in artifacts. Build profile: DEBUG, not performance comparable. This does not prove a real WKWebView frame, native input, accessibility, code signing, notarization, or runtime correctness. Inspect exact build/launch logs before claiming success.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-actual-tauri-macos-arm64-build
+          path: evidence/tauri-macos-arm64/
+          retention-days: 14
+          if-no-files-found: warn
