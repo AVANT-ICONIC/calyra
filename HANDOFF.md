@@ -1,12 +1,19 @@
 # CALYRA — HANDOFF
 
 **Updated:** 2026-11-16
-**Repository:** AVANT-ICONIC/calyra (private)
+**Repository:** AVANT-ICONIC/calyra (public; feature branch remains draft/unmerged)
 **Working branch:** feat/reference-fixtures
 **PR:** https://github.com/AVANT-ICONIC/calyra/pull/2 — DRAFT and UNMERGED
 **PR base:** docs/openspec-native-css-feasibility (stacked; do not change main)
 
 **FIRST THING IN ANY NEW CHAT:** Read this HANDOFF.md from the current working branch. Continue the existing change rather than re-planning it from scratch.
+
+## 2026-11-16 OSS readiness addition (GPT WebUI)
+
+- Scoped, **documentation/licensing-only** edits on this same working branch: README now distinguishes real archived Blitz/Vello CPU evidence from unverified production behavior; `CONTRIBUTING.md` documents reproducible experiment rules; proposed MIT `LICENSE` added for maintainer legal review. These files are not on `main` yet and do not imply release approval.
+- Commits: `8157d14b` README status, `0af24e9a` license proposal, `6ebb89df` contributor guide, `3043992c` evidence and contribution links. The owner must confirm that all content is licensable before a public tagged release.
+- **No Rust/Boa/Vello source changed. No native tests rerun** in this OSS-readiness update. Prior CI receipts remain historical to their recorded exact source heads. Do not infer CI success for subsequent source edits.
+- **Next engineering step remains unchanged:** noneditable native `SelectData` at pinned upstream, with no editor/IME/caret, real same-document pixels and exact-head CI. Preserve the existing OpenSpec, source/evidence digests, and PR #2 draft/unmerged.
 
 ## Verified checkpoint, 2026-11-16: live native select label pixels
 
