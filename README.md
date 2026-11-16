@@ -4,7 +4,7 @@
 
 CALYRA is a research-first project exploring whether developers can use familiar CSS to build interactive, visually sophisticated native interfaces without requiring a Chromium-based application runtime.
 
-The project is **in the specification and feasibility phase**. No renderer, performance advantage, CSS coverage, or cross-platform compatibility has been demonstrated yet.
+The project is a **feasibility lab**, not a production GUI framework. Experimental native rendering and limited JavaScript behavior have been demonstrated on the [active research branch](../../tree/feat/reference-fixtures), while broad CSS parity, OS input, accessibility, cross-platform compatibility, and any performance advantage remain **unproven**.
 
 ## Thesis
 
@@ -18,6 +18,16 @@ Key hypotheses to test:
 - A neutral UI representation and C ABI may eventually allow multiple language and framework integrations.
 
 **All four are hypotheses, not commitments or proven properties.**
+
+## Current experimental evidence (research branch)
+
+On [`feat/reference-fixtures`](../../tree/feat/reference-fixtures), the existing [draft PR #2](../../pull/2) documents source-pinned experiments against the original CSS/JS fixture:
+
+- **Blitz + Vello CPU:** real native raster captures for four static CALYRA scenes. Browser JavaScript is absent from those *static* captures, and explicit DOM adaptation is recorded.
+- **Blitz + Boa:** nine native Rust/JavaScript integration tests passed for restricted programmatic select state, and a single live document repainted a selected-option label on the same native node. [CI evidence](../../actions/runs/43778999121) and [archived evidence](docs/evidence/blitz-select-live/) report **732 changed pixels**; these pixels are *CPU-rendered*, not a hardware GPU or OS input demonstration.
+- **RmlUi:** real restricted native captures exist, but direct modern-CSS compatibility is visibly incomplete.
+
+The select-label prototype currently uses a temporary editable text buffer as a paint workaround. The next task is a **noneditable native `SelectData`** with one authoritative selection state; keyboard/pointer input, popup, IME, accessibility, CSS parity, and a production-ready runtime are not established. Read [the live branch handoff](HANDOFF.md), [evidence notes](docs/blitz-select-live-observations.md), and the existing OpenSpec change before proposing or implementing changes. These links resolve on the research branch, not necessarily on `main` until the stacked PRs are merged.
 
 ## First milestone: engine feasibility
 
@@ -43,4 +53,4 @@ The first change is `openspec/changes/establish-native-css-feasibility/`: propos
 
 ## Status
 
-**Planning only.** No benchmark results, implementation, or verified performance claims yet.
+**Active experimental feasibility work on the research branch; unmerged.** The public default branch is not an implementation release. No comparative performance win, native OS input stack, complete CSS coverage, or supported cross-platform product has been verified. Published evidence is experimental, not a claim of a deployable SDK.
