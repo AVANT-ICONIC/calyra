@@ -12,7 +12,8 @@
 
 - Scoped, **documentation/licensing-only** edits on this same working branch: README now distinguishes real archived Blitz/Vello CPU evidence from unverified production behavior; `CONTRIBUTING.md` documents reproducible experiment rules; proposed MIT `LICENSE` added for maintainer legal review. These files are not on `main` yet and do not imply release approval.
 - Commits: `8157d14b` README status, `0af24e9a` license proposal, `6ebb89df` contributor guide, `3043992c` evidence and contribution links. The owner must confirm that all content is licensable before a public tagged release.
-- **No Rust/Boa/Vello source changed. No native tests rerun** in this OSS-readiness update. Prior CI receipts remain historical to their recorded exact source heads. Do not infer CI success for subsequent source edits.
+- Additional source-pinned Blitz audit committed in `docs/blitz-select-data-architecture.md` (`419e68ba`): explicit `SpecialElementData::Clone` arm, reuse of read-only `TextLayout`/Parley shaping, exclusion of input IME/caret path and native single-owner JS selection migration. This is design research, not a compiled prototype.
+- **No Rust/Boa/Vello implementation changed. No native tests rerun** in this OSS-readiness or source-audit update. Prior CI receipts remain historical to their recorded exact source heads. Do not infer CI success for subsequent source edits.
 - **Next engineering step remains unchanged:** noneditable native `SelectData` at pinned upstream, with no editor/IME/caret, real same-document pixels and exact-head CI. Preserve the existing OpenSpec, source/evidence digests, and PR #2 draft/unmerged.
 
 ## Verified checkpoint, 2026-11-16: live native select label pixels
