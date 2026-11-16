@@ -107,3 +107,49 @@ fn calyra_select_has_no_editor_and_rejects_keyboard_ime_paste_edits() {
     assert_eq!(select.label, "Balanced");
     assert!(el.text_input_data().is_none(), "IME must not create an editor");
 }
+
+
+#[test]
+fn calyra_select_idempotent_js_writes_preserve_native_state_without_events() {
+    let mut doc = document("controls");
+    let id = query(&doc, "#priority");
+    doc.eval("window.__calyraIdempotentEvents=[]; \\
+        const s=document.getElementById('priority'); \\
+        ['input','change'].forEach(type=>s.addEventListener(type,e=> \\
+            window.__calyraIdempotentEvents.push(e.type)));");
+
+    // Three independent JS setter paths assign the already-selected option.
+    // This is an explicit no-op at the native boundary: no label rebuild/redraw
+    // should be requested by these property writes.
+    doc.eval("document.getElementById('priority').value='balanced'; \\
+        document.getElementById('priority').selectedIndex=0; \\
+        document.querySelector('#priority option').selected=true;");
+    doc.inner_mut().resolve(0.0);
+    assert_eq!(query(&doc, "#priority"), id);
+    assert_eq!(
+        state(&mut doc, "({value:document.getElementById('priority').value,index:document.getElementById('priority').selectedIndex,events:window.__calyraIdempotentEvents})"),
+        r#"{"value":"balanced","index":0,"events":[]}"#
+    );
+    {
+        let inner = doc.inner();
+        let el = inner.get_node(id).unwrap().element_data().unwrap();
+        assert_eq!(el.select_data().unwrap().label, "Balanced");
+        assert!(el.text_input_data().is_none());
+    }
+
+    // Unmatched values intentionally clear the selection. Repeating that
+    // assignment remains a no-op and must not resurrect the first option.
+    doc.eval("document.getElementById('priority').value='missing'; \\
+        document.getElementById('priority').value='still-missing'; \\
+        document.getElementById('priority').selectedIndex=-1;");
+    doc.inner_mut().resolve(0.0);
+    assert_eq!(
+        state(&mut doc, "({value:document.getElementById('priority').value,index:document.getElementById('priority').selectedIndex,events:window.__calyraIdempotentEvents})"),
+        r#"{"value":"","index":-1,"events":[]}"#
+    );
+    let inner = doc.inner();
+    let el = inner.get_node(id).unwrap().element_data().unwrap();
+    assert_eq!(el.select_data().unwrap().label, "");
+    assert!(el.text_input_data().is_none());
+    assert!(doc.take_js_errors().is_empty());
+}
