@@ -66,6 +66,7 @@ jobs:
             git -C "$RUNNER_TEMP/blitz" apply "$GITHUB_WORKSPACE/native/blitz/patches/$patch"
           done
           python3 native/blitz/experiments/apply_readonly_select.py --source "$RUNNER_TEMP/blitz"
+          grep -Fq "SpecialElementData::Select(_) => {}" "$RUNNER_TEMP/blitz/packages/blitz-dom/src/mutator.rs"
           cp native/blitz/experiments/select_state_readonly.rs \
             "$RUNNER_TEMP/blitz/packages/blitz-vibey-script/src/dom/element/select_state.rs"
           cp native/blitz/experiments/calyra_readonly_screenshot.rs \
