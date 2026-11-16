@@ -1,0 +1,26 @@
+{
+  "schema": "calyra.blitz-option-text-paint.v1",
+  "upstream_commit": "4f61cffacee50fe4f944ebe9d0470d9a5d3997e0",
+  "renderer": "native Blitz AnyRender/Vello CPU",
+  "control_state": "native noneditable SelectData",
+  "same_document": true,
+  "original_css_modified": false,
+  "original_js_modified": false,
+  "javascript_executed": true,
+  "hardware_gpu": false,
+  "os_input_tested": false,
+  "old_label": "Balanced",
+  "new_label": "Balanced updated",
+  "changed_pixels_at_12": 381,
+  "diff_bbox": [
+    767,
+    490,
+    832,
+    505
+  ],
+  "images": {
+    "option-text-before.png": "485552ed102b35a3934fa3aeb0adac00bb974ef876f932a2a0c5fd374a39188a",
+    "option-text-after.png": "7c2f240530b5e641b1bfbd567c2ba5b307f74314962d022f2cd61f0c521bb84d",
+    "option-text-pixel-diff.png": "e53cc0c35c0fe8e1593e96d6c692f14ed037b0e6ea0cf33164c38b9f7d13720a"
+  }
+}
