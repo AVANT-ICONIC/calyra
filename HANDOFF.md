@@ -8,6 +8,16 @@
 
 **FIRST THING IN ANY NEW CHAT:** Read this HANDOFF.md from the current working branch. Continue the existing change rather than re-planning it from scratch.
 
+## Current engineering result: selected-option text invalidation (2026-11-16, newest)
+
+- **Native fix on this branch:** `native/blitz/experiments/apply_select_option_text_refresh.py` adds targeted noneditable `SelectData` text refresh after Boa `option.textContent` or direct Text-node `nodeValue`. Existing selected option identity and `value` stay unchanged; unrelated option text does not overwrite the selected label; programmatic property and text edits remain silent for `input`/`change`.
+- **Actual Rust/Boa:** [producing CI #43868624637](https://github.com/AVANT-ICONIC/calyra/actions/runs/43868624637) compiled the pinned upstream experiment and passed **11/11 native tests**, including seven original JS states and the new label invalidation regression.
+- **Actual same-document Vello CPU pixels:** native 1060×800 before/after `Balanced` → `Balanced updated`; **381 changed RGB pixels** (threshold 12/255), bbox **[767,490,832,505]**, with canonical CSS/JS byte-identical. Native screenshot and Rust steps PASSED; *producing workflow* status was FAILED solely by a stale end-of-job archive assertion expecting old label `Visual fidelity`.
+- **Independent permanent proof:** [archival CI #43871323400](https://github.com/AVANT-ICONIC/calyra/actions/runs/43871323400) PASSED, verified exact original hashes, CPU PNG pixels, 11/11 tests and JS state, and committed **18 byte-exact files** at `docs/evidence/blitz-select-option-text/`. Full technical analysis: `docs/blitz-select-option-text-observations.md`.
+- The producing workflow's wrong expected string was corrected, and it now triggers **manually only** to avoid costly redundant builds. This edit itself is **not** a new CI proof. Earlier readonly/idempotence evidence remains unchanged.
+- **Next bounded gap:** style-only `font-size`/`font-family`/`class` changes might leave Parley typography stale despite the selected `NodeId` and option text being unchanged. Investigate with one controlled CSS-only run before attempting arbitrary DOM mutation support or full native popups. True OS input, keyboard dropdown, IME, a11y, GPU and macOS benchmarks are unverified.
+- Preserve same OpenSpec `openspec/changes/establish-native-css-feasibility/` (task 4.1 UNCHECKED), keep PR #2 DRAFT and UNMERGED, no changes to `main`.
+
 ## Current engineering checkpoint (2026-11-16, newer than historical entries below)
 
 - **The old "SelectData not implemented" next step below is stale.** The noneditable `SelectData` adapter already compiled and passed a source-pinned native **9/9 Rust/Boa** run, seven same-document JS states and real Vello **CPU** before/after pixels, [successful archival CI #43783621933](https://github.com/AVANT-ICONIC/calyra/actions/runs/43783621933).
