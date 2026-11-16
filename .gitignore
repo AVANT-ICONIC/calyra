@@ -6,3 +6,8 @@ results/
 reports/generated/
 .DS_Store
 .local/
+
+# Tauri Stage A generated local/toolchain artifacts
+adapters/tauri-reference/node_modules/
+adapters/tauri-reference/src-tauri/target/
+adapters/tauri-reference/src-tauri/icons/
