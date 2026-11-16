@@ -9,7 +9,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   linux-patched-dom:
@@ -182,6 +182,75 @@ jobs:
           (root/'live-paint-result.json').write_text(json.dumps(result,indent=2)+'\n')
           print('PASS: same-document native selected-label pixels:',count,bbox)
           PY
+      - name: Archive byte-exact native evidence in this same successful run
+        # Avoid cross-run artifact tokens: the subsequent preservation workflow
+        # could not download the artifact (Bad credentials) despite valid CI.
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="evidence/native-stage-a/blitz-select-readonly"
+          test -s "$root/live-before-balanced.png"
+          test -s "$root/live-after-quality.png"
+          test -s "$root/live-paint-pixel-diff.png"
+          test -s "$root/live-paint-result.json"
+          sha256sum -c "$root/source-sha256.txt"
+          "$RUNNER_TEMP/calyra-live-pillow/bin/python" - <<'PY'
+          import hashlib,json,shutil
+          from pathlib import Path
+          from PIL import Image,ImageChops
+          root=Path('evidence/native-stage-a/blitz-select-readonly')
+          r=json.loads((root/'live-paint-result.json').read_text())
+          assert r['schema']=='calyra.blitz-readonly-select-paint.v1'
+          assert r['upstream_commit']=='4f61cffacee50fe4f944ebe9d0470d9a5d3997e0'
+          assert r['control_state']=='native noneditable SelectData'
+          assert r['same_document'] is True
+          assert r['original_css_modified'] is False and r['original_js_modified'] is False
+          assert r['hardware_gpu'] is False and r['os_input_tested'] is False
+          assert r['old_label']=='Balanced' and r['new_label']=='Visual fidelity'
+          for name in ('live-before-balanced.png','live-after-quality.png','live-paint-pixel-diff.png'):
+              assert hashlib.sha256((root/name).read_bytes()).hexdigest()==r['images'][name]
+          with Image.open(root/'live-before-balanced.png') as a,Image.open(root/'live-after-quality.png') as b:
+              assert a.size==b.size==(1060,800)
+              d=ImageChops.difference(a.convert('RGB'),b.convert('RGB'))
+              count=sum(1 for p in d.getdata() if max(p)>=12)
+              bbox=d.getbbox()
+              with Image.open(root/'live-paint-pixel-diff.png') as stored:
+                  assert stored.convert('RGB').tobytes()==d.tobytes()
+          assert count==r['changed_pixels_at_12'] and count>=40
+          assert bbox==tuple(r['diff_bbox'])
+          assert 450<=bbox[0] and bbox[2]<=950 and 350<=bbox[1] and bbox[3]<=650
+          js=json.loads((root/'calyra-js-select-live.json').read_text())
+          assert js['js_error_count']==0 and js['observations']['same_node'] is True
+          assert len(js['observations']['snapshots'])==7
+          assert js['observations']['snapshots'][0]['native_label']=='Balanced'
+          assert js['observations']['snapshots'][1]['native_label']=='Visual fidelity'
+          assert all(not s['js']['events'] for s in js['observations']['snapshots'])
+          rust=(root/'rust-test.log').read_text()
+          assert 'test result: ok. 9 passed; 0 failed' in rust
+          assert 'test calyra_select_has_no_editor_and_rejects_keyboard_ime_paste_edits ... ok' in rust
+          assert 'CALYRA_LIVE_SELECT_DATA=read_only_no_editor' in (root/'native-live-paint.log').read_text()
+          files=[p for p in root.rglob('*') if p.is_file()]
+          assert len(files)>=17,len(files)
+          dest=Path('docs/evidence/blitz-select-readonly')
+          dest.mkdir(parents=True,exist_ok=True)
+          for p in files:
+              assert not p.is_symlink()
+              target=dest/p.relative_to(root)
+              target.parent.mkdir(parents=True,exist_ok=True)
+              shutil.copyfile(p,target)
+              assert hashlib.sha256(p.read_bytes()).digest()==hashlib.sha256(target.read_bytes()).digest()
+          print('PASS:',len(files),'original files, native Vello CPU pixels',count,bbox,'9/9 native Rust tests')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f docs/evidence/blitz-select-readonly/
+          if git diff --cached --quiet; then
+            echo "Identical original evidence already archived"
+            exit 0
+          fi
+          git commit -m "docs(evidence): preserve native noneditable SelectData pixels in same run"
+          git push origin HEAD:feat/reference-fixtures
+
       - name: Preserve reproducibility and failed attempts
         if: always()
         run: |
