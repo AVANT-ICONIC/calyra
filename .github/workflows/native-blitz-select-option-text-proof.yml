@@ -3,9 +3,6 @@ name: CALYRA Blitz selected-option text mutation native pixel proof
 # One-shot source-pinned option-text experiment. Upstream is patched after verifying
 # its pinned clean SHA. No CALYRA reference assets or original JS are changed.
 on:
-  push:
-    branches: [feat/reference-fixtures]
-    paths: [.github/workflows/native-blitz-select-option-text-proof.yml]
   workflow_dispatch:
 
 permissions:
@@ -148,7 +145,7 @@ jobs:
           grep -Fq "paint_scene(scene,&mut *doc.inner_mut()" examples/calyra_option_text_screenshot.rs
           cargo build --locked --release --example calyra_option_text_screenshot -j 2 2>&1 | tee "$GITHUB_WORKSPACE/evidence/native-stage-a/blitz-select-option-text/cargo-live-paint.log"
           test -x target/release/examples/calyra_option_text_screenshot
-      - name: Capture same ScriptDocument before and after JS selection
+      - name: Capture same ScriptDocument before and after selected-option text mutation
         shell: bash
         run: |
           set -euo pipefail
@@ -217,7 +214,7 @@ jobs:
           assert r['same_document'] is True
           assert r['original_css_modified'] is False and r['original_js_modified'] is False
           assert r['hardware_gpu'] is False and r['os_input_tested'] is False
-          assert r['old_label']=='Balanced' and r['new_label']=='Visual fidelity'
+          assert r['old_label']=='Balanced' and r['new_label']=='Balanced updated'
           for name in ('option-text-before.png','option-text-after.png','option-text-pixel-diff.png'):
               assert hashlib.sha256((root/name).read_bytes()).hexdigest()==r['images'][name]
           with Image.open(root/'option-text-before.png') as a,Image.open(root/'option-text-after.png') as b:
@@ -263,7 +260,7 @@ jobs:
             echo "Identical original evidence already archived"
             exit 0
           fi
-          git commit -m "docs(evidence): preserve native native selected-option text pixels in same run"
+          git commit -m "docs(evidence): preserve native selected-option text pixels in same run"
           git push origin HEAD:feat/reference-fixtures
 
       - name: Preserve reproducibility and failed attempts
