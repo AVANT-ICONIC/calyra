@@ -1,6 +1,6 @@
 # CALYRA / Blitz: native noneditable select renderer proposal
 
-**Status:** architecture proposal, **not implemented or verified**. Date: 2026-11-16. Current experimental success and exact sources are in [blitz-select-live-observations.md](blitz-select-live-observations.md).
+**Status:** historical architecture proposal, subsequently implemented as a **restricted experimental adapter** (not production). Date: 2026-11-16. Verified implementation and 731-pixel same-document native proof: [blitz-select-readonly-observations.md](blitz-select-readonly-observations.md), [CI #43783621933](https://github.com/AVANT-ICONIC/calyra/actions/runs/43783621933). This document retains the original design reasoning and proposed gates as historical context.
 
 ## The distinction that matters
 
