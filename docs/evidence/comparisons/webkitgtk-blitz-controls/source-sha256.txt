@@ -1,0 +1,3 @@
+9c68cf5e3a19f36491e1da3f81c5dc4046170a21bf5dbb0a4ea2a814c1893306  harness/compare_blitz_webkitgtk.py
+485552ed102b35a3934fa3aeb0adac00bb974ef876f932a2a0c5fd374a39188a  docs/evidence/blitz-select-typography/typography-before.png
+22b9bb1b3369bc3fd78773e580bcb57e306014eb9368bba1c8bbae27655cdbad  docs/evidence/system-webkitgtk-reference/webkitgtk-controls-1060x800-default-initial.png
