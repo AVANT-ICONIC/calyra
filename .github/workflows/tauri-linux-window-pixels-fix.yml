@@ -2,10 +2,8 @@ name: CALYRA native Tauri window pixels with software WebKit compositing workaro
 
 # Experimental X11 capture of the ACTUAL Tauri 2 Linux executable.
 # This is not a macOS WKWebView test, trusted OS input or perf benchmark.
+# Verified source-pinned producing run 43939757930; avoid accidental expensive rebuilds.
 on:
-  push:
-    branches: [feat/reference-fixtures]
-    paths: [.github/workflows/tauri-linux-window-pixels-fix.yml]
   workflow_dispatch:
 
 permissions:
