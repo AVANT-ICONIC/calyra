@@ -18,6 +18,20 @@ Real CI [#43778999121](https://github.com/AVANT-ICONIC/calyra/actions/runs/43778
 | `packages/blitz-dom/src/document.rs` | current `calyra_sync_select_label` writes editor text; bridge must call native read-only label shaping and request repaint instead |
 | `packages/blitz-dom/src/events/keyboard.rs` | current KeyDown bypass is insufficient to prove IME/clipboard safety; remove reliance on editor routing entirely |
 
+## Pinned upstream source audit (2026-11-16; inspected, not compiled)
+
+The integration points below were inspected directly from upstream [Blitz commit `4f61cffa`](https://github.com/DioxusLabs/blitz/tree/4f61cffacee50fe4f944ebe9d0470d9a5d3997e0). They refine the implementation route, **not** the acceptance status.
+
+1. **Typed DOM state must extend clone semantics.** `packages/blitz-dom/src/node/element.rs` implements `Clone` for `SpecialElementData` with an explicit exhaustive `match`. Adding `SpecialElementData::Select` without its clone arm will fail compilation; cloning current selection must be defined intentionally. `ElementData` already has `inline_layout_data: Option<Box<TextLayout>>`, but that is ordinary inline content and should not be silently repurposed as a select's mutable editor.
+2. **An existing read-only shaping primitive exists.** `packages/blitz-dom/src/node/text.rs` defines `TextLayout { text, layout: parley::layout::Layout<TextBrush>, content_box_subpixel_offset, … }` with `Clone + Default`. `layout/inline/build.rs::build_inline_layout_into` uses `LayoutContext::tree_builder(font_ctx, scale, …)` followed by `builder.build_into(&mut text_layout.layout)`. Investigate using that path for the generated select label before adding a second Parley API wrapper. Test CSS font, alignment, line height and intrinsic sizing rather than assuming the normal inline-root path is directly reusable.
+3. **The editor constructor is intrinsically unsafe for a select.** `layout/construct.rs::create_text_editor` always creates `TextInputData` / `parley::PlainEditor` and calls `shell_provider.set_ime_enabled(true)` for an already-focused input. The new select constructor must not call this function. A temporary KeyDown bypass does not cover all editor, composition or clipboard routes.
+4. **Paint has a shared glyph pipeline but an editor-specific caret path.** `packages/blitz-paint/src/render.rs::draw_text_input_text` draws selection geometry and a caret when focused before it calls `crate::text::stroke_text`. Noneditable select paint should use the shared glyph stroke function with its own clipped transform/offset and shaped label, never `editor.try_layout()`, `selection_geometry()`, or `cursor_geometry()`. Keep the exact same-document two-frame Vello CPU proof as the pixel gate.
+5. **State migration must be atomic.** The current experiment's `blitz-vibey-script/.../select_state.rs` holds JS selectedness independently. Native `SelectData` should own the single current selection used by Boa getters/setters and paint. If a transition layer is necessary, make its authority unidirectional and test all seven Chromium-compatible programmatic states before deleting old code.
+
+**First compile gate:** define the new variant plus correct clone, read-only layout ownership and direct accessors; assert the select has no `TextInputData`/editor and that a focused select never enables IME via the text-input constructor. **Second gate:** link JS setters to that native state and reprove the 9 Rust/Boa behaviors. **Third gate:** render 1060×800 native same-document before/after frames and inspect exact raster changes. These are a proposed dependency order, not executed tests.
+
+**Known risk:** `TextLayout` and the ordinary inline shaping path assume an inline-root tree, while a select's visible label derives from an option. Reuse the shaping machinery, not an implicit assumption that original option nodes should paint as normal inline children. If synthetic label layout cannot integrate with sizing and clipping without duplicating the renderer, report the limitation rather than extending the experimental patch indefinitely.
+
 ## Proposed minimal data contract
 
 ```rust
