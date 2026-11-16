@@ -1,0 +1,131 @@
+name: CALYRA Linux system WebKitGTK reference preflight
+
+# One-shot real Linux system-WebView backend smoke, NOT packaged Tauri
+# and NOT a comparative performance benchmark. Canonical CSS/JS unchanged.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/linux-system-webkitgtk-reference.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  native-linux-webkitgtk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    env:
+      GDK_BACKEND: x11
+      LIBGL_ALWAYS_SOFTWARE: '1'
+      WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS: '1'
+      PYTHONUNBUFFERED: '1'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install actual Ubuntu WebKit2GTK-4.1 and GTK/X11 test prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            gir1.2-webkit2-4.1 gir1.2-gtk-3.0 \
+            python3-gi python3-jsonschema python3-pil \
+            xvfb xauth fonts-dejavu-core libwebkit2gtk-4.1-0
+          /usr/bin/python3 - <<'PY'
+          import gi
+          gi.require_version('Gtk','3.0')
+          gi.require_version('WebKit2','4.1')
+          from gi.repository import Gtk,WebKit2
+          print('GTK',Gtk.get_major_version(),Gtk.get_minor_version(),Gtk.get_micro_version())
+          print('WebKit',WebKit2.get_major_version(),WebKit2.get_minor_version(),WebKit2.get_micro_version())
+          import jsonschema
+          from PIL import Image
+          PY
+      - name: Verify immutable reference content and record system package versions
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/native-stage-a/system-webkitgtk
+          echo 'aa9fa23b242f06be7dc5b760f0f8379ce750d8fe2cd67a977daf1a4ff1bd848a  fixtures/index.html' | sha256sum -c -
+          echo '04635269a8fbd790c87316a03c6469a157806201e58fd730212f632fc86b7b9c  fixtures/reference.css' | sha256sum -c -
+          echo '9d565203fc9c3450b0c61d7774cb2322b14ed3e3325926122b17f583e81cf3de  fixtures/reference.js' | sha256sum -c -
+          sha256sum fixtures/index.html fixtures/reference.css fixtures/reference.js \
+            fixtures/manifest.json harness/run_webkitgtk_reference.py \
+            harness/verify_webkitgtk_reference.py harness/adapter-contract.schema.json \
+            > evidence/native-stage-a/system-webkitgtk/source-sha256.txt
+          dpkg-query -W libwebkit2gtk-4.1-0 gir1.2-webkit2-4.1 \
+            gir1.2-gtk-3.0 libgtk-3-0 python3-gi \
+            > evidence/native-stage-a/system-webkitgtk/installed-packages.txt
+          uname -a > evidence/native-stage-a/system-webkitgtk/uname.txt
+          /usr/bin/python3 -m py_compile \
+            harness/run_webkitgtk_reference.py harness/verify_webkitgtk_reference.py
+      - name: Render real Linux WebKitGTK windows and execute original JavaScript
+        shell: bash
+        run: |
+          set -euo pipefail
+          output=evidence/native-stage-a/system-webkitgtk
+          xvfb-run -a -s '-screen 0 1600x1200x24' bash -c '
+            set -euo pipefail
+            for fixture in controls dashboard visual interaction; do
+              /usr/bin/python3 harness/run_webkitgtk_reference.py \
+                --fixture "$fixture" --width 1060 --height 800 \
+                --output evidence/native-stage-a/system-webkitgtk
+            done
+            /usr/bin/python3 harness/run_webkitgtk_reference.py \
+              --fixture interaction --state menu-open --width 1060 --height 800 \
+              --output evidence/native-stage-a/system-webkitgtk
+            /usr/bin/python3 harness/run_webkitgtk_reference.py \
+              --fixture dashboard --width 390 --height 844 \
+              --output evidence/native-stage-a/system-webkitgtk
+          ' 2>&1 | tee "$output/native-xvfb-window-run.log"
+      - name: Independently validate schema, real pixels, served assets and traces
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=evidence/native-stage-a/system-webkitgtk
+          sha256sum -c "$root/source-sha256.txt"
+          /usr/bin/python3 harness/verify_webkitgtk_reference.py \
+            --directory "$root"
+      - name: Preserve byte-exact original WebKitGTK evidence on research branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          src=evidence/native-stage-a/system-webkitgtk
+          dst=docs/evidence/system-webkitgtk-reference
+          mkdir -p "$dst"
+          cp -a "$src"/. "$dst"/
+          /usr/bin/python3 - <<'PY'
+          import hashlib
+          from pathlib import Path
+          src=Path('evidence/native-stage-a/system-webkitgtk')
+          dst=Path('docs/evidence/system-webkitgtk-reference')
+          files=[p for p in src.rglob('*') if p.is_file()]
+          assert len(files)>=25,len(files)
+          for file in files:
+              other=dst/file.relative_to(src)
+              assert other.is_file()
+              assert hashlib.sha256(file.read_bytes()).digest()==hashlib.sha256(other.read_bytes()).digest()
+          print('PASS: verified',len(files),'original WebKitGTK evidence files')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+users.noreply.github.com'
+          git add -f docs/evidence/system-webkitgtk-reference/
+          if git diff --cached --quiet; then
+            echo 'Evidence already persisted'
+            exit 0
+          fi
+          git commit -m "docs(evidence): preserve real Linux WebKitGTK reference windows"
+          git push origin HEAD:feat/reference-fixtures
+      - name: Record critical limits
+        if: always()
+        shell: bash
+        run: |
+          echo '### CALYRA Stage A Linux system WebKitGTK engine baseline' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Real GTK/X11 WebKit browser-backed windows. Canonical fixture assets byte-identical, JavaScript executes. Harness actions are synthetic DOM events. NOT Tauri packaging, NOT WKWebView on macOS, NOT hardware GPU, OS keyboard/IME/a11y, memory, launch or latency benchmark. Xvfb software renderer is not a production desktop GPU path.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-linux-system-webkitgtk-raw
+          path: evidence/native-stage-a/system-webkitgtk/
+          retention-days: 7
+          if-no-files-found: warn
