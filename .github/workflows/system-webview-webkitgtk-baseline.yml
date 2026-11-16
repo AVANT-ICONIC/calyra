@@ -1,10 +1,9 @@
 name: CALYRA Linux system WebView WebKitGTK Stage A
 
-# One-shot actual OS-WebKit engine probe. NOT a Tauri shell or macOS result.
+# Historical OS-WebKit engine probe. Producing run 43932124401 passed all
+# rendering/JS steps; independent archive 43932469917 passed after concurrent push.
+# Manual reruns only, no hidden scheduled or document-triggered builds.
 on:
-  push:
-    branches: [feat/reference-fixtures]
-    paths: [.github/workflows/system-webview-webkitgtk-baseline.yml]
   workflow_dispatch:
 
 permissions:
