@@ -1,0 +1,76 @@
+name: Archive independently verified CALYRA Linux WebKitGTK images
+
+# Recover original finished CI artifact after a concurrent feature-branch push.
+# Never repeat WebKitGTK rendering or substitute a different image.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/archive-system-webview-webkitgtk-evidence.yml]
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  archive:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download original producing-run WebKitGTK source and images
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 43932124401
+          name: calyra-linux-webkitgtk-original-evidence
+          github-token: ${{ github.token }}
+          path: original
+      - name: Check original canonical assets, state semantics and PNG hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          /usr/bin/python3 -m pip --version || true
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends python3-pil
+          /usr/bin/python3 harness/verify_webkitgtk_baseline.py \
+            --out original --fixtures fixtures
+          sha256sum -c original/source-sha256.txt
+          python3 - <<'PY'
+          from pathlib import Path
+          files=[p for p in Path('original').rglob('*') if p.is_file()]
+          assert len(files)==18,len(files)
+          assert len(list(Path('original').glob('*.png')))==6
+          for file in files: assert not file.is_symlink()
+          print('PASS:',len(files),'unmodified produced artifacts, 6 genuine WebKitGTK PNGs')
+          PY
+      - name: Save exact originals with non-destructive concurrent branch retry
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for attempt in 1 2 3 4 5; do
+            git fetch origin feat/reference-fixtures
+            git checkout -B feat/reference-fixtures FETCH_HEAD
+            mkdir -p docs/evidence/webkitgtk-linux-stage-a
+            cp -a original/. docs/evidence/webkitgtk-linux-stage-a/
+            git add -f docs/evidence/webkitgtk-linux-stage-a/
+            if git diff --cached --quiet; then
+              echo 'Original artifacts already archived on the branch'
+              exit 0
+            fi
+            git commit -m 'docs(evidence): archive independently verified Linux WebKitGTK frames'
+            if git push origin HEAD:feat/reference-fixtures; then
+              echo "PASS: exact WebKitGTK evidence on branch, attempt=$attempt"
+              exit 0
+            fi
+            echo "A concurrent branch commit raced attempt=$attempt; fetching latest branch"
+            sleep 1
+          done
+          echo "ERROR: 5 safe fast-forward retries exhausted"
+          exit 1
+      - name: Evidence scope
+        if: always()
+        shell: bash
+        run: |
+          echo 'Archived exact original bytes from producing CI 43932124401; WebKitGTK 4.1 Linux Xvfb, unmodified HTML/CSS/JS, 6 PNGs. NOT actual Tauri, macOS, hardware GPU, trusted OS input, comparable benchmark, or repeated performance.' >> "$GITHUB_STEP_SUMMARY"
