@@ -3,12 +3,6 @@ name: CALYRA Linux system WebKitGTK reference preflight
 # One-shot real Linux system-WebView backend smoke, NOT packaged Tauri
 # and NOT a comparative performance benchmark. Canonical CSS/JS unchanged.
 on:
-  push:
-    branches: [feat/reference-fixtures]
-    paths:
-      - .github/workflows/linux-system-webkitgtk-reference.yml
-      - harness/run_webkitgtk_reference.py
-      - harness/verify_webkitgtk_reference.py
   workflow_dispatch:
 
 permissions:
