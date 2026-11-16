@@ -1,11 +1,8 @@
 name: CALYRA native CSS typography invalidation proof
 
-# Focused one-shot Rust/Boa plus actual Vello CPU pixels.
-# Run only when this workflow itself is introduced or explicitly dispatched.
+# Historical one-shot Rust/Boa and Vello CPU proof.
+# Verified in CI #43919838241; avoid expensive reruns on documentation edits.
 on:
-  push:
-    branches: [feat/reference-fixtures]
-    paths: [.github/workflows/native-blitz-select-typography-proof.yml]
   workflow_dispatch:
 
 permissions:
