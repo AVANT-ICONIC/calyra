@@ -31,7 +31,8 @@ def main() -> None:
     assert len(config["app"]["windows"]) == 1, "Stage A must not spawn extra windows"
     win = config["app"]["windows"][0]
     assert win["width"] == 1060 and win["height"] == 800
-    assert win["visible"] is True\n    # WindowConfig width/height are logical window dimensions, not verified CSS innerWidth.
+    assert win["visible"] is True
+    # WindowConfig width/height are logical window dimensions, not verified CSS innerWidth.
     assert win["url"] == "index.html?fixture=controls&motion=off"
     assert config["bundle"]["targets"] == ["app"]
     assert config["bundle"]["icon"] == ["icons/icon.icns"]
