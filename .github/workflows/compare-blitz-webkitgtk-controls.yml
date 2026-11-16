@@ -1,0 +1,102 @@
+name: CALYRA WebKitGTK versus native Blitz controls pixel comparison
+
+# One-shot report from two separately VERIFIED archived native PNGs.
+# No renderer build, no claims of font parity, performance or OS input.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/compare-blitz-webkitgtk-controls.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  compare-archived-controls:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Pillow and pin canonical source content
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends python3-pil fonts-dejavu-core
+          echo 'aa9fa23b242f06be7dc5b760f0f8379ce750d8fe2cd67a977daf1a4ff1bd848a  fixtures/index.html' | sha256sum -c -
+          echo '04635269a8fbd790c87316a03c6469a157806201e58fd730212f632fc86b7b9c  fixtures/reference.css' | sha256sum -c -
+          echo '9d565203fc9c3450b0c61d7774cb2322b14ed3e3325926122b17f583e81cf3de  fixtures/reference.js' | sha256sum -c -
+          sha256sum harness/compare_blitz_webkitgtk.py \
+            docs/evidence/blitz-select-typography/typography-before.png \
+            docs/evidence/system-webkitgtk-reference/webkitgtk-controls-1060x800-default-initial.png \
+            > source-sha256.txt
+      - name: Compare exact 1060x800 CSS scene and produce unranked region diagnostics
+        shell: bash
+        run: |
+          set -euo pipefail
+          /usr/bin/python3 harness/compare_blitz_webkitgtk.py \
+            --output evidence/comparisons/webkitgtk-blitz-controls
+          /usr/bin/python3 - <<'PY'
+          import json
+          from pathlib import Path
+          from PIL import Image
+          root=Path('evidence/comparisons/webkitgtk-blitz-controls')
+          o=json.loads((root/'controls-comparison-result.json').read_text())
+          assert o['schema']=='calyra.exploratory-webkitgtk-blitz-diff.v1'
+          assert o['viewport_css_px']==[1060,800]
+          assert o['total_pixels']==848000
+          assert o['changed_rgb_pixels_at_12']==51944
+          assert o['exact_match_pixels']==778478
+          assert o['source']['blitz']['producing_run']==43919838241
+          assert o['source']['webview']['producing_run']==43930684985
+          assert o['regions']['select_control']['changed_fraction']>0.7
+          assert o['regions']['control_surface']['changed_fraction']>o['regions']['header']['changed_fraction']
+          assert len(o['limits'])>=6 and 'performance' in ' '.join(o['limits']).lower()
+          with Image.open(root/'controls-raw-rgb-diff.png') as im:
+              assert im.size==(1060,800)
+          with Image.open(root/'controls-comparison-montage.png') as im:
+              assert im.size[0]>=1500 and im.size[1]>=450
+          print('PASS: exact archived inputs and 51,944 pixel differences, including control ROIs; NOT a CSS coverage score')
+          PY
+      - name: Archive report and derived proof images separately from original PNGs
+        shell: bash
+        run: |
+          set -euo pipefail
+          src=evidence/comparisons/webkitgtk-blitz-controls
+          dst=docs/evidence/comparisons/webkitgtk-blitz-controls
+          mkdir -p "$dst"
+          cp "$src"/. "$dst"/
+          cp source-sha256.txt "$dst/"
+          sha256sum -c "$dst/source-sha256.txt"
+          /usr/bin/python3 - <<'PY'
+          import hashlib
+          from pathlib import Path
+          a=Path('evidence/comparisons/webkitgtk-blitz-controls')
+          b=Path('docs/evidence/comparisons/webkitgtk-blitz-controls')
+          for f in a.iterdir():
+              assert (b/f.name).is_file()
+              assert hashlib.sha256(f.read_bytes()).digest()==hashlib.sha256((b/f.name).read_bytes()).digest()
+          print('PASS: exact derived report/PNG files archived; original engine screenshots untouched')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+users.noreply.github.com'
+          git add -f "$dst/"
+          if git diff --cached --quiet; then
+            echo 'Already archived'
+            exit 0
+          fi
+          git commit -m "docs(evidence): add unranked WebKitGTK-versus-Blitz region diff"
+          git push origin HEAD:feat/reference-fixtures
+      - name: Preserve comparison limitations
+        if: always()
+        shell: bash
+        run: |
+          echo '### CALYRA cross-engine visual diagnostic' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Pillow compare of two native source-pinned 1060x800 controls screenshots. Different CI runners and font/rendering pipelines. Pixel match is NOT CSS fidelity score, platform support, input compatibility, startup speed or RAM advantage. Original CSS/JS unchanged.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-blitz-webkitgtk-controls-comparison
+          path: evidence/comparisons/webkitgtk-blitz-controls/
+          retention-days: 7
+          if-no-files-found: warn
