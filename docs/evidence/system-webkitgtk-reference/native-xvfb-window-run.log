@@ -1,0 +1,42 @@
+
+(run_webkitgtk_reference.py:3259): dbind-WARNING **: 18:37:36.541: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files
+/home/runner/work/calyra/calyra/harness/run_webkitgtk_reference.py:281: DeprecationWarning: WebKit2.WebView.run_javascript is deprecated
+  self.view.run_javascript(script, None, self.on_js, name)
+/home/runner/work/calyra/calyra/harness/run_webkitgtk_reference.py:288: DeprecationWarning: WebKit2.WebView.run_javascript_finish is deprecated
+  result = view.run_javascript_finish(task)
+{"engine": "system-WebKitGTK-4.1", "version": "2.52.6", "fixture": "controls", "steps": ["initial", "controls_action"], "captures": 2, "asset_paths": ["/", "/reference.css", "/reference.js"], "eligibility": "restricted", "os_input_tested": false, "gpu_performance_tested": false}
+
+(run_webkitgtk_reference.py:3338): dbind-WARNING **: 18:37:44.513: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files
+/home/runner/work/calyra/calyra/harness/run_webkitgtk_reference.py:281: DeprecationWarning: WebKit2.WebView.run_javascript is deprecated
+  self.view.run_javascript(script, None, self.on_js, name)
+/home/runner/work/calyra/calyra/harness/run_webkitgtk_reference.py:288: DeprecationWarning: WebKit2.WebView.run_javascript_finish is deprecated
+  result = view.run_javascript_finish(task)
+{"engine": "system-WebKitGTK-4.1", "version": "2.52.6", "fixture": "dashboard", "steps": ["initial"], "captures": 1, "asset_paths": ["/", "/reference.css", "/reference.js"], "eligibility": "restricted", "os_input_tested": false, "gpu_performance_tested": false}
+
+(run_webkitgtk_reference.py:3416): dbind-WARNING **: 18:37:46.343: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files
+/home/runner/work/calyra/calyra/harness/run_webkitgtk_reference.py:281: DeprecationWarning: WebKit2.WebView.run_javascript is deprecated
+  self.view.run_javascript(script, None, self.on_js, name)
+/home/runner/work/calyra/calyra/harness/run_webkitgtk_reference.py:288: DeprecationWarning: WebKit2.WebView.run_javascript_finish is deprecated
+  result = view.run_javascript_finish(task)
+{"engine": "system-WebKitGTK-4.1", "version": "2.52.6", "fixture": "visual", "steps": ["initial"], "captures": 1, "asset_paths": ["/", "/reference.css", "/reference.js"], "eligibility": "restricted", "os_input_tested": false, "gpu_performance_tested": false}
+
+(run_webkitgtk_reference.py:3494): dbind-WARNING **: 18:37:48.693: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files
+/home/runner/work/calyra/calyra/harness/run_webkitgtk_reference.py:281: DeprecationWarning: WebKit2.WebView.run_javascript is deprecated
+  self.view.run_javascript(script, None, self.on_js, name)
+/home/runner/work/calyra/calyra/harness/run_webkitgtk_reference.py:288: DeprecationWarning: WebKit2.WebView.run_javascript_finish is deprecated
+  result = view.run_javascript_finish(task)
+{"engine": "system-WebKitGTK-4.1", "version": "2.52.6", "fixture": "interaction", "steps": ["initial", "menu_open", "menu_close"], "captures": 2, "asset_paths": ["/", "/reference.css", "/reference.js"], "eligibility": "restricted", "os_input_tested": false, "gpu_performance_tested": false}
+
+(run_webkitgtk_reference.py:3571): dbind-WARNING **: 18:37:51.041: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files
+/home/runner/work/calyra/calyra/harness/run_webkitgtk_reference.py:281: DeprecationWarning: WebKit2.WebView.run_javascript is deprecated
+  self.view.run_javascript(script, None, self.on_js, name)
+/home/runner/work/calyra/calyra/harness/run_webkitgtk_reference.py:288: DeprecationWarning: WebKit2.WebView.run_javascript_finish is deprecated
+  result = view.run_javascript_finish(task)
+{"engine": "system-WebKitGTK-4.1", "version": "2.52.6", "fixture": "interaction", "steps": ["initial"], "captures": 1, "asset_paths": ["/", "/reference.css", "/reference.js"], "eligibility": "restricted", "os_input_tested": false, "gpu_performance_tested": false}
+
+(run_webkitgtk_reference.py:3258): dbind-WARNING **: 18:37:52.861: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files
+/home/runner/work/calyra/calyra/harness/run_webkitgtk_reference.py:281: DeprecationWarning: WebKit2.WebView.run_javascript is deprecated
+  self.view.run_javascript(script, None, self.on_js, name)
+/home/runner/work/calyra/calyra/harness/run_webkitgtk_reference.py:288: DeprecationWarning: WebKit2.WebView.run_javascript_finish is deprecated
+  result = view.run_javascript_finish(task)
+{"engine": "system-WebKitGTK-4.1", "version": "2.52.6", "fixture": "dashboard", "steps": ["initial"], "captures": 1, "asset_paths": ["/", "/reference.css", "/reference.js"], "eligibility": "restricted", "os_input_tested": false, "gpu_performance_tested": false}

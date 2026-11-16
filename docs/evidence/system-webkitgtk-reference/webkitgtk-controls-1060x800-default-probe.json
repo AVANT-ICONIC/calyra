@@ -1,0 +1,74 @@
+{
+  "schema": "calyra.webkitgtk-reference-probe.v1",
+  "engine_class": "linux-system-webview-backend-not-tauri",
+  "webkit_version": "2.52.6",
+  "fixture": "controls",
+  "viewport_css_px": [
+    1060,
+    800
+  ],
+  "motion": "off",
+  "state": "default",
+  "scripted_steps": [
+    "initial",
+    "controls_action"
+  ],
+  "scripted_input_class": "javascript-dom-synthetic-not-os",
+  "states": {
+    "initial": {
+      "ready": "true",
+      "fixture": "controls",
+      "motion": "off",
+      "active": [
+        "controls"
+      ],
+      "selectedNav": 1,
+      "viewport": [
+        1060,
+        800
+      ],
+      "htmlScrollWidth": 1060,
+      "styles": {
+        "mainGrid": "grid",
+        "metricsGrid": "grid",
+        "selectedColor": "rgb(232, 233, 228)",
+        "glassBackdrop": "blur(20px) saturate(1.45)"
+      },
+      "priority": "balanced",
+      "menuExpanded": "false"
+    },
+    "controls_action": {
+      "name": "Mara Novak",
+      "priority": "quality",
+      "intensity": "73",
+      "intensityOutput": "73%",
+      "effects": false,
+      "status": "Applied: Mara Novak · quality · 73% · off"
+    }
+  },
+  "captures": {
+    "initial": {
+      "path": "evidence/native-stage-a/system-webkitgtk/webkitgtk-controls-1060x800-default-initial.png",
+      "sha256": "22b9bb1b3369bc3fd78773e580bcb57e306014eb9368bba1c8bbae27655cdbad",
+      "bytes": 64341,
+      "backend": "webkit2gtk-native-snapshot-fallback",
+      "gdk_capture_unusable": {
+        "path": "evidence/native-stage-a/system-webkitgtk/webkitgtk-controls-1060x800-default-initial-gdk-blank.png",
+        "sha256": "764eb0373a75d37a4e9437ee92016a7effc1427c250d44748009fef9914eb965",
+        "distinct_colors_64x64": 1
+      }
+    },
+    "controls_action": {
+      "path": "evidence/native-stage-a/system-webkitgtk/webkitgtk-controls-1060x800-default-controls_action.png",
+      "sha256": "c24831d7ecf12461d7e3b2706d470c202853cc2cb744aa1bdced295707e51d37",
+      "bytes": 65334,
+      "backend": "gdk-x11-window-pixbuf"
+    }
+  },
+  "requested_local_paths": [
+    "/",
+    "/reference.css",
+    "/reference.js"
+  ],
+  "required_assets_observed": true
+}
