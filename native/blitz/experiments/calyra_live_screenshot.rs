@@ -4,12 +4,12 @@
 //! No browser engine, OS input, GPU, popup or production select widget.
 use anyrender::{AntiAliasing, PaintScene as _, render_to_buffer};
 use anyrender_vello_cpu::VelloCpuImageRenderer;
-use blitz_dom::{DocumentConfig, NodeId, util::Color};
+use blitz_dom::{Document, DocumentConfig, NodeId, util::Color};
 use blitz_paint::paint_scene;
 use blitz_traits::shell::{ColorScheme, Viewport};
 use blitz_vibey_script::ScriptDocument;
 use peniko::{Fill, kurbo::Rect};
-use std::{env, fs, fs::File, io::Write, path::Path};
+use std::{env, fs, fs::File, path::Path};
 
 const WIDTH:u32=1060;
 const HEIGHT:u32=800;
