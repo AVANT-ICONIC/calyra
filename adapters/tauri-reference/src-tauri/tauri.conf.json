@@ -14,7 +14,6 @@
         "url": "index.html?fixture=controls&motion=off",
         "width": 1060,
         "height": 800,
-        "innerSize": true,
         "resizable": true,
         "visible": true,
         "center": true
