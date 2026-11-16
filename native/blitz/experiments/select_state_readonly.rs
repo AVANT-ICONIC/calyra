@@ -56,6 +56,12 @@ fn current(ctx: &DomCtx, select: NodeId) -> Option<NodeId> {
 }
 
 fn update(ctx: &DomCtx, select: NodeId, chosen: Option<NodeId>) {
+    // An idempotent property assignment is not a selection transition.
+    // Avoid reshaping glyphs and requesting redraw for unchanged JS writes.
+    // Native construction still owns style/layout rebuilds.
+    if current(ctx, select) == chosen {
+        return;
+    }
     ctx.doc.borrow_mut().calyra_set_select_selection(select, chosen);
 }
 
