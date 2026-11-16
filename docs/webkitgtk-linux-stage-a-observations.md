@@ -28,7 +28,7 @@ The separate [controls pixel comparison](evidence/comparisons/webkitgtk-blitz-co
 
 ## Memory/timing diagnostics: NOT a benchmark
 
-The additional probe captured one system `ps` RSS sample of itself plus reachable WebKit child processes after each fixture, yielding **approximately 545–557 MiB summed RSS** (raw field expressed in KiB; includes a short-lived `ps` child, shared mapped pages and unshared process accounting). This is **not private memory**, **not 20-tab memory** and **not comparable to Blitz**. Four sequential single-run JavaScript readiness observations ranged from ~1.05 to 1.44 seconds, but startup/process scheduling, warm caches, Xvfb and runner variance were not controlled. Neither result should be marketed as a speed or resource claim.
+The additional probe captured one system `ps` RSS sample of itself plus reachable WebKit child processes after each fixture, yielding **544,632–556,788 KiB summed RSS (~532–544 MiB)** (raw field expressed in KiB; includes a short-lived `ps` child, shared mapped pages and unshared process accounting). This is **not private memory**, **not 20-tab memory** and **not comparable to Blitz**. Four sequential single-run JavaScript readiness observations ranged from ~1.05 to 1.44 seconds, but startup/process scheduling, warm caches, Xvfb and runner variance were not controlled. Neither result should be marketed as a speed or resource claim.
 
 ## Gate decisions
 
