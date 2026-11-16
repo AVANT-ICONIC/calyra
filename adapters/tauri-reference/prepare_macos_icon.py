@@ -55,11 +55,14 @@ def write_png(path: Path) -> None:
 
 
 def main() -> None:
-    if sys.platform != "darwin":
-        raise SystemExit("macOS iconutil and sips are required for this Stage A .app build")
     ICONS.mkdir(parents=True, exist_ok=True)
     base = ICONS / "calyra-reference-source.png"
     write_png(base)
+    if sys.platform != "darwin":
+        # The same deterministic PNG is also usable for a Linux Tauri
+        # compile smoke. macOS .icns packaging still requires Apple iconutil.
+        print("CALYRA_APP_ICON_PNG_CREATED=true")
+        return
     iconset = ICONS / "calyra-reference.iconset"
     iconset.mkdir(exist_ok=True)
     for size in SIZES:
