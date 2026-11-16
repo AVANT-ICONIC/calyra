@@ -2,10 +2,8 @@ name: CALYRA actual Tauri 2 Linux native shell compile and Xvfb launch
 
 # Secondary buildability check while GitHub macOS-15 ARM64 runner is queued.
 # Linux WebKitGTK Tauri executable is NOT macOS WKWebView evidence.
+# Verified source-pinned producing run 43937455301; avoid accidental expensive rebuilds.
 on:
-  push:
-    branches: [feat/reference-fixtures]
-    paths: [.github/workflows/tauri-linux-shell-smoke.yml]
   workflow_dispatch:
 
 permissions:
