@@ -1,0 +1,109 @@
+{
+  "schema": "calyra.system-webview.webkitgtk-stage-a.v1",
+  "candidate": "WebKitGTK 4.1 system WebView in a minimal GTK3 host",
+  "tauri_shell_tested": false,
+  "macos_wkwebview_tested": false,
+  "physical_os_input_tested": false,
+  "hardware_gpu_verified": false,
+  "js_interactions_untrusted": true,
+  "repeated_performance_samples": false,
+  "fixture": "visual",
+  "source": "/home/runner/work/calyra/calyra/fixtures/index.html",
+  "source_hashes": {
+    "index.html": "aa9fa23b242f06be7dc5b760f0f8379ce750d8fe2cd67a977daf1a4ff1bd848a",
+    "reference.css": "04635269a8fbd790c87316a03c6469a157806201e58fd730212f632fc86b7b9c",
+    "reference.js": "9d565203fc9c3450b0c61d7774cb2322b14ed3e3325926122b17f583e81cf3de"
+  },
+  "environment": {
+    "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+    "python": "3.12.3",
+    "display": ":99",
+    "gdk_backend": "x11",
+    "gtk": "3.24.41",
+    "webkit": "2.52.6",
+    "viewport_css_pixels": [
+      1060,
+      800
+    ],
+    "configured_scale": 1
+  },
+  "events": {
+    "initial": {
+      "ready": "true",
+      "fixture": "visual",
+      "requested": "visual",
+      "active": [
+        "visual"
+      ],
+      "nav": [
+        "visual"
+      ],
+      "motion": "off",
+      "styleSheets": 1,
+      "shellDisplay": "grid",
+      "bodyBackground": "rgb(14, 19, 25)",
+      "cssGridSupported": true,
+      "priority": {
+        "value": "balanced",
+        "index": 0
+      },
+      "viewport": {
+        "width": 1060,
+        "height": 800,
+        "dpr": 1
+      },
+      "userAgent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/60.5 Safari/605.1.15"
+    }
+  },
+  "screenshots": {
+    "initial": {
+      "path": "visual-initial.png",
+      "width": 1060,
+      "height": 800,
+      "bytes": 161468,
+      "sha256": "6b9b3c391cf657709e8889882b2e388eb44a77a698591e905b499ea148a45fe3",
+      "source": "real WebKitGTK WebView.get_snapshot Cairo surface"
+    }
+  },
+  "timings_ms": {
+    "load_finished": 700.38,
+    "js_ready": 1057.84,
+    "snapshot_initial": 1126.41,
+    "end": 1126.43
+  },
+  "errors": [],
+  "memory_diagnostic": {
+    "available": true,
+    "method": "single ps RSS sample, host PID and reachable child PID tree",
+    "rss_sum_kib": 553308,
+    "shared_memory_double_count_possible": true,
+    "excludes_external_xvfb_and_system_daemons": true,
+    "processes": [
+      {
+        "pid": 3422,
+        "ppid": 3264,
+        "rss_kib": 191384,
+        "name": "python3"
+      },
+      {
+        "pid": 3451,
+        "ppid": 3422,
+        "rss_kib": 54524,
+        "name": "WebKitNetworkPr"
+      },
+      {
+        "pid": 3453,
+        "ppid": 3422,
+        "rss_kib": 303076,
+        "name": "WebKitWebProces"
+      },
+      {
+        "pid": 3493,
+        "ppid": 3422,
+        "rss_kib": 4324,
+        "name": "ps"
+      }
+    ]
+  },
+  "success": true
+}
