@@ -19,6 +19,7 @@ import json
 import platform
 from pathlib import Path
 from threading import Thread
+from PIL import Image
 import traceback
 
 import gi
@@ -155,6 +156,7 @@ class WebKitFixtureRun:
         self.main_loop = GLib.MainLoop()
         self.states = {}
         self.captures = {}
+        self.gdk_blank_evidence = {}
         self.error = None
         self.step_index = 0
         self.steps = [("initial", INITIAL_JS, True)]
@@ -217,11 +219,54 @@ class WebKitFixtureRun:
         )
         pixels.savev(str(target), "png", [], [])
         assert target.stat().st_size > 2000, f"Blank or failed capture: {target}"
+        # A GDK window pixbuf can be stale/blank when WebKit moves a
+        # backdrop-filter scene to a separately composited surface. Do not
+        # count an opaque plain background as a valid reference image.
+        with Image.open(target) as sample:
+            colors = sample.convert("RGB").resize((64, 64)).getcolors(4096)
+        if colors is None or len(colors) <= 35:
+            gdk_blank = target.with_name(target.stem + "-gdk-blank.png")
+            target.replace(gdk_blank)
+            self.gdk_blank_evidence[name] = {
+                "path": str(gdk_blank.relative_to(ROOT)),
+                "sha256": hash_file(gdk_blank),
+                "distinct_colors_64x64": len(colors or []),
+            }
+            return False
         self.captures[name] = {
             "path": str(target.relative_to(ROOT)),
             "sha256": hash_file(target),
             "bytes": target.stat().st_size,
+            "backend": "gdk-x11-window-pixbuf",
         }
+        return True
+
+    def on_webkit_snapshot(self, view, task, name):
+        # Fallback must use WebKit's *own* actual page surface, not a
+        # synthetic CSS raster or an HTML-to-canvas emulation.
+        try:
+            target = self.args.output / (
+                f"webkitgtk-{self.args.fixture}-{self.args.width}x{self.args.height}-{self.args.state}-{name}.png"
+            )
+            surface = view.get_snapshot_finish(task)
+            assert surface is not None, "WebKit native snapshot returned no cairo surface"
+            surface.write_to_png(str(target))
+            with Image.open(target) as image:
+                assert image.size == (self.args.width, self.args.height), image.size
+                colors = image.convert("RGB").resize((64, 64)).getcolors(4096)
+                assert colors is not None and len(colors) > 35, (
+                    "Native WebKit snapshot also blank", len(colors or [])
+                )
+            self.captures[name] = {
+                "path": str(target.relative_to(ROOT)),
+                "sha256": hash_file(target),
+                "bytes": target.stat().st_size,
+                "backend": "webkit2gtk-native-snapshot-fallback",
+                "gdk_capture_unusable": self.gdk_blank_evidence[name],
+            }
+        except Exception:
+            return self.fail(traceback.format_exc())
+        self.next_step()
 
     def next_step(self):
         if self.error is not None:
@@ -258,10 +303,16 @@ class WebKitFixtureRun:
 
     def capture_then_continue(self, name):
         try:
-            self.screenshot(name)
+            if self.screenshot(name):
+                return self.next_step()
+            self.view.get_snapshot(
+                WebKit2.SnapshotRegion.VISIBLE,
+                WebKit2.SnapshotOptions.NONE,
+                None, self.on_webkit_snapshot, name,
+            )
         except Exception:
             return self.fail(traceback.format_exc())
-        return self.next_step()
+        return False
 
     def run(self):
         GLib.timeout_add_seconds(30, self.timeout)
