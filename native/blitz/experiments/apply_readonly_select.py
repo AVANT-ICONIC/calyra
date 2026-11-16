@@ -224,6 +224,15 @@ fn create_text_editor(doc: &mut BaseDocument, input_element_id: NodeId, is_multi
 
     fn draw_marker(&self, scene: &mut impl PaintScene, pos: Point) {""")
     ])
+    # The new enum variant must be handled when DOM subtrees are destroyed.
+    apply(root, "packages/blitz-dom/src/mutator.rs", [(
+        """                SpecialElementData::TextInput(_) => {}
+                SpecialElementData::CheckboxInput(_) => {}""",
+        """                SpecialElementData::TextInput(_) => {}
+                SpecialElementData::Select(_) => {}
+                SpecialElementData::CheckboxInput(_) => {}"""
+    )])
+
     print("CALYRA_READONLY_PATCH_COMPLETE=1")
 
 
