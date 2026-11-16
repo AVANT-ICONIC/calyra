@@ -8,6 +8,14 @@
 
 **FIRST THING IN ANY NEW CHAT:** Read this HANDOFF.md from the current working branch. Continue the existing change rather than re-planning it from scratch.
 
+## Current engineering checkpoint (2026-11-16, newer than historical entries below)
+
+- **The old "SelectData not implemented" next step below is stale.** The noneditable `SelectData` adapter already compiled and passed a source-pinned native **9/9 Rust/Boa** run, seven same-document JS states and real Vello **CPU** before/after pixels, [successful archival CI #43783621933](https://github.com/AVANT-ICONIC/calyra/actions/runs/43783621933).
+- The **17 byte-exact files** in `docs/evidence/blitz-select-readonly/` include two 1060×800 same-document PNGs, verified diff, full native patch/logs and JS observation states. The label transition `Balanced` → `Visual fidelity` changed **731 pixels** at RGB threshold 12 in bbox `[687,490,794,505]`. Original CSS/JS hashes unchanged. No `TextInputData` / `PlainEditor` in the experimental select node, separate Parley text shaping and Vello label painter.
+- Earlier failing compile #43781785053 (missing exhaustive mutator match) was preserved and fixed in successful #43782046600; earlier cross-run artifact preservation #43783382936 failed authorization and was replaced by same-run archival #43783621933. Do not misrepresent these failures as passes.
+- **New branch-only follow-up, not yet native-CI verified:** idempotent JS setters now return before the native repaint/reshape path when selected option is unchanged. Additional Rust regression covers repeated `value`, `selectedIndex`, `option.selected`, empty selections and event silence. Code commits `4bb07ffc`, `2cc132af`, `f39f6612`. Check the new exact-head CI receipt before declaring 10/10 tests or performance improvement.
+- **Next:** verify the idempotence regression with a focused one-shot source-pinned CI run, inspect any failures and preserve exact results; then investigate native construction/style invalidation, option text mutation, and eventual keyboard/popup behavior. OpenSpec 4.1 stays **unchecked**. PR #2 stays DRAFT / UNMERGED. **Do not change main.**
+
 ## 2026-11-16 OSS readiness addition (GPT WebUI)
 
 - Scoped, **documentation/licensing-only** edits on this same working branch: README now distinguishes real archived Blitz/Vello CPU evidence from unverified production behavior; `CONTRIBUTING.md` documents reproducible experiment rules; proposed MIT `LICENSE` added for maintainer legal review. These files are not on `main` yet and do not imply release approval.
