@@ -1,10 +1,8 @@
 name: CALYRA actual Tauri versus system WebKitGTK controls pixels
 
 # Cheap exact-asset diagnostic. No rebuilding browsers or Tauri app.
+# Verified source-pinned producing run 43941143858; avoid accidental expensive rebuilds.
 on:
-  push:
-    branches: [feat/reference-fixtures]
-    paths: [.github/workflows/tauri-webkitgtk-controls-compare.yml]
   workflow_dispatch:
 
 permissions:
