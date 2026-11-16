@@ -16,13 +16,17 @@ The previous working [live-label experiment](blitz-select-live-observations.md) 
 
 [Native CI run #43781785053](https://github.com/AVANT-ICONIC/calyra/actions/runs/43781785053) applied the adapter but **failed** Rust compilation because the new enum variant was not covered by `blitz-dom/src/mutator.rs`'s exhaustive node-removal match (E0004). The adapter was fixed and a strict preflight added; that failure is retained rather than reclassified.
 
-[Follow-up CI run #43782046600](https://github.com/AVANT-ICONIC/calyra/actions/runs/43782046600) applied the corrected adapter, completed native Rust/Boa integration tests and checked seven JavaScript selectedness states successfully. Its separate optimized Vello CPU screenshot build was **still running when this note was written**. A passing integration test is not proof of updated rendered pixels.
+[Follow-up CI run #43782046600](https://github.com/AVANT-ICONIC/calyra/actions/runs/43782046600) passed Rust/Boa tests and the native Vello CPU screenshot. A later [source-pinned verification and archival run #43783621933](https://github.com/AVANT-ICONIC/calyra/actions/runs/43783621933) also passed and preserved **17 original evidence files** in [docs/evidence/blitz-select-readonly/](evidence/blitz-select-readonly/). The read-only implementation produced two genuine **1060×800** frames from one `ScriptDocument`, with `select.value='quality'` changing **731 pixels** at RGB threshold 12/255, confined to bbox **[687, 490, 794, 505]**. Full-size PNG SHA-256 hashes are in `live-paint-result.json`; seven native JS selection states matched the expected values, and **9/9** Rust tests passed at the archived source revision. This proves CPU label repaint with no editor, not a production dropdown, real OS IME or a GPU renderer.
 
 The new Rust tests assert that a select does not have `TextInputData`, that the Parley label has shaped lines, and that synthetic keydown, IME Commit and paste do not mutate the selected label or JS selection. This does **not** verify real OS IME composition or accessibility.
 
 ## Remaining gates and risks
 
-- Do not count live pixel repaint until source-pinned same-document before/after PNGs have passed and been preserved with exact hashes.
+- Live read-only label repaint is **proved and archived at its source-pinned CI revision**. Subsequent source edits require a new exact-head compile/test receipt before their behavior can be described as verified.
 - The `calyra_set_select_selection` construction path currently requests redraw even if the selection/label did not change. A future window host must guard against redundant invalidation and measure redraw loops.
 - No working popup, user pointer/keyboard selection, input/change dispatch from actual selection, form reset, disabled/optgroup semantics, screen reader output, hardware GPU or macOS/Windows benchmark.
 - Keep OpenSpec task 4.1 unchecked and PR #2 draft/unmerged.
+
+## In-progress follow-up (later branch changes; not part of archived proof)
+
+An idempotence fast path now skips native repaint requests from JS setters when `selected_option` is unchanged, and a new Rust regression checks repeated `.value`, `.selectedIndex`, `option.selected` and unmatched-value assignments. Commits `4bb07ffc`, `2cc132af`, `f39f6612`. **These changes have not passed a new native CI run at the time of this note**. The guard does not claim to solve style-triggered native construction redraws or independent option-text mutation. Keep the earlier 9/9 evidence associated only with the exact archived head.
