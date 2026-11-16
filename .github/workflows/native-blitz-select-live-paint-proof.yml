@@ -151,6 +151,8 @@ jobs:
           # The Rust integration test passes without compiling the screenshot example.
           # Verify the Document trait import before the separate native Vello build.
           grep -q "use blitz_dom::{Document, DocumentConfig" examples/calyra_live_screenshot.rs
+          # paint_scene takes &mut BaseDocument; the native Document returns a guard.
+          grep -Fq "paint_scene(scene,&mut *doc.inner_mut()" examples/calyra_live_screenshot.rs
           cargo build --locked --release --example calyra_live_screenshot -j 2 2>&1 | tee "$GITHUB_WORKSPACE/evidence/native-stage-a/blitz-select-live-paint/cargo-live-paint.log"
           test -x target/release/examples/calyra_live_screenshot
       - name: Capture same ScriptDocument before and after JS selection
