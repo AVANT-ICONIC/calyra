@@ -9,6 +9,7 @@ from __future__ import annotations
 import binascii
 import math
 from pathlib import Path
+import shutil
 import struct
 import subprocess
 import sys
@@ -58,6 +59,11 @@ def main() -> None:
     ICONS.mkdir(parents=True, exist_ok=True)
     base = ICONS / "calyra-reference-source.png"
     write_png(base)
+    # tauri::generate_context!() always expects this conventional source
+    # icon on macOS, even when bundle.icon names only the generated .icns.
+    icon_png = ICONS / "icon.png"
+    shutil.copyfile(base, icon_png)
+    assert icon_png.read_bytes() == base.read_bytes()
     if sys.platform != "darwin":
         # The same deterministic PNG is also usable for a Linux Tauri
         # compile smoke. macOS .icns packaging still requires Apple iconutil.
