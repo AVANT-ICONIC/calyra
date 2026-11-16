@@ -8,15 +8,29 @@
 
 **FIRST THING IN ANY NEW CHAT:** Read this HANDOFF.md from the current working branch. Continue the existing change rather than re-planning it from scratch.
 
-## Continuation checkpoint, 2026-11-16
+## Verified checkpoint, 2026-11-16: live native select label pixels
 
-- The **actual** [Blitz live selectedness CI #43699535417](https://github.com/AVANT-ICONIC/calyra/actions/runs/43699535417) passed **9/9** Rust/Boa tests. Original author CSS/JS untouched; same select node identity; seven state transitions for `value`, `selectedIndex`, `option.selected`, `defaultSelected`, no programmatic input/change events, and synchronous text-buffer label changes.
-- An **independent local** Chromium 144.0.7559.96/Playwright run matched all seven programmatic state transitions. Trusted ArrowDown on this Chromium/Linux instance produced `keydown → input → change`, twice; programmatic assignment produced no events. Details: `docs/blitz-select-live-observations.md`.
-- The separate **live screenshot CI #43699535421** failed during Rust example compilation (missing `blitz_dom::Document` trait), **not** during native pixel comparison. The JS test part passed. In a follow-up source audit, `paint_scene` also requires a `&mut BaseDocument`, whereas `inner_mut()` returns `DocGuardMut`.
-- Both Rust fixes are committed on the **same draft branch**, not on main: import `Document`, drop unused `io::Write`, call `paint_scene(scene, &mut *doc.inner_mut(), ...)`. The one-shot CI workflow has a separate preflight guard for both API expectations.
-- Independent retry runs: [#43778282277](https://github.com/AVANT-ICONIC/calyra/actions/runs/43778282277) (first import fix, expected old guard mismatch) and [#43778999121](https://github.com/AVANT-ICONIC/calyra/actions/runs/43778999121) (both fixes). **Both were still running at this checkpoint.** Their outcomes must be retrieved, not assumed.
-- New report: `docs/blitz-select-live-observations.md`. OpenSpec remains **5/18**, task **4.1 unchecked**. There is **no verified same-document pixel transition yet**, no physical OS input, a11y, IME, hardware GPU or production select.
-- **Next:** inspect the complete latest CI status and build/screenshot logs; fix any demonstrable build/paint issue on this branch; if native before/after PNGs actually pass, preserve original evidence byte-for-byte with hashes; then replace the temporary `TextInputData` buffer with dedicated noneditable `SelectData` on the pinned experimental upstream checkout. Keep both PRs draft/unmerged and update this handoff at end.
+**Read this first, then** `docs/blitz-select-live-observations.md`, `docs/blitz-select-data-architecture.md`, and the existing OpenSpec change. Continue this same branch, not a replacement project.
+
+### Done and independently verified
+
+- **9/9 actual Rust/Boa integration tests PASS** in [CI #43699535417](https://github.com/AVANT-ICONIC/calyra/actions/runs/43699535417) and again in [CI #43778999121](https://github.com/AVANT-ICONIC/calyra/actions/runs/43778999121): live `select.value`, `selectedIndex`, `option.selected`, `option.defaultSelected` semantics and a synchronous label update on the same select DOM node; seven observed states; programmatic property setters do not dispatch `input`/`change`.
+- The **real native Vello CPU pixel test #43778999121 PASSED**: one `ScriptDocument`, old label "Balanced", JS `select.value='quality'`, new "Visual fidelity", two genuine **1060×800** raster frames. **732** changed RGB pixels at threshold 12/255 in bbox **[687, 490, 794, 505]**. Initial/repaint PNG SHA-256: `4bd397daf2be6b314dd788c472545bf0154d3f806cdea2fb1ad66353eb9e4a4f` / `5d8b90174327eb1689727675122125f49f85a2e1560cf8142cff9bbe80810dcc`.
+- **[Archival CI #43780409985](https://github.com/AVANT-ICONIC/calyra/actions/runs/43780409985) PASSED**: verified PNG hashes, independently recomputed pixel count and bbox, 9/9 native Rust tests, seven JS states, pinned SHA and exact source manifest, unchanged canonical CSS/JS, then committed **18 byte-exact original files** in `docs/evidence/blitz-select-live/` on this **feature branch only**. See `live-paint-result.json` and native PNGs there.
+- Independent Chromium 144.0.7559.96/Playwright run matched the seven programmatic selection states. Trusted keyboard ArrowDown on Linux Chromium produced `keydown → input → change`; programmatic setters no events. Baseline is **not** evidence that native keyboard selection works.
+- Pinned official Blitz upstream source is `4f61cffacee50fe4f944ebe9d0470d9a5d3997e0`; code changes are isolated patches applied to disposable upstream checkout. Original `fixtures/reference.css` SHA-256 `04635269a8fbd790c87316a03c6469a157806201e58fd730212f632fc86b7b9c`; `reference.js` `9d565203fc9c3450b0c61d7774cb2322b14ed3e3325926122b17f583e81cf3de`. Never modify them for the native demo.
+- Earlier failed CI runs preserved for diagnosis: [#43699535421](https://github.com/AVANT-ICONIC/calyra/actions/runs/43699535421) missing `Document` trait in screenshot example, [#43778282277](https://github.com/AVANT-ICONIC/calyra/actions/runs/43778282277) `DocGuardMut` mismatch; verified fixes in latest success.
+- OpenSpec `openspec/changes/establish-native-css-feasibility/` updated honestly: **5/18 checked, 4.1 STILL UNCHECKED**. This is **not** production select, true popup, hardware GPU, OS keyboard/pointer/IME/a11y or complete CSS parity. PR #2 stays draft, unmerged, stacked on PR #1. **Do not change main.**
+
+### **Next concrete engineering step**
+
+Replace **temporary editor-as-label** with **noneditable SelectData**, as described in `docs/blitz-select-data-architecture.md` and existing `design.md`:
+
+1. Inspect pinned upstream `packages/blitz-dom/src/node/element.rs`, `node/text.rs`, `layout/construct.rs`, `events/keyboard.rs`, `document.rs`, and `packages/blitz-paint/src/render.rs`; reuse native Parley shaping but NOT `TextInputData` or `PlainEditor`. Define authoritative native selected-option state, not a second conflicting Boa state map.
+2. Prototype in **new isolated patches** applied only to the clean SHA-pinned checkout, never rework original evidence or canonical fixtures. Assert select has no editor, no IME/caret/clipboard edits; retain `value`, `selectedIndex`, `option.selected`, `defaultSelected` semantics and same-node repaint.
+3. Run focused true native Rust/Boa and **same-document Vello CPU** CI under a dedicated one-shot workflow. Preserve failures as well as successes, avoid spending CI on every source change. Only then investigate popup/keyboard/OS input.
+4. Update OpenSpec, evidence, draft PR #2 and HANDOFF at end of each substantial turn. Keep PR unmerged and main untouched.
+
 
 ## Goal
 
