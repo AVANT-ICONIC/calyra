@@ -123,7 +123,10 @@ def checked_state(fixture: str, step: str, state: dict, width: int, height: int)
         assert state["selectedNav"] == 1, state
         assert state["viewport"] == [width, height], state
         assert state["htmlScrollWidth"] <= width + 1, state
-        assert state["styles"]["mainGrid"] == "grid", state
+        # The canonical @media(max-width:650px) intentionally collapses
+        # .workspace from grid to block. This is *correct* responsive CSS.
+        expected_display = "block" if width <= 650 else "grid"
+        assert state["styles"]["mainGrid"] == expected_display, state
         assert state["styles"]["metricsGrid"] == "grid", state
         assert state["priority"] == "balanced", state
     elif step == "controls_action":
