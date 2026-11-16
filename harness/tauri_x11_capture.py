@@ -68,17 +68,35 @@ def main() -> None:
     run("xwd", "-silent", "-id", wid, "-out", str(raw))
     subprocess.run(["convert", str(raw), str(image)], check=True, capture_output=True)
     assert raw.is_file() and raw.stat().st_size > 10000
-    assert image.is_file() and image.stat().st_size > 2000
+    assert image.is_file(), "XWD conversion produced no PNG"
     with Image.open(image) as im:
         im.load()
         width, height = im.size
-        assert 950 <= width <= 1600 and 700 <= height <= 1200, im.size
         preview = im.convert("RGB").resize((96, 96))
         colors = len(preview.getcolors(maxcolors=96 * 96) or [])
-        if colors < MINIMUM_COLORS:
-            raise AssertionError(
-                f"Native Tauri window captured but no useful rendered content: {colors} colors"
-            )
+    # Save diagnostics even when the capture is only a blank X11 backing
+    # surface. Do not treat a tiny valid PNG as a successful WebKit paint.
+    diagnostic = {
+        "window": wid,
+        "geometry": geom,
+        "image_size": [width, height],
+        "png_bytes": image.stat().st_size,
+        "sampled_distinct_colors": colors,
+        "disable_compositing": os.environ.get("WEBKIT_DISABLE_COMPOSITING_MODE"),
+        "disable_dmabuf": os.environ.get("WEBKIT_DISABLE_DMABUF_RENDERER"),
+        "gdk_backend": os.environ.get("GDK_BACKEND"),
+        "original_capture": image.name,
+        "successful_real_pixels": colors >= MINIMUM_COLORS and image.stat().st_size > 2000,
+    }
+    (out / "capture-diagnostic.json").write_text(json.dumps(diagnostic, indent=2) + "\n")
+    assert 950 <= width <= 1600 and 700 <= height <= 1200, (width, height)
+    assert image.stat().st_size > 2000, (
+        f"Actual X11 window exists, but PNG compressed to {image.stat().st_size} bytes; "
+        f"likely blank compositor, {colors} distinct colors"
+    )
+    assert colors >= MINIMUM_COLORS, (
+        f"Actual Tauri window captured but rendered content appears blank: {colors} colors"
+    )
     report = {
         "schema": "calyra.tauri-linux-real-window-pixels.v1",
         "success": True,
