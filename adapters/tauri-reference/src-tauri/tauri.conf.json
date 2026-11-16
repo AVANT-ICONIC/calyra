@@ -1,0 +1,39 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "CALYRA Stage A Reference",
+  "version": "0.1.0",
+  "identifier": "com.avanticonic.calyra.stagea",
+  "build": {
+    "frontendDist": "../../../fixtures"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "CALYRA Stage A · System WKWebView",
+        "url": "index.html?fixture=controls&motion=off",
+        "width": 1060,
+        "height": 800,
+        "innerSize": true,
+        "resizable": true,
+        "visible": true,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "app"
+    ],
+    "icon": [
+      "icons/icon.icns"
+    ],
+    "macOS": {
+      "minimumSystemVersion": "11.0"
+    }
+  }
+}
