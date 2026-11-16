@@ -1,4 +1,4 @@
-name: CALYRA actual Tauri 2 macOS ARM64 .app reference
+name: CALYRA actual Tauri 2 macOS ARM64 .app reference (icon fix)
 
 # Single Stage A build proof. Real Tauri packaging on macOS, not Linux WebKitGTK.
 # Triggered once when this workflow is introduced; switch to manual after proof.
@@ -65,14 +65,17 @@ jobs:
           python3 adapters/tauri-reference/prepare_macos_icon.py \
             | tee evidence/tauri-macos-arm64/app-icon-build.log
           test -s adapters/tauri-reference/src-tauri/icons/icon.icns
-          shasum -a 256 adapters/tauri-reference/src-tauri/icons/icon.icns \
+          test -s adapters/tauri-reference/src-tauri/icons/icon.png
+          test -s adapters/tauri-reference/src-tauri/icons/calyra-reference-source.png
+          cmp adapters/tauri-reference/src-tauri/icons/icon.png adapters/tauri-reference/src-tauri/icons/calyra-reference-source.png
+          shasum -a 256 adapters/tauri-reference/src-tauri/icons/icon.png adapters/tauri-reference/src-tauri/icons/icon.icns \
             > evidence/tauri-macos-arm64/icon-sha256.txt
       - name: Install pinned Tauri CLI from npm and log dependency resolution
         shell: bash
         run: |
           set -euo pipefail
           cd adapters/tauri-reference
-          npm install --no-audit --no-fund 2>&1 | tee "$GITHUB_WORKSPACE/evidence/tauri-macos-arm64/npm-install.log"
+          npm ci --no-audit --no-fund 2>&1 | tee "$GITHUB_WORKSPACE/evidence/tauri-macos-arm64/npm-install.log"
           ./node_modules/.bin/tauri --version \
             | tee "$GITHUB_WORKSPACE/evidence/tauri-macos-arm64/tauri-cli-version.txt"
           grep -Fq 'tauri-cli 2.12.4' "$GITHUB_WORKSPACE/evidence/tauri-macos-arm64/tauri-cli-version.txt"
@@ -82,9 +85,10 @@ jobs:
         run: |
           set -euo pipefail
           cd adapters/tauri-reference
-          npm run build:macos -- --debug 2>&1 \
+          npm run build:macos -- --debug -- --locked 2>&1 \
             | tee "$GITHUB_WORKSPACE/evidence/tauri-macos-arm64/tauri-build.log"
           test -s src-tauri/Cargo.lock
+          git diff --exit-code -- src-tauri/Cargo.lock package-lock.json
           cp src-tauri/Cargo.lock "$GITHUB_WORKSPACE/evidence/tauri-macos-arm64/Cargo.lock"
           shasum -a 256 src-tauri/Cargo.lock package-lock.json \
             > "$GITHUB_WORKSPACE/evidence/tauri-macos-arm64/dependency-lock-sha256.txt"
