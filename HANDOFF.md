@@ -1,12 +1,22 @@
 # CALYRA — HANDOFF
 
-**Updated:** 2026-11-15
+**Updated:** 2026-11-16
 **Repository:** AVANT-ICONIC/calyra (private)
 **Working branch:** feat/reference-fixtures
 **PR:** https://github.com/AVANT-ICONIC/calyra/pull/2 — DRAFT and UNMERGED
 **PR base:** docs/openspec-native-css-feasibility (stacked; do not change main)
 
 **FIRST THING IN ANY NEW CHAT:** Read this HANDOFF.md from the current working branch. Continue the existing change rather than re-planning it from scratch.
+
+## Continuation checkpoint, 2026-11-16
+
+- The **actual** [Blitz live selectedness CI #43699535417](https://github.com/AVANT-ICONIC/calyra/actions/runs/43699535417) passed **9/9** Rust/Boa tests. Original author CSS/JS untouched; same select node identity; seven state transitions for `value`, `selectedIndex`, `option.selected`, `defaultSelected`, no programmatic input/change events, and synchronous text-buffer label changes.
+- An **independent local** Chromium 144.0.7559.96/Playwright run matched all seven programmatic state transitions. Trusted ArrowDown on this Chromium/Linux instance produced `keydown → input → change`, twice; programmatic assignment produced no events. Details: `docs/blitz-select-live-observations.md`.
+- The separate **live screenshot CI #43699535421** failed during Rust example compilation (missing `blitz_dom::Document` trait), **not** during native pixel comparison. The JS test part passed. In a follow-up source audit, `paint_scene` also requires a `&mut BaseDocument`, whereas `inner_mut()` returns `DocGuardMut`.
+- Both Rust fixes are committed on the **same draft branch**, not on main: import `Document`, drop unused `io::Write`, call `paint_scene(scene, &mut *doc.inner_mut(), ...)`. The one-shot CI workflow has a separate preflight guard for both API expectations.
+- Independent retry runs: [#43778282277](https://github.com/AVANT-ICONIC/calyra/actions/runs/43778282277) (first import fix, expected old guard mismatch) and [#43778999121](https://github.com/AVANT-ICONIC/calyra/actions/runs/43778999121) (both fixes). **Both were still running at this checkpoint.** Their outcomes must be retrieved, not assumed.
+- New report: `docs/blitz-select-live-observations.md`. OpenSpec remains **5/18**, task **4.1 unchecked**. There is **no verified same-document pixel transition yet**, no physical OS input, a11y, IME, hardware GPU or production select.
+- **Next:** inspect the complete latest CI status and build/screenshot logs; fix any demonstrable build/paint issue on this branch; if native before/after PNGs actually pass, preserve original evidence byte-for-byte with hashes; then replace the temporary `TextInputData` buffer with dedicated noneditable `SelectData` on the pinned experimental upstream checkout. Keep both PRs draft/unmerged and update this handoff at end.
 
 ## Goal
 
