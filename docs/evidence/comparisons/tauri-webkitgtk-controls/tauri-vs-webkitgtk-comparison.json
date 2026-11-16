@@ -1,0 +1,128 @@
+{
+  "schema": "calyra.tauri-webkitgtk-exploratory-controls-comparison.v1",
+  "scene": "controls first view, 1060x800 native pixels",
+  "sources": {
+    "tauri": {
+      "path": "docs/evidence/tauri-linux-window-pixels/tauri-native-window.png",
+      "sha256": "8d035f42495d2b5d0d006c37c2cba1e6124c9795768937d42e66b77b743dc6e9"
+    },
+    "webkitgtk": {
+      "path": "docs/evidence/system-webkitgtk-reference/webkitgtk-controls-1060x800-default-initial.png",
+      "sha256": "22b9bb1b3369bc3fd78773e580bcb57e306014eb9368bba1c8bbae27655cdbad"
+    }
+  },
+  "images": {
+    "tauri-vs-webkitgtk-raw-difference.png": "1298f82598104203b9c83257d614aab1083e558f1b4f54297a241ccf0ed5a69b",
+    "tauri-vs-webkitgtk-montage.png": "4d11c56ef0b9f311b2fd97d5de2c9498c93aaf40f79cd2d7fa4ecf42cd3d9457"
+  },
+  "regions": {
+    "whole_view": {
+      "bounds": [
+        0,
+        0,
+        1060,
+        800
+      ],
+      "pixels": 848000,
+      "changed_at_12": 1692,
+      "fraction_at_12": 0.001995,
+      "changed_at_32": 1690,
+      "fraction_at_32": 0.001993,
+      "mean_abs_rgb_channel": 0.098917
+    },
+    "header": {
+      "bounds": [
+        0,
+        0,
+        1060,
+        85
+      ],
+      "pixels": 90100,
+      "changed_at_12": 235,
+      "fraction_at_12": 0.002608,
+      "changed_at_32": 235,
+      "fraction_at_32": 0.002608,
+      "mean_abs_rgb_channel": 0.129205
+    },
+    "sidebar": {
+      "bounds": [
+        0,
+        85,
+        258,
+        800
+      ],
+      "pixels": 184470,
+      "changed_at_12": 0,
+      "fraction_at_12": 0.0,
+      "changed_at_32": 0,
+      "fraction_at_32": 0.0,
+      "mean_abs_rgb_channel": 0.0
+    },
+    "main_intro": {
+      "bounds": [
+        258,
+        85,
+        1060,
+        450
+      ],
+      "pixels": 292730,
+      "changed_at_12": 1097,
+      "fraction_at_12": 0.003747,
+      "changed_at_32": 1095,
+      "fraction_at_32": 0.003741,
+      "mean_abs_rgb_channel": 0.185754
+    },
+    "control_surface": {
+      "bounds": [
+        258,
+        450,
+        1060,
+        800
+      ],
+      "pixels": 280700,
+      "changed_at_12": 360,
+      "fraction_at_12": 0.001283,
+      "changed_at_32": 360,
+      "fraction_at_32": 0.001283,
+      "mean_abs_rgb_channel": 0.063643
+    },
+    "select_control": {
+      "bounds": [
+        670,
+        465,
+        1010,
+        525
+      ],
+      "pixels": 20400,
+      "changed_at_12": 0,
+      "fraction_at_12": 0.0,
+      "changed_at_32": 0,
+      "fraction_at_32": 0.0,
+      "mean_abs_rgb_channel": 0.0
+    },
+    "range_control": {
+      "bounds": [
+        310,
+        585,
+        1010,
+        630
+      ],
+      "pixels": 31500,
+      "changed_at_12": 0,
+      "fraction_at_12": 0.0,
+      "changed_at_32": 0,
+      "fraction_at_32": 0.0,
+      "mean_abs_rgb_channel": 0.0
+    }
+  },
+  "meaning": "uncorrected native pixel difference, not CSS support score",
+  "source_content_modified": false,
+  "actual_tauri_runtime_source": true,
+  "hardware_gpu_measured": false,
+  "wkwebview_macos_tested": false,
+  "native_os_input_tested": false,
+  "performance_measured": false,
+  "different_capture_backends": true,
+  "color_fonts_scale_normalized": false,
+  "limitation": "The Tauri X11 window was captured by xwd, standalone WebKitGTK by WebView native snapshot, on separate CI runner jobs; decorations, antialiasing, font fallback and raster pipeline may differ. Large flat backgrounds make whole-frame percentages misleading."
+}

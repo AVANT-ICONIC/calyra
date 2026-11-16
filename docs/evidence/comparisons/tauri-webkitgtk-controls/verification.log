@@ -1,0 +1,2 @@
+VERIFIED: native Tauri vs standalone WebKitGTK Controls: 1692/848000 RGB pixels differ at threshold 12
+CAVEAT: direct visual diagnostic only, not CSS compatibility or performance
