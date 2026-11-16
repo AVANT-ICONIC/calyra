@@ -3,9 +3,6 @@ name: CALYRA WebKitGTK versus native Blitz controls pixel comparison
 # One-shot report from two separately VERIFIED archived native PNGs.
 # No renderer build, no claims of font parity, performance or OS input.
 on:
-  push:
-    branches: [feat/reference-fixtures]
-    paths: [.github/workflows/compare-blitz-webkitgtk-controls.yml]
   workflow_dispatch:
 
 permissions:
