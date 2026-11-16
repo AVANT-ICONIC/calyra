@@ -24,6 +24,10 @@ On 2026-11-16, headless **Chromium 144.0.7559.96** via Playwright on Linux ran t
 
 The same output is reproducible using `harness/chromium_select_contract.py --chromium /usr/bin/chromium --out <file>` with Playwright and Chromium installed. This verifies only the enumerated behavior. It does not validate keyboard/pointer option selection, select reset, disabled options, optgroups, focus, accessibility, OS input or paint fidelity.
 
+## Chromium keyboard-event reference (separate from programmatic setter contract)
+
+An additional Playwright/headless Chromium 144.0.7559.96 probe focused the same native browser `<select>` and sent **trusted** user-like `ArrowDown` key presses. On this Linux Chromium configuration, each ArrowDown emitted `keydown` (at the preceding selection) followed by `input`, then `change`, both at the new selected index/value: first `quality` / 1, then `performance` / 2. A subsequent Escape emitted `keydown` without changing selection or dispatching `input`/`change`. This is browser-specific measured behavior, not a universal native OS event ordering guarantee and **not** a Blitz implementation result. The current CALYRA native test intentionally covers only programmatic changes, which dispatch no such events.
+
 ## Screenshot acceptance boundary
 
 A *separate* one-shot workflow, `.github/workflows/native-blitz-select-live-paint-proof.yml`, compiles the native Vello CPU screenshot example `native/blitz/experiments/calyra_live_screenshot.rs`. It captures **Balanced** then mutates `select.value='quality'` on the *same* ScriptDocument and captures **Visual fidelity**, verifying unchanged node identity, image sizes, hashes, change count and localized pixel bounds.
