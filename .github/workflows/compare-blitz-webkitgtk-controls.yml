@@ -65,7 +65,7 @@ jobs:
           src=evidence/comparisons/webkitgtk-blitz-controls
           dst=docs/evidence/comparisons/webkitgtk-blitz-controls
           mkdir -p "$dst"
-          cp "$src"/. "$dst"/
+          cp -a "$src"/. "$dst"/
           cp source-sha256.txt "$dst/"
           sha256sum -c "$dst/source-sha256.txt"
           /usr/bin/python3 - <<'PY'
