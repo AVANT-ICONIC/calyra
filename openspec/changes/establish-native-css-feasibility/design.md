@@ -160,3 +160,21 @@ This OpenSpec change is **proposed, not implemented**. Implementation must not b
 **Evidence, not release approval:** [native Rust/Boa CI #43699535417](https://github.com/AVANT-ICONIC/calyra/actions/runs/43699535417) passed 9/9 tests for seven in-place select states. [Native Vello CPU CI #43778999121](https://github.com/AVANT-ICONIC/calyra/actions/runs/43778999121) passed 9/9 tests, built a release screenshot example, and painted two 1060×800 frames from **one ScriptDocument** before/after a live `select.value='quality'` mutation. Exactly **732** pixels differed by >=12 in any RGB channel within bbox **[687, 490, 794, 505]**. The original 18 evidence files are permanently archived by [#43780409985](https://github.com/AVANT-ICONIC/calyra/actions/runs/43780409985) under `docs/evidence/blitz-select-live/`, with independent SHA-256/pixel verification. CSS and JS original hashes remain unchanged.
 
 This verifies **live reactive pixels** for the restricted direct-option case, not `HTMLSelectElement` compatibility. The still-used `TextInputData`/Parley editor buffer is not a safe read-only select widget. The follow-up architecture and explicit acceptance gates are recorded in `docs/blitz-select-data-architecture.md`: separate noneditable `SelectData`, single native selected-option authority, shared Parley shaping without an editor, no IME or caret, no duplicate browser DOM state, and a separate same-document test. Task 4.1 remains unchecked until the broader input/accessibility criteria hold. No hardware GPU, native OS input or general CSS parity is implied.
+
+
+## Scoped Stage A system-WebView baseline: Linux WebKitGTK (2026-11-16)
+
+**Decision:** establish a Linux WebKitGTK 4.1 reference using a minimal GTK3 host, loading the **unaltered canonical CALYRA HTML, CSS and JavaScript assets**. This is a **system-WebView engine smoke test**, **not a Tauri build** and **not a macOS WKWebView result**. Linux Tauri v2 uses WebKitGTK 4.1, while macOS Tauri v2 uses WKWebView. A successful WebKitGTK result alone cannot complete task 3.1.
+
+**Inputs and evidence contract:**
+
+- All four original fixtures, 1060×800 CSS-pixel viewport, motion off, same real relative CSS/JS paths via file URL, no CSS or JavaScript substitutions.
+- Each scene uses a real WebKitGTK widget under a recorded Xvfb session on Ubuntu 24.04. PNG output must come from the WebKitGTK snapshot API rather than a prerendered image.
+- Record exact original SHA-256 hashes, GTK/WebKit version, image dimensions and SHA-256 hashes, ready and active DOM state, CSS values, programmatic interaction traces, errors and process memory samples.
+- The control interaction checks the original apply/reset handlers and select value. The menu probe tests the original toggle/Escape handler and focus. These are **synthetic DOM events**, not trusted physical keyboard or mouse input.
+- Separate engine/process evidence from user-facing Tauri shell overhead. WebKitGTK 4.1 smoke results establish Linux engine behavior, not macOS WKWebView or actual Tauri app behavior.
+- No claims of comparable CPU/RAM/GPU performance from a single Linux run. Load elapsed values and child-process RSS snapshots are diagnostics only, especially because shared memory may be double counted.
+
+**Fail-closed gate:** all four states must load the unchanged source, execute canonical JavaScript, pass state assertions and save real 1060×800 screenshots. If a package, Wayland/X11 display, file URI, API or rendering path is unavailable, archive its exact failure and label this candidate restricted/blocked. Never call a Chromium fallback WebKitGTK.
+
+**Follow-up:** actual Tauri 2 shell and WKWebView on a Mac, trusted OS input, repeatable memory/process measurements, and comparative differences to Blitz/RmlUi. Keep tasks 3.1, 4.1 and 4.2 unchecked until those distinct gates really pass.
