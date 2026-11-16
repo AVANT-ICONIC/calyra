@@ -56,7 +56,8 @@ fn capture(doc:&mut ScriptDocument, path:&Path) {
                 &Rect::new(0.0,0.0,WIDTH as f64,HEIGHT as f64),
                 AntiAliasing::Enabled,
             );
-            paint_scene(scene,doc.inner_mut(),1.0,WIDTH,HEIGHT,0,0);
+            // paint_scene requires &mut BaseDocument, not DocGuardMut by value.
+            paint_scene(scene,&mut *doc.inner_mut(),1.0,WIDTH,HEIGHT,0,0);
         },
         WIDTH,
         HEIGHT,
