@@ -1,0 +1,1 @@
+{"schema":"calyra.blitz-js.v1","fixture":"escape-patched","reference_js_modified":false,"javascript_execution_attempted":true,"os_input_tested":false,"gpu_tested":false,"js_error_count":0,"observations":{"before":{"expanded":"true","focused":"inspect"},"after":{"expanded":"false","hidden":true,"trace":[{"key":"Escape","target":""}]}}}
