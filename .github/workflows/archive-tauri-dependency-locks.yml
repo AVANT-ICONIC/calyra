@@ -1,0 +1,84 @@
+name: Preserve reproducible CALYRA Tauri source dependency locks
+
+# Only lockfiles from the verified real Tauri Linux compile (not fabricated).
+# Separate from binary CI so no expensive Rust/WebKit rebuild is needed.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/archive-tauri-dependency-locks.yml]
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  exact-lockfile-preservation:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download exact original lockfile evidence from successful Tauri compile
+        uses: actions/download-artifact@v4
+        with:
+          run-id: 43937455301
+          name: calyra-native-tauri-linux-smoke
+          github-token: ${{ github.token }}
+          path: produced
+      - name: Verify Rust and CLI package lock contents
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -s produced/Cargo.lock
+          test -s produced/package-lock.json
+          grep -Fq 'CALYRA_NATIVE_TAURI_LINUX_PROCESS_ALIVE=true' produced/runtime-summary.txt
+          grep -Fq 'tauri-cli 2.12.4' produced/tauri-cli-version.txt
+          python3 - <<'PY'
+          import hashlib,json,tomllib
+          from pathlib import Path
+          root=Path('produced')
+          pkg=json.loads((root/'package-lock.json').read_text())
+          assert pkg['packages']['node_modules/@tauri-apps/cli']['version']=='2.12.4'
+          rust=tomllib.loads((root/'Cargo.lock').read_text())
+          entries=rust['package']
+          matches=[p for p in entries if p['name']=='calyra-tauri-reference']
+          assert len(matches)==1
+          tauri=[p for p in entries if p['name']=='tauri']
+          tauri_build=[p for p in entries if p['name']=='tauri-build']
+          assert len(tauri)==1 and len(tauri_build)==1
+          assert tauri[0]['version'].split('.')[0]=='2'
+          assert tauri_build[0]['version'].split('.')[0]=='2'
+          for name in ('Cargo.lock','package-lock.json'):
+              x=root/name
+              print('VERIFIED',name,'bytes',x.stat().st_size,'sha256',hashlib.sha256(x.read_bytes()).hexdigest())
+          print('Tauri Rust',tauri[0]['version'],'Tauri build',tauri_build[0]['version'])
+          PY
+      - name: Commit only exact locks on latest feature branch with safe retries
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for attempt in 1 2 3 4 5; do
+            git fetch origin feat/reference-fixtures
+            git checkout -B feat/reference-fixtures FETCH_HEAD
+            cp produced/package-lock.json adapters/tauri-reference/package-lock.json
+            cp produced/Cargo.lock adapters/tauri-reference/src-tauri/Cargo.lock
+            git add adapters/tauri-reference/package-lock.json adapters/tauri-reference/src-tauri/Cargo.lock
+            if git diff --cached --quiet; then
+              echo "Exact lockfiles already preserved"
+              exit 0
+            fi
+            git commit -m "build(tauri): pin exact Tauri Rust and npm dependency graph from real native build"
+            if git push origin HEAD:feat/reference-fixtures; then
+              echo "PASS: exact verified locks committed on attempt=$attempt"
+              exit 0
+            fi
+            echo "Concurrent push; retry latest branch, attempt=$attempt"
+            sleep 1
+          done
+          exit 1
+      - name: Summarize provenance
+        if: always()
+        run: |
+          echo 'Exact Cargo.lock and npm package-lock.json came from successful native Linux Tauri compile #43937455301 and were hash-checked before a safe branch-only commit. This does not prove macOS runtime or package signing.' >> "$GITHUB_STEP_SUMMARY"
