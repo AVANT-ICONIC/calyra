@@ -1,0 +1,4 @@
+pid	responsible_pid	resident_bytes	physical_footprint_bytes	rusage_status
+4184	904	86130688	17041664	ok
+4198	904	52740096	27625408	ok
+4202	904	18874368	5309632	ok
