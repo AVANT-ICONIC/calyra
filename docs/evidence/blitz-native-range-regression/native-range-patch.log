@@ -1,0 +1,11 @@
+CALYRA_RANGE_PATCHED=packages/blitz-dom/src/node/mod.rs
+CALYRA_RANGE_PATCHED=packages/blitz-dom/src/node/element.rs
+CALYRA_RANGE_PATCHED=packages/blitz-dom/src/layout/construct.rs
+CALYRA_RANGE_PATCHED=packages/blitz-dom/src/document.rs
+CALYRA_RANGE_PATCHED=packages/blitz-dom/src/mutator.rs
+CALYRA_RANGE_PATCHED=packages/blitz-paint/src/render/form_controls.rs
+CALYRA_RANGE_PATCHED=packages/blitz-vibey-script/src/dom/element/form_controls.rs
+CALYRA_RANGE_PATCHED=packages/blitz-dom/src/accessibility.rs
+CALYRA_RANGE_MODEL_NO_TEXT_EDITOR=1
+CALYRA_RANGE_OS_POINTER_KEYBOARD_NOT_IMPLEMENTED=1
+CALYRA_RANGE_PROGRAMMATIC_EVENTS_NOT_DISPATCHED=1
