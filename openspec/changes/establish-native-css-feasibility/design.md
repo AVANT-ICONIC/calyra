@@ -46,6 +46,11 @@ This section records **documentation evidence**, not CALYRA benchmark results or
 
 **Important:** RmlUi's missing Grid is a compatibility gap, not automatically a reason to exclude it from performance or adapter research. Never silently transform Grid into Flexbox and report direct compatibility. Electrobun's webview anchoring is not proof that its experimental GPU path itself runs in a webview.
 
+## Apple Silicon Blitz Vello-CPU compatibility slice (2026-11-17)
+
+Before measuring a putative native-renderer performance advantage, verify whether the exact pinned Blitz 0.3.0-beta.4 upstream `examples/screenshot.rs` compiles and renders CALYRA on the **same macOS ARM64 runner family** as the verified Tauri WKWebView baseline. Reuse `native/blitz/run_stage_a.py` and `prepare_static.py` with unchanged authored CSS and honest static-HTML adaptations (explicit JS omission and active fixture). Keep native Blitz executable headless Vello **CPU**, not a windowed/GPU/text-input backend. Verify the actual executable revision, original fixture digests, nonblank 1060×800 normalized screenshot and raw provenance; archive success or real native build blocker.
+
+**Acceptance boundary:** This only closes the cross-OS Blitz build/paint feasibility slice when a native Mac executable actually produces pixels. It MUST NOT be compared in a single speed/RAM headline with Tauri's persistent interactive WKWebView. A one-shot screenshot renderer that exits has different lifespan, readiness, capabilities, and memory scope than the interactive Tauri app (with WebKit helpers). Full OpenSpec 4.2 needs functionality-equivalent, same-machine, repeated runs, matched optimized configurations, defined readiness and whole-process accounting. No hidden JS substitutions or invented GPU parity.
 ## Two-stage experiment
 
 ### Stage A — compatibility preflight (cheap, documented)
