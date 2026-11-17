@@ -14,6 +14,10 @@ The current screenshot failure is therefore **not simply missing author CSS**. T
 
 Also note that Blitz's `build_accessibility_node` sets element `role`, tag and explicit ARIA attributes, but its ordinary element path has no generic `set_value` for a select/range current value in this source. It *does* set `value` for `TextRun`. This raises a concrete OS-level values/labels question rather than proving current AX output.
 
+## Additional upstream blocker: AX actions are not dispatched to controls
+
+[The pinned BlitzShell application event handler](https://github.com/DioxusLabs/blitz/blob/4f61cffacee50fe4f944ebe9d0470d9a5d3997e0/packages/blitz-shell/src/application.rs) already handles AccessKit `InitialTreeRequested` by calling `window.build_accessibility_tree()`, but its `WindowEvent::ActionRequested(_req)` branch is a **TODO**. Thus successfully activating the AX tree would still not demonstrate functional native Accessibility actions or change a slider/select from an assistive technology. A future proper integration must implement action routing to an authoritative native control state and verify emitted value/events. This finding is independently established by the pinned source, not inferred from the AX screenshot.
+
 ## Targeted controlled experiment
 
 The new isolated [macOS native SelectData + AX workflow](../.github/workflows/blitz-macos-select-ax-proof.yml) applies only the existing Linux-proven source-pinned select adapter to a temporary, exact-revision Blitz checkout. It independently verifies a real app-owned macOS window, captures its genuine pixels and reads the actual macOS AX tree via [`harness/macos_ax_inventory.swift`](../harness/macos_ax_inventory.swift) without posting OS input, changing focus or values, or requesting permissions. Its AX inventory is compared to the already verified original Tauri WKWebView native AX baseline. Missing fields must remain explicit, not silently counted as passing.
