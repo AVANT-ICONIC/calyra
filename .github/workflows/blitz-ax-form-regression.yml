@@ -1,4 +1,4 @@
-name: CALYRA pinned Blitz native AccessKit form semantics regression
+name: CALYRA pinned Blitz native AccessKit form labels and block-spacing regression
 
 on:
   push:
@@ -110,8 +110,8 @@ jobs:
           tail -n 160 "$O/native-rust-test.log"
           echo "$code" > "$O/native-test-exit-code.txt"
           test "$code" -eq 0
-          grep -Fq 'test result: ok. 7 passed; 0 failed' "$O/native-rust-test.log"
-          printf '%s\n' '7 source-pinned native AccessKit regression cases passed' \
+          grep -Fq 'test result: ok. 9 passed; 0 failed' "$O/native-rust-test.log"
+          printf '%s\n' '9 source-pinned native AccessKit regression cases passed' \
             | tee "$O/regression-verdict.txt"
       - name: Preserve actual source-pinned test evidence
         if: success()
