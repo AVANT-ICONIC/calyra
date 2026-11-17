@@ -2,6 +2,23 @@
 
 **Scope:** real Tauri 2 desktop application using the **original CALYRA HTML/CSS/JS**. A live **Linux Tauri WebKitGTK** executable and its **real X11 window screenshot** have been built and verified. **The macOS ARM64 .app build, native process launch, and a real app-owned WKWebView first frame are verified; original JS event handlers have been validated inside a genuine WKWebView, but OS-delivered keyboard/pointer and IME remain unverified.** This is a restricted Stage A feasibility result, not a production release or speed benchmark.
 
+## Original WKWebView native macOS Accessibility tree, read-only (2026-11-17, NEWEST)
+
+[Actual Mac ARM64 CI #44014882723](https://github.com/AVANT-ICONIC/calyra/actions/runs/44014882723) **PASSED every step**, including original prebuilt, hash-verified CALYRA Tauri app startup, app-owned CoreGraphics window and actual application accessibility tree traversal via macOS `AXUIElementCopyAttributeValue`. **221 native AX nodes** were exposed, including system window/menu objects (do **not** describe 221 as 221 CALYRA-specific controls). In addition to `AXWebArea`, the canonical Controls surface exposes:
+
+| Original field/control | Native AX role | Real AX title | Real AX value |
+|---|---|---|---|
+| Display name | `AXTextField` | `Display name` | `Alex Rivera` |
+| Render priority | `AXPopUpButton` | `Render priority` | `Balanced` |
+| Material intensity | `AXSlider` | `Material intensity 64%` | `64` |
+| Enable effects | `AXCheckBox` | `Enable effects Native checkbox with CSS presentation` | `1` (checked) |
+| Apply settings | `AXButton` | `Apply settings` | blank |
+| Reset | `AXButton` | `Reset` | blank |
+
+The tree also contains **44 AXStaticText**, **5 AXLink**, **1 AXScrollArea**, **1 AXValueIndicator** and menu/window controls. The entire untruncated original AX tree, actual app-owned window report, exact app artifact/source SHA-256 and environment were independently archived by the successful CI to [`docs/evidence/tauri-macos-original-ax-tree/`](evidence/tauri-macos-original-ax-tree/) (10 original files plus hash manifest). The probe source [`macos_ax_readonly_probe.swift`](../adapters/tauri-reference/macos_ax_readonly_probe.swift) never posts mouse/key events, changes focus, sets element values, requests OS permissions or injects JS; **the original Tauri app and canonical authored fixtures are unchanged**.
+
+**Strict boundary:** This proves that the genuine macOS accessibility API can read semantic roles/titles/current values for the tested native WKWebView UI. It is **not** an actual VoiceOver session, real keyboard navigation, pointer testing, dynamic ARIA live-update audit, IME test, color contrast audit or complete WCAG compliance proof. OpenSpec **4.1 remains unchecked**, as do 3.1/4.2. First probe attempt [#44014692944](https://github.com/AVANT-ICONIC/calyra/actions/runs/44014692944) failed Swift String/CFString interop, second [#44014797117](https://github.com/AVANT-ICONIC/calyra/actions/runs/44014797117) failed doubled absolute path before AX traversal; these were test-wiring failures, corrected in the **verified** run #44014882723.
+
 ## Five same-machine directly attributed WKWebView resource trials (2026-11-17, NEWEST)
 
 [Native ARM64 CI #44008710566](https://github.com/AVANT-ICONIC/calyra/actions/runs/44008710566) **PASSED every step**, including **6/6 new strict direct-PID verification unit tests**, reproducible Rust/Tauri diagnostic-feature build, native CoreGraphics/Quartz app-window inspection, and five sequential independent app instances. Each instance's WKWebView returned its own WebContent and Networking PIDs using the private diagnostic selectors; the harness checked both against actual living macOS processes and captured libproc rusage info around **12 seconds after launch**. Original canonical CALYRA assets are unchanged.
