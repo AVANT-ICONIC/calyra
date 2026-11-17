@@ -1,4 +1,4 @@
-name: CALYRA pinned Blitz native RangeData and AccessKit sixteen regression tests
+name: CALYRA pinned Blitz native RangeData and AccessKit sixteen regression tests v2
 
 on:
   push:
