@@ -176,12 +176,22 @@ fn create_checkbox_input(doc: &mut BaseDocument, input_element_id: NodeId) {""")
     ])
     # Bridge into the actual current DOM state; no duplicate JS map, no event synthesis.
     change(root,"packages/blitz-vibey-script/src/dom/element/form_controls.rs",[
-        ("""                Some(input_data) => input_data.editor.raw_text().to_string(),
-                None => element""",
-         """                Some(input_data) => input_data.editor.raw_text().to_string(),
-                None if element.range_data().is_some() =>
-                    element.range_data().unwrap().value_text(),
-                None => element"""),
+        ("""    let value = {
+        let doc = ctx.doc.borrow();""",
+         """    // Native RangeData is the single current value authority. The
+    // raw HTML 'value' attribute remains the defaultValue, not live state.
+    let current_range_value = {
+        let doc = ctx.doc.borrow();
+        doc.get_node(node_id)
+            .and_then(|node| node.element_data())
+            .and_then(|el| el.range_data())
+            .map(|range| range.value_text())
+    };
+    if let Some(value) = current_range_value {
+        return Ok(js_str(&value));
+    }
+    let value = {
+        let doc = ctx.doc.borrow();"""),
         ("""    attr_setter("value", this, args, context)
 }
 
