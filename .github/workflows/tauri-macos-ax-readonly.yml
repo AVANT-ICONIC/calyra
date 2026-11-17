@@ -1,0 +1,157 @@
+name: CALYRA real macOS WKWebView accessibility read-only probe
+
+# Genuine original uninstrumented Tauri app; read-only AX tree inspection.
+# No keyboard/mouse injection, no TCC changes, no privileged frontend bridge.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/tauri-macos-ax-readonly.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  original-wkwebview-ax:
+    runs-on: macos-15
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/reference-fixtures
+      - name: Fetch verified original native macOS ARM64 Tauri app
+        uses: actions/download-artifact@v4
+        with:
+          name: calyra-actual-tauri-macos-arm64-build
+          run-id: 43996164957
+          github-token: ${{ github.token }}
+          path: evidence/tauri-macos-ax/input
+
+      - name: Hash-check original unchanged app and compile native read-only AX tool
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$GITHUB_WORKSPACE/evidence/tauri-macos-ax"
+          python3 adapters/tauri-reference/verify_source.py | tee "$OUT/source-contract.json"
+          grep -Fq '"pass": true' "$OUT/source-contract.json"
+          ZIP="$OUT/input/calyra-tauri-macos-arm64-debug.app.zip"
+          test -s "$ZIP"
+          expected="$(awk '{print $1}' "$OUT/input/bundle-zip-sha256.txt")"
+          actual="$(shasum -a 256 "$ZIP" | awk '{print $1}')"
+          test "$actual" = "$expected"
+          printf '%s\n' "$actual" > "$OUT/verified-original-app-zip-sha256.txt"
+          mkdir -p "$OUT/unpacked"
+          ditto -x -k "$ZIP" "$OUT/unpacked"
+          APP="$(find "$OUT/unpacked" -maxdepth 1 -name '*.app' -type d -print -quit)"
+          test -n "$APP"
+          test -x "$APP/Contents/MacOS/calyra-tauri-reference"
+          lipo -archs "$APP/Contents/MacOS/calyra-tauri-reference" \
+            | tee "$OUT/native-archs.txt"
+          grep -qw arm64 "$OUT/native-archs.txt"
+          printf '%s\n' "$PWD/$APP" > "$OUT/absolute-app-path.txt"
+          swiftc -O adapters/tauri-reference/macos_ax_readonly_probe.swift \
+            -o "$OUT/ax-readonly"
+          swiftc -O adapters/tauri-reference/macos_native_window_probe.swift \
+            -o "$OUT/actual-window-inspector"
+          test -x "$OUT/ax-readonly"
+          test -x "$OUT/actual-window-inspector"
+          shasum -a 256 adapters/tauri-reference/macos_ax_readonly_probe.swift \
+            adapters/tauri-reference/macos_native_window_probe.swift \
+            > "$OUT/inspector-source-sha256.txt"
+          { sw_vers; uname -m; swift --version; } | tee "$OUT/host-environment.txt"
+
+      - name: Inspect actual app-owned macOS WKWebView AX tree, without input
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$GITHUB_WORKSPACE/evidence/tauri-macos-ax"
+          APP="$(cat "$OUT/absolute-app-path.txt")"
+          /usr/bin/open -n -a "$APP"
+          sleep 7
+          PID="$(pgrep -f "$APP/Contents/MacOS/calyra-tauri-reference" | head -n 1 || true)"
+          test -n "$PID" || { echo 'No real Tauri process'; exit 2; }
+          echo "$PID" > "$OUT/app-pid.txt"
+          "$OUT/actual-window-inspector" windows "$PID" | tee "$OUT/app-owned-windows.json"
+          python3 - "$OUT/app-owned-windows.json" "$PID" <<'PY'
+          import json,sys
+          d=json.load(open(sys.argv[1]))
+          assert d['owner_pid']==int(sys.argv[2])
+          assert d['window_found'] and len(d['visible_window_candidates'])>0
+          print('PASS real macOS app-owned content window, not a headless DOM simulation')
+          PY
+          set +e
+          "$OUT/ax-readonly" "$PID" > "$OUT/actual-ax-tree.json" 2> "$OUT/native-ax-error.log"
+          rc=$?
+          set -e
+          echo "$rc" > "$OUT/native-ax-exit-code.txt"
+          test "$rc" -eq 0 || { cat "$OUT/native-ax-error.log"; cat "$OUT/actual-ax-tree.json"; exit "$rc"; }
+          python3 - "$OUT/actual-ax-tree.json" "$PID" <<'PY'
+          import json,sys
+          d=json.load(open(sys.argv[1]))
+          assert d['schema']=='calyra.macos-native-accessibility-readonly.v1'
+          assert d['target_app_pid']==int(sys.argv[2])
+          assert d['accessibility_permission_trusted'] is True
+          assert d['canonical_name_field_exposed_with_value'] is True
+          assert d['element_count']>=10
+          assert d['events_posted'] is False
+          assert d['focus_or_value_mutated'] is False
+          assert d['voiceover_screenreader_tested'] is False
+          assert d['actual_os_keyboard_or_pointer_tested'] is False
+          print('PASS native macOS AX exposed canonical original textfield:')
+          print('roles:',d['role_counts'])
+          print('Total exposed AX nodes:',d['element_count'])
+          print('No physical input, screenreader or complete a11y compliance claimed')
+          PY
+
+      - name: Archive original verified accessible-tree evidence on research branch
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=evidence/tauri-macos-ax
+          DEST=docs/evidence/tauri-macos-original-ax-tree
+          mkdir -p "$DEST"
+          cp -p "$OUT"/{source-contract.json,verified-original-app-zip-sha256.txt,native-archs.txt,inspector-source-sha256.txt,host-environment.txt,app-pid.txt,app-owned-windows.json,actual-ax-tree.json,native-ax-error.log,native-ax-exit-code.txt} "$DEST"/
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          p=Path('docs/evidence/tauri-macos-original-ax-tree')
+          f={x.name:hashlib.sha256(x.read_bytes()).hexdigest()
+             for x in p.iterdir() if x.is_file()}
+          (p/'original-file-sha256.json').write_text(json.dumps(f,indent=2,sort_keys=True)+'\n')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f "$DEST"/
+          git diff --cached --quiet && exit 0
+          git commit -m "test(evidence): record original Tauri macOS WebKit AX semantic tree"
+          git fetch origin feat/reference-fixtures
+          git rebase origin/feat/reference-fixtures
+          git push origin HEAD:refs/heads/feat/reference-fixtures
+
+      - name: Report strict a11y boundary
+        if: always()
+        shell: bash
+        run: |
+          echo '### CALYRA macOS Tauri read-only Accessibility API evidence' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Only original app AX textfield/roles exposed and read; no trusted OS input, IME, actual screen-reader use, or WCAG compliance verified.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Native screenshot and JS semantics have separate evidence; no synthetic DOM substitutions here.' >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-macos-original-wkwebview-ax-tree
+          path: |
+            evidence/tauri-macos-ax/source-contract.json
+            evidence/tauri-macos-ax/verified-original-app-zip-sha256.txt
+            evidence/tauri-macos-ax/native-archs.txt
+            evidence/tauri-macos-ax/inspector-source-sha256.txt
+            evidence/tauri-macos-ax/host-environment.txt
+            evidence/tauri-macos-ax/app-pid.txt
+            evidence/tauri-macos-ax/app-owned-windows.json
+            evidence/tauri-macos-ax/actual-ax-tree.json
+            evidence/tauri-macos-ax/native-ax-error.log
+            evidence/tauri-macos-ax/native-ax-exit-code.txt
+          retention-days: 14
+          if-no-files-found: warn
