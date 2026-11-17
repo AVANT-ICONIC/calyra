@@ -1,0 +1,50 @@
+{
+  "schema": "calyra.blitz-native-proof.v1",
+  "upstream_commit": "4f61cffacee50fe4f944ebe9d0470d9a5d3997e0",
+  "version": "0.3.0-beta.4",
+  "binary_sha256": "64cc1f91d1ca271eb1dc6ca7ed97aabdff9472a1c5cb2834487dd5140a8a75a0",
+  "snapshot": {
+    "schema": "calyra.blitz-static-input.v1",
+    "fixture": "dashboard",
+    "canonical_sha256": {
+      "index.html": "aa9fa23b242f06be7dc5b760f0f8379ce750d8fe2cd67a977daf1a4ff1bd848a",
+      "reference.css": "04635269a8fbd790c87316a03c6469a157806201e58fd730212f632fc86b7b9c",
+      "reference.js": "9d565203fc9c3450b0c61d7774cb2322b14ed3e3325926122b17f583e81cf3de"
+    },
+    "generated_html_sha256": "a548e1464cd6c6d901e8f433e328f53c292b9ec5a8c48ffe2baf83301f11e30c",
+    "css_bytes_changed": false,
+    "html_patched": true,
+    "javascript_executed": false,
+    "network_resources_used": false,
+    "adaptations": [
+      "Canonical stylesheet inlined verbatim into one style element; link delivery changed",
+      "Removed script tag; browser JavaScript not run",
+      "Set data-fixture to dashboard; marked its case active and its navigation link selected",
+      "Set data-motion=off and data-ready=true as static render state"
+    ],
+    "limitations": [
+      "This is a static HTML/CSS paint probe, NOT browser JavaScript or event behavior",
+      "Existing hidden controls/sections remain in the DOM; only one .case is active",
+      "Input/focus/IME/OS accessibility are not evaluated"
+    ]
+  },
+  "image": {
+    "raw_size": [
+      2120,
+      1936
+    ],
+    "viewport_px": [
+      1060,
+      800
+    ],
+    "mean_rgb": [
+      18.84,
+      24.25,
+      30.08
+    ],
+    "raw_sha256": "848b80b33f9740cb422569ed898cad20602b53b071219310510bff29f8a7e742",
+    "normalized_sha256": "c44e942201c9f8a34baa95c5352710b16ad83865e97ec56da279b73190963aeb"
+  },
+  "elapsed_seconds_diagnostic_only": 0.183,
+  "performance_benchmark": false
+}

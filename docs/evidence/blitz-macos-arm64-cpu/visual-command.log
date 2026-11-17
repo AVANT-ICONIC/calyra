@@ -1,0 +1,5 @@
+{
+  "status": "restricted",
+  "reason": "Native screenshot generated; no CSS property has been scored direct from pixels alone",
+  "capture": true
+}
