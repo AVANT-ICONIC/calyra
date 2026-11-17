@@ -1,4 +1,4 @@
-name: CALYRA pinned Blitz native RangeData and AccessKit sixteen regression tests v2
+name: CALYRA pinned Blitz RangeData and native Boa JS value regressions v3
 
 on:
   push:
@@ -35,6 +35,7 @@ jobs:
             native/blitz/experiments/ax_form_semantics_regression.rs \
             native/blitz/experiments/apply_range_state_paint.py \
             native/blitz/experiments/range_state.rs \
+            native/blitz/experiments/range_js_semantics.rs \
             native/blitz/experiments/apply_readonly_select.py \
             native/blitz/experiments/select_state_readonly.rs \
             native/blitz/patches/document-event-chain.patch \
@@ -94,6 +95,8 @@ jobs:
           python3 native/blitz/experiments/apply_range_state_paint.py \
             --source "$RUNNER_TEMP/calyra-blitz-ax-regression" \
             | tee "$O/native-range-patch.log"
+          cp native/blitz/experiments/range_js_semantics.rs \
+            "$RUNNER_TEMP/calyra-blitz-ax-regression/packages/blitz-vibey-script/tests/calyra_range.rs"
           cp native/blitz/experiments/ax_form_semantics_regression.rs \
             "$RUNNER_TEMP/calyra-blitz-ax-regression/tests/blitz-tests/tests/calyra_ax_form_semantics.rs"
           echo 'mod calyra_ax_form_semantics;' >> \
@@ -120,6 +123,24 @@ jobs:
           grep -Fq 'test result: ok. 16 passed; 0 failed' "$O/native-rust-test.log"
           printf '%s\n' '16 source-pinned native AX and RangeData regression cases passed' \
             | tee "$O/regression-verdict.txt"
+      - name: Verify actual Boa JS range getter/setter and absence of synthetic input/change
+        shell: bash
+        run: |
+          set -euo pipefail
+          O="$GITHUB_WORKSPACE/$OUT"
+          cd "$RUNNER_TEMP/calyra-blitz-ax-regression"
+          set +e
+          cargo test --locked -p blitz-vibey-script --test calyra_range -- --nocapture \
+            > "$O/native-boa-range-js-test.log" 2>&1
+          code=$?
+          set -e
+          echo "$code" > "$O/native-boa-range-js-exit-code.txt"
+          tail -n 120 "$O/native-boa-range-js-test.log"
+          test "$code" -eq 0
+          grep -Fq 'test result: ok. 3 passed; 0 failed' "$O/native-boa-range-js-test.log"
+          echo "3/3 actual Boa JS range DOM accessors PASS" \
+            | tee "$O/native-boa-range-js-verdict.txt"
+
       - name: Preserve actual source-pinned test evidence
         if: success()
         shell: bash
@@ -151,7 +172,7 @@ jobs:
         if: always()
         shell: bash
         run: |
-          echo '### CALYRA: pinned native range state and AX regressions' >> "$GITHUB_STEP_SUMMARY"
+          echo '### CALYRA: pinned native RangeData plus real Boa JS regression tests' >> "$GITHUB_STEP_SUMMARY"
           echo 'These Rust unit tests do not prove macOS AX output, keyboard/IME, pointer, native popups, or the complete HTML-AAM name algorithm.' >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         if: always()
