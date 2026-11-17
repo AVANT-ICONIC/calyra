@@ -1,0 +1,415 @@
+{
+  "macos_apple_silicon_native_window_per_trial": true,
+  "no_whole_app_unique_ram_claim": true,
+  "not_matched_to_native_browserless_engine": true,
+  "parent_ps_rss_kib_median": 84480,
+  "private_responsibility_lookup_optional_not_production_api": true,
+  "process_snapshot_race_and_shared_pages_limit_precision": true,
+  "sample_count": 5,
+  "schema": "calyra.macos-wkwebview-process-attribution.v1",
+  "trials": [
+    {
+      "app_owned_window_id": 24,
+      "app_pid": 3770,
+      "helper_physical_footprint_bytes_sum_diagnostic_only": null,
+      "helper_rss_kib_sum_not_unique": 0,
+      "original_exe_sha256": "d67321b7b5f2d9026be66bd9c30fee892288ea538731a42c7647c0df452688a2",
+      "parent_native_process_metadata": {
+        "physical_footprint_bytes": 16402816,
+        "resident_bytes": 81657856,
+        "responsible_pid": 922,
+        "rusage_status": "ok"
+      },
+      "parent_ps_rss_kib": 79744,
+      "post_launch_seconds_at_snapshot": 12.131,
+      "private_os_responsibility_api_diagnostic_only": true,
+      "trial": 1,
+      "unassigned_webkit_candidates_excluded_from_totals": true,
+      "unique_total_memory_established": false,
+      "webkit": {
+        "baseline_webkit_count": 0,
+        "confirmed": [],
+        "during_webkit_count": 2,
+        "native_descendants": [
+          3770
+        ],
+        "new_unconfirmed": [
+          {
+            "classification": "new_temporal_correlation_only",
+            "comm": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.WebContent.xpc/Contents/MacOS/com.apple.WebKit.WebContent",
+            "new_since_baseline": true,
+            "physical_footprint_bytes": 24578048,
+            "pid": 3782,
+            "ppid": 1,
+            "ps_cpu_percent_instantaneous": 0.0,
+            "resident_bytes": 52166656,
+            "responsible_pid": 922,
+            "rss_kib": 50944,
+            "rusage_status": "ok",
+            "vsz_kib": 499614224
+          },
+          {
+            "classification": "new_temporal_correlation_only",
+            "comm": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.Networking.xpc/Contents/MacOS/com.apple.WebKit.Networking",
+            "new_since_baseline": true,
+            "physical_footprint_bytes": 5113024,
+            "pid": 3787,
+            "ppid": 1,
+            "ps_cpu_percent_instantaneous": 0.0,
+            "resident_bytes": 18759680,
+            "responsible_pid": 922,
+            "rss_kib": 18320,
+            "rusage_status": "ok",
+            "vsz_kib": 431302432
+          }
+        ],
+        "preexisting_unassigned": []
+      }
+    },
+    {
+      "app_owned_window_id": 33,
+      "app_pid": 3930,
+      "helper_physical_footprint_bytes_sum_diagnostic_only": null,
+      "helper_rss_kib_sum_not_unique": 0,
+      "original_exe_sha256": "d67321b7b5f2d9026be66bd9c30fee892288ea538731a42c7647c0df452688a2",
+      "parent_native_process_metadata": {
+        "physical_footprint_bytes": 16451776,
+        "resident_bytes": 86409216,
+        "responsible_pid": 922,
+        "rusage_status": "ok"
+      },
+      "parent_ps_rss_kib": 84384,
+      "post_launch_seconds_at_snapshot": 12.127,
+      "private_os_responsibility_api_diagnostic_only": true,
+      "trial": 2,
+      "unassigned_webkit_candidates_excluded_from_totals": true,
+      "unique_total_memory_established": false,
+      "webkit": {
+        "baseline_webkit_count": 0,
+        "confirmed": [],
+        "during_webkit_count": 2,
+        "native_descendants": [
+          3930
+        ],
+        "new_unconfirmed": [
+          {
+            "classification": "new_temporal_correlation_only",
+            "comm": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.WebContent.xpc/Contents/MacOS/com.apple.WebKit.WebContent",
+            "new_since_baseline": true,
+            "physical_footprint_bytes": 25806720,
+            "pid": 3933,
+            "ppid": 1,
+            "ps_cpu_percent_instantaneous": 0.2,
+            "resident_bytes": 45105152,
+            "responsible_pid": 922,
+            "rss_kib": 44048,
+            "rusage_status": "ok",
+            "vsz_kib": 499614192
+          },
+          {
+            "classification": "new_temporal_correlation_only",
+            "comm": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.Networking.xpc/Contents/MacOS/com.apple.WebKit.Networking",
+            "new_since_baseline": true,
+            "physical_footprint_bytes": 5113088,
+            "pid": 3934,
+            "ppid": 1,
+            "ps_cpu_percent_instantaneous": 0.0,
+            "resident_bytes": 15368192,
+            "responsible_pid": 922,
+            "rss_kib": 15008,
+            "rusage_status": "ok",
+            "vsz_kib": 431303024
+          }
+        ],
+        "preexisting_unassigned": []
+      }
+    },
+    {
+      "app_owned_window_id": 40,
+      "app_pid": 4237,
+      "helper_physical_footprint_bytes_sum_diagnostic_only": null,
+      "helper_rss_kib_sum_not_unique": 0,
+      "original_exe_sha256": "d67321b7b5f2d9026be66bd9c30fee892288ea538731a42c7647c0df452688a2",
+      "parent_native_process_metadata": {
+        "physical_footprint_bytes": 16533632,
+        "resident_bytes": 86507520,
+        "responsible_pid": 922,
+        "rusage_status": "ok"
+      },
+      "parent_ps_rss_kib": 84480,
+      "post_launch_seconds_at_snapshot": 12.066,
+      "private_os_responsibility_api_diagnostic_only": true,
+      "trial": 3,
+      "unassigned_webkit_candidates_excluded_from_totals": true,
+      "unique_total_memory_established": false,
+      "webkit": {
+        "baseline_webkit_count": 0,
+        "confirmed": [],
+        "during_webkit_count": 7,
+        "native_descendants": [
+          4237
+        ],
+        "new_unconfirmed": [
+          {
+            "classification": "new_temporal_correlation_only",
+            "comm": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.WebContent.xpc/Contents/MacOS/com.apple.WebKit.WebContent",
+            "new_since_baseline": true,
+            "physical_footprint_bytes": 25708480,
+            "pid": 4281,
+            "ppid": 1,
+            "ps_cpu_percent_instantaneous": 0.3,
+            "resident_bytes": 44957696,
+            "responsible_pid": 922,
+            "rss_kib": 43904,
+            "rusage_status": "ok",
+            "vsz_kib": 499609920
+          },
+          {
+            "classification": "new_temporal_correlation_only",
+            "comm": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.Networking.xpc/Contents/MacOS/com.apple.WebKit.Networking",
+            "new_since_baseline": true,
+            "physical_footprint_bytes": 5195008,
+            "pid": 4285,
+            "ppid": 1,
+            "ps_cpu_percent_instantaneous": 0.0,
+            "resident_bytes": 15335424,
+            "responsible_pid": 922,
+            "rss_kib": 14976,
+            "rusage_status": "ok",
+            "vsz_kib": 431302384
+          },
+          {
+            "classification": "new_temporal_correlation_only",
+            "comm": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.WebContent.xpc/Contents/MacOS/com.apple.WebKit.WebContent",
+            "new_since_baseline": true,
+            "physical_footprint_bytes": 10208960,
+            "pid": 4365,
+            "ppid": 1,
+            "ps_cpu_percent_instantaneous": 0.0,
+            "resident_bytes": 37634048,
+            "responsible_pid": 482,
+            "rss_kib": 36752,
+            "rusage_status": "ok",
+            "vsz_kib": 499496480
+          },
+          {
+            "classification": "new_temporal_correlation_only",
+            "comm": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.Networking.xpc/Contents/MacOS/com.apple.WebKit.Networking",
+            "new_since_baseline": true,
+            "physical_footprint_bytes": 4326592,
+            "pid": 4366,
+            "ppid": 1,
+            "ps_cpu_percent_instantaneous": 0.0,
+            "resident_bytes": 16515072,
+            "responsible_pid": 482,
+            "rss_kib": 16128,
+            "rusage_status": "ok",
+            "vsz_kib": 431302288
+          },
+          {
+            "classification": "new_temporal_correlation_only",
+            "comm": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.WebContent.xpc/Contents/MacOS/com.apple.WebKit.WebContent",
+            "new_since_baseline": true,
+            "physical_footprint_bytes": null,
+            "pid": 4407,
+            "ppid": 1,
+            "ps_cpu_percent_instantaneous": 0.0,
+            "resident_bytes": null,
+            "responsible_pid": null,
+            "rss_kib": 28576,
+            "rusage_status": "unavailable",
+            "vsz_kib": 499497344
+          },
+          {
+            "classification": "new_temporal_correlation_only",
+            "comm": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.Networking.xpc/Contents/MacOS/com.apple.WebKit.Networking",
+            "new_since_baseline": true,
+            "physical_footprint_bytes": null,
+            "pid": 4408,
+            "ppid": 1,
+            "ps_cpu_percent_instantaneous": 0.0,
+            "resident_bytes": null,
+            "responsible_pid": null,
+            "rss_kib": 12672,
+            "rusage_status": "unavailable",
+            "vsz_kib": 431301584
+          },
+          {
+            "classification": "new_temporal_correlation_only",
+            "comm": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.WebContent.xpc/Contents/MacOS/com.apple.WebKit.WebContent",
+            "new_since_baseline": true,
+            "physical_footprint_bytes": 10536640,
+            "pid": 4411,
+            "ppid": 1,
+            "ps_cpu_percent_instantaneous": 0.0,
+            "resident_bytes": 30343168,
+            "responsible_pid": 482,
+            "rss_kib": 29632,
+            "rusage_status": "ok",
+            "vsz_kib": 499496512
+          }
+        ],
+        "preexisting_unassigned": []
+      }
+    },
+    {
+      "app_owned_window_id": 47,
+      "app_pid": 4615,
+      "helper_physical_footprint_bytes_sum_diagnostic_only": null,
+      "helper_rss_kib_sum_not_unique": 0,
+      "original_exe_sha256": "d67321b7b5f2d9026be66bd9c30fee892288ea538731a42c7647c0df452688a2",
+      "parent_native_process_metadata": {
+        "physical_footprint_bytes": 16779520,
+        "resident_bytes": 88047616,
+        "responsible_pid": 922,
+        "rusage_status": "ok"
+      },
+      "parent_ps_rss_kib": 85984,
+      "post_launch_seconds_at_snapshot": 12.08,
+      "private_os_responsibility_api_diagnostic_only": true,
+      "trial": 4,
+      "unassigned_webkit_candidates_excluded_from_totals": true,
+      "unique_total_memory_established": false,
+      "webkit": {
+        "baseline_webkit_count": 5,
+        "confirmed": [],
+        "during_webkit_count": 4,
+        "native_descendants": [
+          4615
+        ],
+        "new_unconfirmed": [
+          {
+            "classification": "new_temporal_correlation_only",
+            "comm": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.WebContent.xpc/Contents/MacOS/com.apple.WebKit.WebContent",
+            "new_since_baseline": true,
+            "physical_footprint_bytes": 24627200,
+            "pid": 4617,
+            "ppid": 1,
+            "ps_cpu_percent_instantaneous": 0.0,
+            "resident_bytes": 52494336,
+            "responsible_pid": 922,
+            "rss_kib": 51264,
+            "rusage_status": "ok",
+            "vsz_kib": 499616144
+          },
+          {
+            "classification": "new_temporal_correlation_only",
+            "comm": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.Networking.xpc/Contents/MacOS/com.apple.WebKit.Networking",
+            "new_since_baseline": true,
+            "physical_footprint_bytes": 5309696,
+            "pid": 4618,
+            "ppid": 1,
+            "ps_cpu_percent_instantaneous": 0.0,
+            "resident_bytes": 18759680,
+            "responsible_pid": 922,
+            "rss_kib": 18320,
+            "rusage_status": "ok",
+            "vsz_kib": 431302432
+          }
+        ],
+        "preexisting_unassigned": [
+          {
+            "classification": "preexisting_unassigned",
+            "comm": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.WebContent.xpc/Contents/MacOS/com.apple.WebKit.WebContent",
+            "new_since_baseline": false,
+            "physical_footprint_bytes": 10208960,
+            "pid": 4365,
+            "ppid": 1,
+            "ps_cpu_percent_instantaneous": 0.0,
+            "resident_bytes": 37617664,
+            "responsible_pid": 482,
+            "rss_kib": 36736,
+            "rusage_status": "ok",
+            "vsz_kib": 499496480
+          },
+          {
+            "classification": "preexisting_unassigned",
+            "comm": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.Networking.xpc/Contents/MacOS/com.apple.WebKit.Networking",
+            "new_since_baseline": false,
+            "physical_footprint_bytes": 4195520,
+            "pid": 4366,
+            "ppid": 1,
+            "ps_cpu_percent_instantaneous": 0.0,
+            "resident_bytes": 16465920,
+            "responsible_pid": 482,
+            "rss_kib": 16080,
+            "rusage_status": "ok",
+            "vsz_kib": 431302288
+          }
+        ]
+      }
+    },
+    {
+      "app_owned_window_id": 54,
+      "app_pid": 4836,
+      "helper_physical_footprint_bytes_sum_diagnostic_only": null,
+      "helper_rss_kib_sum_not_unique": 0,
+      "original_exe_sha256": "d67321b7b5f2d9026be66bd9c30fee892288ea538731a42c7647c0df452688a2",
+      "parent_native_process_metadata": {
+        "physical_footprint_bytes": 16566464,
+        "resident_bytes": 87605248,
+        "responsible_pid": 922,
+        "rusage_status": "ok"
+      },
+      "parent_ps_rss_kib": 85552,
+      "post_launch_seconds_at_snapshot": 12.144,
+      "private_os_responsibility_api_diagnostic_only": true,
+      "trial": 5,
+      "unassigned_webkit_candidates_excluded_from_totals": true,
+      "unique_total_memory_established": false,
+      "webkit": {
+        "baseline_webkit_count": 2,
+        "confirmed": [],
+        "during_webkit_count": 2,
+        "native_descendants": [
+          4836
+        ],
+        "new_unconfirmed": [
+          {
+            "classification": "new_temporal_correlation_only",
+            "comm": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.WebContent.xpc/Contents/MacOS/com.apple.WebKit.WebContent",
+            "new_since_baseline": true,
+            "physical_footprint_bytes": 31885248,
+            "pid": 4838,
+            "ppid": 1,
+            "ps_cpu_percent_instantaneous": 0.0,
+            "resident_bytes": 46448640,
+            "responsible_pid": 922,
+            "rss_kib": 45360,
+            "rusage_status": "ok",
+            "vsz_kib": 499617056
+          },
+          {
+            "classification": "new_temporal_correlation_only",
+            "comm": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.Networking.xpc/Contents/MacOS/com.apple.WebKit.Networking",
+            "new_since_baseline": true,
+            "physical_footprint_bytes": 5309632,
+            "pid": 4839,
+            "ppid": 1,
+            "ps_cpu_percent_instantaneous": 0.0,
+            "resident_bytes": 15859712,
+            "responsible_pid": 922,
+            "rss_kib": 15488,
+            "rusage_status": "ok",
+            "vsz_kib": 431302416
+          }
+        ],
+        "preexisting_unassigned": []
+      }
+    }
+  ],
+  "webkit_confirmed_counts": [
+    0,
+    0,
+    0,
+    0,
+    0
+  ],
+  "webkit_new_unconfirmed_counts": [
+    2,
+    2,
+    7,
+    2,
+    2
+  ]
+}
