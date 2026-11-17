@@ -74,3 +74,18 @@ fn native_range_getter_remains_undefined_for_non_range_dom_case() {
     assert_eq!(doc.take_js_errors(), Vec::<String>::new());
     assert_eq!(doc.take_messages(), ["Hello","11"]);
 }
+
+#[test]
+fn ordinary_text_input_object_conversion_occurs_exactly_once() {
+    let mut doc = native_script_document(r#"<input id="name" type="text" value="Initial">"#);
+    doc.eval(r#"
+        let conversions = 0;
+        const special = {toString() { conversions++; return 'Converted'; }};
+        const input = document.getElementById('name');
+        input.value = special;
+        __blitz_send_message(String(conversions));
+        __blitz_send_message(input.value);
+    "#);
+    assert_eq!(doc.take_js_errors(), Vec::<String>::new());
+    assert_eq!(doc.take_messages(), ["1","Converted"]);
+}
