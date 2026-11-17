@@ -16,6 +16,8 @@ tauri = { version = "2", features = [] }
 [features]
 # Test-only path. Default desktop app keeps original source and bridge-free host.
 stage-a-js-probe = []
+# Independent macOS WKWebView private PID selector experiment. Never shipped.
+stage-a-process-pids = []
 
 [profile.dev]
 debug = 0
