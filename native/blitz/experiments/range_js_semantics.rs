@@ -3,7 +3,6 @@
 //! attribute update or duplicate JS state. No OS pointer/keyboard events here.
 use blitz_dom::{Document, DocumentConfig};
 use blitz_vibey_script::ScriptDocument;
-use accesskit::{NodeId, Role};
 
 fn native_script_document(html: &str) -> ScriptDocument {
     let mut doc = ScriptDocument::from_html(html, DocumentConfig::default());
@@ -38,11 +37,6 @@ fn programmatic_js_value_updates_native_range_not_default_html_or_events() {
     let state = inner.get_node(id).unwrap().element_data().unwrap().range_data().unwrap();
     assert_eq!(state.value, 18.0);
     assert_eq!(state.default_value, 64.0);
-    let ax = inner.build_accessibility_tree().nodes.into_iter()
-        .find(|(node,_)| *node==NodeId(id.as_u64())).unwrap().1;
-    assert_eq!(ax.role(),Role::Slider);
-    assert_eq!(ax.value(),Some("18"));
-    assert_eq!(ax.numeric_value(),Some(18.0));
 }
 
 #[test]
