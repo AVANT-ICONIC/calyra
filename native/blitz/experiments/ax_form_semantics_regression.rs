@@ -98,3 +98,24 @@ fn calyra_ax_aria_labelledby_precedence_over_html_label() {
     );
     assert_eq!(control.label(), Some("External"));
 }
+
+#[test]
+fn calyra_ax_computed_block_css_inserts_name_word_boundary() {
+    let control = field(
+        r#"<style>label strong, label small { display: block }</style>
+        <label><span><strong>Enable effects</strong><small>Native checkbox with CSS presentation</small></span>
+        <input id="effect" type="checkbox" checked></label>"#,
+        "effect",
+    );
+    assert_eq!(control.label(), Some("Enable effects Native checkbox with CSS presentation"));
+    assert_eq!(control.toggled(), Some(Toggled::True));
+}
+
+#[test]
+fn calyra_ax_adjacent_inline_text_preserves_deliberate_concatenation() {
+    let control = field(
+        r#"<button id="save">Pre<strong>fix</strong></button>"#,
+        "save",
+    );
+    assert_eq!(control.label(), Some("Prefix"));
+}
