@@ -1,0 +1,23 @@
+[package]
+name = "calyra-tauri-reference"
+version = "0.1.0"
+description = "CALYRA research baseline on the macOS system WKWebView"
+edition = "2021"
+rust-version = "1.80"
+build = "build.rs"
+publish = false
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+
+[features]
+# Test-only path. Default desktop app keeps original source and bridge-free host.
+stage-a-js-probe = []
+# Independent macOS WKWebView private PID selector experiment. Never shipped.
+stage-a-process-pids = []
+
+[profile.dev]
+debug = 0

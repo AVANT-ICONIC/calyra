@@ -1,0 +1,58 @@
+{
+  "app_owned_window_id": 33,
+  "app_pid": 3930,
+  "helper_physical_footprint_bytes_sum_diagnostic_only": null,
+  "helper_rss_kib_sum_not_unique": 0,
+  "original_exe_sha256": "d67321b7b5f2d9026be66bd9c30fee892288ea538731a42c7647c0df452688a2",
+  "parent_native_process_metadata": {
+    "physical_footprint_bytes": 16451776,
+    "resident_bytes": 86409216,
+    "responsible_pid": 922,
+    "rusage_status": "ok"
+  },
+  "parent_ps_rss_kib": 84384,
+  "post_launch_seconds_at_snapshot": 12.127,
+  "private_os_responsibility_api_diagnostic_only": true,
+  "trial": 2,
+  "unassigned_webkit_candidates_excluded_from_totals": true,
+  "unique_total_memory_established": false,
+  "webkit": {
+    "baseline_webkit_count": 0,
+    "confirmed": [],
+    "during_webkit_count": 2,
+    "native_descendants": [
+      3930
+    ],
+    "new_unconfirmed": [
+      {
+        "classification": "new_temporal_correlation_only",
+        "comm": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.WebContent.xpc/Contents/MacOS/com.apple.WebKit.WebContent",
+        "new_since_baseline": true,
+        "physical_footprint_bytes": 25806720,
+        "pid": 3933,
+        "ppid": 1,
+        "ps_cpu_percent_instantaneous": 0.2,
+        "resident_bytes": 45105152,
+        "responsible_pid": 922,
+        "rss_kib": 44048,
+        "rusage_status": "ok",
+        "vsz_kib": 499614192
+      },
+      {
+        "classification": "new_temporal_correlation_only",
+        "comm": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.Networking.xpc/Contents/MacOS/com.apple.WebKit.Networking",
+        "new_since_baseline": true,
+        "physical_footprint_bytes": 5113088,
+        "pid": 3934,
+        "ppid": 1,
+        "ps_cpu_percent_instantaneous": 0.0,
+        "resident_bytes": 15368192,
+        "responsible_pid": 922,
+        "rss_kib": 15008,
+        "rusage_status": "ok",
+        "vsz_kib": 431303024
+      }
+    ],
+    "preexisting_unassigned": []
+  }
+}

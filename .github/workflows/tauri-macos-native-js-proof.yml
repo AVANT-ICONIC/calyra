@@ -1,0 +1,173 @@
+name: CALYRA original JavaScript inside real macOS Tauri WKWebView
+
+# One-shot native AppKit/WebKit JavaScript feasibility proof.
+# Separate opt-in Rust feature; unchanged canonical HTML/CSS/JS.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/tauri-macos-native-js-proof.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  real-wkwebview-javascript:
+    runs-on: macos-15
+    timeout-minutes: 45
+    env:
+      CARGO_BUILD_JOBS: '3'
+      CARGO_TERM_COLOR: never
+      RUST_BACKTRACE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/reference-fixtures
+      - name: Verify unmodified CALYRA fixture hashes and JS probe source
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=evidence/tauri-macos-js
+          mkdir -p "$OUT"
+          python3 adapters/tauri-reference/verify_source.py | tee "$OUT/source-contract.json"
+          grep -Fq '"pass": true' "$OUT/source-contract.json"
+          node --check adapters/tauri-reference/src-tauri/src/stage_a_js_probe.js
+          python3 -m py_compile harness/verify_tauri_macos_js.py
+          python3 - <<'PY'
+          from pathlib import Path
+          cargo=Path('adapters/tauri-reference/src-tauri/Cargo.toml').read_text()
+          main=Path('adapters/tauri-reference/src-tauri/src/main.rs').read_text()
+          assert 'stage-a-js-probe = []' in cargo
+          assert '#[cfg(feature = "stage-a-js-probe")]' in main
+          assert '#[cfg(not(feature = "stage-a-js-probe"))]' in main
+          assert 'invoke_handler' not in main
+          print('PASS: opt-in only; production app retains no privileged probe bridge')
+          PY
+          shasum -a 256 fixtures/index.html fixtures/reference.css fixtures/reference.js \
+            adapters/tauri-reference/src-tauri/src/main.rs \
+            adapters/tauri-reference/src-tauri/src/stage_a_js_probe.rs \
+            adapters/tauri-reference/src-tauri/src/stage_a_js_probe.js \
+            adapters/tauri-reference/src-tauri/Cargo.toml \
+            harness/verify_tauri_macos_js.py > "$OUT/source-sha256.txt"
+          {
+            sw_vers
+            uname -m
+            rustc --version
+            node --version
+          } | tee "$OUT/runner.txt"
+          test "$(uname -m)" = "arm64"
+
+      - name: Build genuine opt-in Tauri macOS arm64 .app from unchanged fixtures
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$GITHUB_WORKSPACE/evidence/tauri-macos-js"
+          python3 adapters/tauri-reference/prepare_macos_icon.py > "$OUT/icon-build.log"
+          cd adapters/tauri-reference
+          npm ci --no-audit --no-fund > "$OUT/npm-ci.log" 2>&1
+          ./node_modules/.bin/tauri --version | tee "$OUT/tauri-version.txt"
+          npm run build:macos -- --debug --features stage-a-js-probe -- --locked \
+            2>&1 | tee "$OUT/native-build.log"
+          git diff --exit-code -- src-tauri/Cargo.lock package-lock.json
+          APP="$(find src-tauri/target/debug/bundle/macos -maxdepth 1 -name '*.app' -type d -print -quit)"
+          test -n "$APP"
+          EXE="$APP/Contents/MacOS/calyra-tauri-reference"
+          test -x "$EXE"
+          lipo -archs "$EXE" | tee "$OUT/architecture.txt"
+          grep -qw arm64 "$OUT/architecture.txt"
+          shasum -a 256 "$EXE" | tee "$OUT/native-executable-sha256.txt"
+          printf '%s\n' "$GITHUB_WORKSPACE/adapters/tauri-reference/$APP" > "$OUT/absolute-app-path.txt"
+          echo 'PASS: actual opt-in arm64 Tauri app built on Apple Silicon.'
+
+      - name: Execute original JS event handlers in the real Tauri WKWebView
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$GITHUB_WORKSPACE/evidence/tauri-macos-js"
+          APP="$(cat "$OUT/absolute-app-path.txt")"
+          EXE="$APP/Contents/MacOS/calyra-tauri-reference"
+          test -x "$EXE"
+          export CALYRA_STAGE_A_PROBE_DIR="$OUT"
+          echo "START native app: $EXE"
+          "$EXE" > "$OUT/native-app.log" 2>&1 &
+          PID=$!
+          echo "$PID" > "$OUT/actual-app-pid.txt"
+          trap 'kill "$PID" 2>/dev/null || true' EXIT
+          for i in $(seq 1 60); do
+            if test -s "$OUT/controls-native-eval.json" && test -s "$OUT/interaction-native-eval.json"; then
+              echo 'Both real native WebKit eval callbacks received'
+              break
+            fi
+            if ! kill -0 "$PID" 2>/dev/null; then
+              echo 'ERROR: native app exited before both callbacks'
+              cat "$OUT/native-app.log"
+              exit 3
+            fi
+            sleep 1
+          done
+          test -s "$OUT/controls-native-eval.json" || { echo 'NO CONTROLS CALLBACK'; cat "$OUT/native-app.log"; exit 4; }
+          test -s "$OUT/interaction-native-eval.json" || { echo 'NO INTERACTION CALLBACK'; cat "$OUT/native-app.log"; exit 5; }
+          python3 harness/verify_tauri_macos_js.py "$OUT" \
+            | tee "$OUT/verification-output.json"
+          kill -0 "$PID"
+          echo 'PASS: original CSS/JS, two real WKWebView native callbacks and every handler assertion'
+          echo 'This is synthetic DOM event replay, NOT physical OS keyboard, pointer or IME.'
+
+      - name: Preserve exact successful native test evidence on research branch only
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=evidence/tauri-macos-js
+          DEST=docs/evidence/tauri-macos-native-js
+          mkdir -p "$DEST"
+          cp -p "$OUT"/source-contract.json "$DEST"/
+          cp -p "$OUT"/source-sha256.txt "$DEST"/
+          cp -p "$OUT"/runner.txt "$DEST"/
+          cp -p "$OUT"/tauri-version.txt "$DEST"/
+          cp -p "$OUT"/architecture.txt "$DEST"/
+          cp -p "$OUT"/native-build.log "$DEST"/
+          cp -p "$OUT"/native-app.log "$DEST"/
+          cp -p "$OUT"/native-executable-sha256.txt "$DEST"/
+          cp -p "$OUT"/actual-app-pid.txt "$DEST"/
+          cp -p "$OUT"/controls-native-eval.json "$DEST"/
+          cp -p "$OUT"/interaction-native-eval.json "$DEST"/
+          cp -p "$OUT"/validated-summary.json "$DEST"/
+          cp -p "$OUT"/verification-output.json "$DEST"/
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          p=Path('docs/evidence/tauri-macos-native-js')
+          files={f.name: hashlib.sha256(f.read_bytes()).hexdigest()
+                 for f in p.iterdir() if f.is_file()}
+          (p/'archived-file-sha256.json').write_text(
+              json.dumps(files,indent=2,sort_keys=True)+'\n')
+          print('PASS: original native evidence staged with',len(files),'verified hashes')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f "$DEST"/
+          git diff --cached --quiet && { echo 'Evidence already preserved'; exit 0; }
+          git commit -m "test(evidence): archive real macOS Tauri WKWebView original JS assertions"
+          git fetch origin feat/reference-fixtures
+          git rebase origin/feat/reference-fixtures
+          git push origin HEAD:refs/heads/feat/reference-fixtures
+
+      - name: Report exact verification boundary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '### CALYRA actual macOS Tauri WKWebView JS proof'
+            echo 'Only a PASS on the native verification step proves Tauri-hosted ORIGINAL JS handlers.'
+            echo 'No physical OS input/IME/accessibility or GPU or same-hardware performance result is claimed.'
+            echo 'Original scripts and rendered assets are SHA-256-pinned. Logs are uploaded even after failure.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-macos-native-js-actual
+          path: evidence/tauri-macos-js/
+          retention-days: 14
+          if-no-files-found: warn

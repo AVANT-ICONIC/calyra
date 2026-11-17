@@ -1,0 +1,6 @@
+PASS trial 1: pid 1690; window 23; parent RSS 79552 KiB
+PASS trial 2: pid 1754; window 32; parent RSS 84528 KiB
+PASS trial 3: pid 1876; window 40; parent RSS 85056 KiB
+PASS trial 4: pid 2089; window 47; parent RSS 84720 KiB
+PASS trial 5: pid 2239; window 54; parent RSS 86320 KiB
+PASS 5 real macOS Tauri runs; parent median RSS 84720 KiB. NOT private whole-process footprint.

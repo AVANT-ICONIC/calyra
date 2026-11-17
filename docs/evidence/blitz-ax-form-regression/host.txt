@@ -1,0 +1,6 @@
+Distributor ID:	Ubuntu
+Description:	Ubuntu 24.04.5 LTS
+Release:	24.04
+Codename:	noble
+x86_64
+rustc 1.99.1 (58cf8f9c3 2026-10-13)

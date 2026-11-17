@@ -1,0 +1,4 @@
+CALYRA_AX_INSTRUMENTED_FILE=packages/blitz-shell/src/accessibility.rs
+CALYRA_AX_INSTRUMENTED_FILE=packages/blitz-shell/src/accessibility.rs
+CALYRA_AX_INSTRUMENTED_FILE=packages/blitz-shell/src/application.rs
+CALYRA_AX_INSTRUMENTATION_LOG_ONLY=1

@@ -1,0 +1,255 @@
+name: CALYRA real Blitz macOS native winit window screenshot
+
+# Actual pinned upstream native shell/VelloWindowRenderer on macOS ARM64.
+# Static canonical CSS, explicit DOM adaptation and JS omission.
+# A window screenshot is not GPU, input, accessibility or parity evidence.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/blitz-macos-native-window-proof.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  macos-blitz-window:
+    runs-on: macos-15
+    timeout-minutes: 55
+    env:
+      CARGO_BUILD_JOBS: '3'
+      CARGO_TERM_COLOR: never
+      RUST_BACKTRACE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/reference-fixtures
+      - name: Verify original CALYRA sources and prepare unchanged-CSS static Controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$GITHUB_WORKSPACE/evidence/blitz-macos-native-window"
+          mkdir -p "$OUT"
+          test "$(uname -m)" = arm64
+          python3 adapters/tauri-reference/verify_source.py \
+            | tee "$OUT/unchanged-source-contract.json"
+          grep -Fq '"pass": true' "$OUT/unchanged-source-contract.json"
+          python3 native/blitz/prepare_static.py \
+            --output "$OUT/static-snapshots" --fixture controls \
+            | tee "$OUT/prepared-static-controls.json"
+          test -s "$OUT/static-snapshots/controls/index.html"
+          shasum -a 256 fixtures/index.html fixtures/reference.css fixtures/reference.js \
+            native/blitz/prepare_static.py \
+            native/blitz/experiments/calyra_native_window.rs \
+            adapters/tauri-reference/macos_native_window_probe.swift \
+            harness/macos_process_metadata.c \
+            > "$OUT/source-sha256.txt"
+          { sw_vers; uname -m; xcodebuild -version; rustc --version; } \
+            | tee "$OUT/runner-environment.txt"
+
+      - name: Pin original upstream Blitz Rust toolchain and exact commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$GITHUB_WORKSPACE/evidence/blitz-macos-native-window"
+          rustup toolchain install 1.91.0 --profile minimal \
+            > "$OUT/rustup.log" 2>&1
+          rustup default 1.91.0
+          rustc --version | tee "$OUT/pinned-rust-version.txt"
+          git clone --filter=blob:none https://github.com/DioxusLabs/blitz.git \
+            "$RUNNER_TEMP/calyra-blitz-native" \
+            > "$OUT/clone.log" 2>&1
+          git -C "$RUNNER_TEMP/calyra-blitz-native" checkout --detach \
+            4f61cffacee50fe4f944ebe9d0470d9a5d3997e0 \
+            > "$OUT/pinned-upstream.log" 2>&1
+          test "$(git -C "$RUNNER_TEMP/calyra-blitz-native" rev-parse HEAD)" = \
+            4f61cffacee50fe4f944ebe9d0470d9a5d3997e0
+          test -z "$(git -C "$RUNNER_TEMP/calyra-blitz-native" status --porcelain --untracked-files=no)"
+          cp native/blitz/experiments/calyra_native_window.rs \
+            "$RUNNER_TEMP/calyra-blitz-native/examples/calyra_native_window.rs"
+          test -s "$RUNNER_TEMP/calyra-blitz-native/examples/calyra_native_window.rs"
+          shasum -a 256 \
+            "$RUNNER_TEMP/calyra-blitz-native/examples/calyra_native_window.rs" \
+            "$RUNNER_TEMP/calyra-blitz-native/Cargo.lock" \
+            "$RUNNER_TEMP/calyra-blitz-native/packages/blitz/src/lib.rs" \
+            > "$OUT/upstream-and-example-sha256.txt"
+
+      - name: Build genuine upstream native Mac Blitz shell/VelloWindowRenderer
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$GITHUB_WORKSPACE/evidence/blitz-macos-native-window"
+          cd "$RUNNER_TEMP/calyra-blitz-native"
+          set +e
+          cargo build --locked --example calyra_native_window -j 3 \
+            > "$OUT/native-build.log" 2>&1
+          status=$?
+          set -e
+          tail -n 100 "$OUT/native-build.log"
+          echo "$status" > "$OUT/native-build-exit-code.txt"
+          test "$status" -eq 0 || {
+            echo "BLOCKED actual macOS native Blitz executable build (see raw log)"
+            exit "$status"
+          }
+          test -z "$(git status --porcelain --untracked-files=no)"
+          EXE="$PWD/target/debug/examples/calyra_native_window"
+          test -x "$EXE"
+          file "$EXE" | tee "$OUT/native-executable-type.txt"
+          lipo -archs "$EXE" | tee "$OUT/native-executable-archs.txt"
+          grep -qw arm64 "$OUT/native-executable-archs.txt"
+          shasum -a 256 "$EXE" > "$OUT/native-executable-sha256.txt"
+          printf '%s\n' "$EXE" > "$OUT/native-executable-path.txt"
+
+      - name: Verify real Mac GUI window, owned PID, untouched-CSS pixel capture
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$GITHUB_WORKSPACE/evidence/blitz-macos-native-window"
+          swiftc -O adapters/tauri-reference/macos_native_window_probe.swift \
+            -o "$OUT/native-window-inspector"
+          clang -std=c11 -O2 -Wall -Wextra -Werror \
+            harness/macos_process_metadata.c -lproc -o "$OUT/native-process-metadata"
+          EXE="$(cat "$OUT/native-executable-path.txt")"
+          HTML="$OUT/static-snapshots/controls/index.html"
+          test -x "$EXE" && test -s "$HTML"
+          "$EXE" "$HTML" > "$OUT/actual-native-app.log" 2>&1 &
+          app_pid=$!
+          trap 'kill "$app_pid" 2>/dev/null || true' EXIT
+          printf '%s\n' "$app_pid" > "$OUT/actual-native-app-pid.txt"
+          found=0
+          for attempt in $(seq 1 45); do
+            if ! kill -0 "$app_pid" 2>/dev/null; then
+              echo 'Native Blitz executable terminated before a real window'
+              cat "$OUT/actual-native-app.log"
+              exit 11
+            fi
+            "$OUT/native-window-inspector" windows "$app_pid" \
+              > "$OUT/actual-native-windows.json"
+            if python3 - "$OUT/actual-native-windows.json" "$app_pid" <<'PY'
+          import json,sys
+          d=json.load(open(sys.argv[1]))
+          assert d['owner_pid']==int(sys.argv[2])
+          assert d['window_found']
+          assert len(d['visible_window_candidates'])>0
+          PY
+            then
+              found=1
+              break
+            fi
+            sleep 1
+          done
+          test "$found" -eq 1 || {
+            echo 'No live CoreGraphics window owned by actual Blitz PID'
+            cat "$OUT/actual-native-app.log"
+            exit 12
+          }
+          sleep 3
+          kill -0 "$app_pid"
+          python3 - "$OUT/actual-native-windows.json" \
+            > "$OUT/app-window-id.txt" <<'PY'
+          import json,sys
+          d=json.load(open(sys.argv[1]))
+          x=d['visible_window_candidates'][0]
+          assert x['owner_pid']==d['owner_pid'] and x['window_id']>0
+          print(x['window_id'])
+          PY
+          window_id="$(cat "$OUT/app-window-id.txt")"
+          screencapture -x -l "$window_id" "$OUT/actual-blitz-native-window.png"
+          test -s "$OUT/actual-blitz-native-window.png"
+          "$OUT/native-window-inspector" inspect "$OUT/actual-blitz-native-window.png" \
+            | tee "$OUT/native-window-pixel-proof.json"
+          printf '%s\n' "$app_pid" \
+            | "$OUT/native-process-metadata" \
+            | tee "$OUT/native-window-process-footprint.tsv"
+          ps -p "$app_pid" -o pid=,ppid=,rss=,vsz=,comm= \
+            | tee "$OUT/native-window-ps.txt"
+          kill -0 "$app_pid"
+          python3 - "$OUT" "$app_pid" "$window_id" <<'PY'
+          import hashlib,json,sys
+          from pathlib import Path
+          p=Path(sys.argv[1])
+          pid=int(sys.argv[2])
+          wid=int(sys.argv[3])
+          d=json.loads((p/'native-window-pixel-proof.json').read_text())
+          w=json.loads((p/'actual-native-windows.json').read_text())
+          s=json.loads((p/'prepared-static-controls.json').read_text())
+          assert d['schema']=='calyra.macos-window-pixels.v1'
+          assert d['accepted'] is True and d['quantized_distinct_colors']>=24
+          assert w['window_found'] and w['owner_pid']==pid
+          assert wid in [x['window_id'] for x in w['visible_window_candidates']]
+          assert s['css_bytes_changed'] is False
+          assert s['html_patched'] is True and s['javascript_executed'] is False
+          screenshot=p/'actual-blitz-native-window.png'
+          evidence={
+            'schema':'calyra.blitz-macos-real-window.v1',
+            'original_blitz_pinned_commit':'4f61cffacee50fe4f944ebe9d0470d9a5d3997e0',
+            'upstream_engine_files_unmodified':True,
+            'real_macos_arm64_native_blitz_executable':True,
+            'real_cgwindow_owned_by_native_blitz_pid':pid,
+            'observed_cgwindow_id':wid,
+            'original_static_css_unchanged':True,
+            'html_active_state_adapted':True,
+            'original_javascript_executed':False,
+            'native_screenshot_sha256':hashlib.sha256(screenshot.read_bytes()).hexdigest(),
+            'native_screenshot_pixels_nonblank':True,
+            'hardware_gpu_verified':False,
+            'os_keyboard_pointer_ime_verified':False,
+            'native_accessibility_verified':False,
+            'css_parity_to_tauri_verified':False,
+            'memory_or_speed_advantage_verified':False,
+          }
+          (p/'verified-native-window-result.json').write_text(
+            json.dumps(evidence,indent=2,sort_keys=True)+'\n')
+          print('PASS: native Mac Blitz process, actual OS window, screenshot pixels')
+          PY
+
+      - name: Preserve only successful original native Blitz window evidence
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=evidence/blitz-macos-native-window
+          DEST=docs/evidence/blitz-macos-native-window
+          mkdir -p "$DEST"
+          cp -p "$OUT"/{unchanged-source-contract.json,prepared-static-controls.json,source-sha256.txt,runner-environment.txt,rustup.log,pinned-rust-version.txt,clone.log,pinned-upstream.log,upstream-and-example-sha256.txt,native-build.log,native-build-exit-code.txt,native-executable-type.txt,native-executable-archs.txt,native-executable-sha256.txt,actual-native-app.log,actual-native-app-pid.txt,actual-native-windows.json,app-window-id.txt,actual-blitz-native-window.png,native-window-pixel-proof.json,native-window-process-footprint.tsv,native-window-ps.txt,verified-native-window-result.json} "$DEST"/
+          cp -p "$OUT/static-snapshots/controls"/{index.html,snapshot.json} "$DEST"/
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          root=Path('docs/evidence/blitz-macos-native-window')
+          files={p.name:hashlib.sha256(p.read_bytes()).hexdigest()
+                 for p in root.iterdir() if p.is_file()}
+          (root/'original-file-sha256.json').write_text(
+            json.dumps(files,sort_keys=True,indent=2)+'\n')
+          print('Native Mac Blitz original files archived:',len(files))
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f "$DEST"/
+          git diff --cached --quiet && exit 0
+          git commit -m "test(evidence): archive genuine Mac Blitz native window and source-pinned pixels"
+          git fetch origin feat/reference-fixtures
+          git rebase origin/feat/reference-fixtures
+          git push origin HEAD:refs/heads/feat/reference-fixtures
+
+      - name: Summarize honestly
+        if: always()
+        shell: bash
+        run: |
+          echo '### CALYRA pinned native Blitz macOS winit/VelloWindowRenderer' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Native CGWindow and screencapture pixels can prove real window paint, not real OS input, accessibility, GPU hardware or CSS/JS parity.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Static original CSS was inlined unchanged, canonical HTML adapted for scene visibility, JS omitted. No speed/RAM ranking versus Tauri.' >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-blitz-native-macos-window
+          path: |
+            evidence/blitz-macos-native-window/*.json
+            evidence/blitz-macos-native-window/*.txt
+            evidence/blitz-macos-native-window/*.log
+            evidence/blitz-macos-native-window/*.png
+            evidence/blitz-macos-native-window/static-snapshots/controls/index.html
+            evidence/blitz-macos-native-window/static-snapshots/controls/snapshot.json
+          retention-days: 14
+          if-no-files-found: warn

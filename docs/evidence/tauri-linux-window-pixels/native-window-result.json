@@ -1,0 +1,20 @@
+{
+  "schema": "calyra.tauri-linux-real-window-pixels.v1",
+  "success": true,
+  "window": "4194307",
+  "geometry": "WINDOW=4194307\nX=272\nY=240\nWIDTH=1060\nHEIGHT=800\nSCREEN=0",
+  "image": "tauri-native-window.png",
+  "image_sha256": "8d035f42495d2b5d0d006c37c2cba1e6124c9795768937d42e66b77b743dc6e9",
+  "image_size": [
+    1060,
+    800
+  ],
+  "sampled_distinct_colors": 759,
+  "pixels_from": "xwd window id of actual Tauri 2 X11 native WebKitGTK widget",
+  "app_process_pid": 9132,
+  "gdk_backend": "x11",
+  "macos_wkwebview_tested": false,
+  "webkit_dom_js_verified": false,
+  "os_hardware_gpu_verified": false,
+  "visual_parity_to_webkit_reference_verified": false
+}

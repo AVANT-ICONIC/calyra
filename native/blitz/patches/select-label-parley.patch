@@ -1,0 +1,81 @@
+diff --git a/packages/blitz-dom/src/layout/construct.rs b/packages/blitz-dom/src/layout/construct.rs
+--- a/packages/blitz-dom/src/layout/construct.rs
++++ b/packages/blitz-dom/src/layout/construct.rs
+@@ -444,10 +444,18 @@
+                 create_checkbox_input(doc, container_node_id);
+                 return;
+             }
+-        }
+-
+-        #[cfg(feature = "svg")]
+-        if matches!(tag_name, "svg") {
++        }
++
++        // CALYRA Stage A: experimental read-only label paint for select.
++        // The existing Parley single-line editor is a paint buffer only,
++        // not a working popup or full HTMLSelectElement implementation.
++        if tag_name == "select" {
++            create_text_editor(doc, container_node_id, false);
++            return;
++        }
++
++        #[cfg(feature = "svg")]
++        if matches!(tag_name, "svg") {
+             let outer_html = doc.get_node(container_node_id).unwrap().svg_source();
+ 
+             // Remove contruction damage from subtree
+@@ -856,9 +864,32 @@
+     out.maybe_push_anon_block(doc);
+ }
+ 
+-fn create_text_editor(doc: &mut BaseDocument, input_element_id: NodeId, is_multiline: bool) {
+-    let node = &mut doc.nodes[input_element_id];
+-    let parley_style = node
++fn create_text_editor(doc: &mut BaseDocument, input_element_id: NodeId, is_multiline: bool) {
++    // CALYRA Stage A: choose the initially selected option's *label* for the
++    // visual buffer. Never rewrite the author DOM or the actual option values.
++    let label = {
++        let select = &doc.nodes[input_element_id];
++        if select.data.is_element_with_tag_name(&local_name!("select")) {
++            let mut first_label = None;
++            let mut selected_label = None;
++            for &child_id in &select.children {
++                let Some(option) = doc.get_node(child_id) else { continue };
++                let Some(element) = option.element_data() else { continue };
++                if element.name.local != local_name!("option") { continue; }
++                let text = option.text_content().trim().to_string();
++                if first_label.is_none() { first_label = Some(text.clone()); }
++                if element.has_attr(local_name!("selected")) {
++                    selected_label = Some(text);
++                    break;
++                }
++            }
++            Some(selected_label.or(first_label).unwrap_or_default())
++        } else {
++            None
++        }
++    };
++    let node = &mut doc.nodes[input_element_id];
++    let parley_style = node
+         .primary_styles()
+         .as_ref()
+         .map(|s| stylo_to_parley::style(node.id, s))
+@@ -872,11 +903,13 @@
+         .map(|s| stylo_to_parley::base_direction(s.clone_direction(), s.clone_unicode_bidi()))
+         .unwrap_or(parley::BaseDirection::Auto);
+ 
+-    let initial_text = if is_multiline {
+-        node.text_content()
+-    } else {
+-        node.attr(local_name!("value")).unwrap_or("").to_string()
+-    };
++    let initial_text = if let Some(label) = label {
++        label
++    } else if is_multiline {
++        node.text_content()
++    } else {
++        node.attr(local_name!("value")).unwrap_or("").to_string()
++    };
+     let is_focussed = node.is_focussed();
+     let element = &mut node.data.downcast_element_mut().unwrap();
+     if !matches!(element.special_data, SpecialElementData::TextInput(_)) {

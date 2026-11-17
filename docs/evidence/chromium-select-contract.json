@@ -1,0 +1,154 @@
+{
+  "chromium_version": "144.0.7559.96",
+  "scenario": "isolated single-select",
+  "original_fixtures_modified": false,
+  "snapshots": [
+    {
+      "name": "initial",
+      "index": 0,
+      "value": "balanced",
+      "selected": [
+        true,
+        false,
+        false
+      ],
+      "defaultSelected": [
+        false,
+        false,
+        false
+      ],
+      "attribute": [
+        false,
+        false,
+        false
+      ],
+      "events": []
+    },
+    {
+      "name": "value=quality",
+      "index": 1,
+      "value": "quality",
+      "selected": [
+        false,
+        true,
+        false
+      ],
+      "defaultSelected": [
+        false,
+        false,
+        false
+      ],
+      "attribute": [
+        false,
+        false,
+        false
+      ],
+      "events": []
+    },
+    {
+      "name": "index=2",
+      "index": 2,
+      "value": "performance",
+      "selected": [
+        false,
+        false,
+        true
+      ],
+      "defaultSelected": [
+        false,
+        false,
+        false
+      ],
+      "attribute": [
+        false,
+        false,
+        false
+      ],
+      "events": []
+    },
+    {
+      "name": "option0.selected=true",
+      "index": 0,
+      "value": "balanced",
+      "selected": [
+        true,
+        false,
+        false
+      ],
+      "defaultSelected": [
+        false,
+        false,
+        false
+      ],
+      "attribute": [
+        false,
+        false,
+        false
+      ],
+      "events": []
+    },
+    {
+      "name": "value=nonexistent",
+      "index": -1,
+      "value": "",
+      "selected": [
+        false,
+        false,
+        false
+      ],
+      "defaultSelected": [
+        false,
+        false,
+        false
+      ],
+      "attribute": [
+        false,
+        false,
+        false
+      ],
+      "events": []
+    },
+    {
+      "name": "index=1",
+      "index": 1,
+      "value": "quality",
+      "selected": [
+        false,
+        true,
+        false
+      ],
+      "defaultSelected": [
+        false,
+        false,
+        false
+      ],
+      "attribute": [
+        false,
+        false,
+        false
+      ],
+      "events": []
+    },
+    {
+      "name": "option2.defaultSelected=true",
+      "index": 1,
+      "value": "quality",
+      "selected": [
+        false,
+        true,
+        false
+      ],
+      "defaultSelected": [
+        false,
+        false,
+        true
+      ],
+      "attribute": [
+        false,
+        false,
+        true
+      ],
+      "events": []
+    }
+  ]
+}

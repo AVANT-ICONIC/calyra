@@ -1,0 +1,1 @@
+671567515f5ca11c840fc0a9ddbacef18ff56e5fab1dc09258d67b92ac7f2b82  src-tauri/target/debug/bundle/macos/CALYRA Stage A Reference.app/Contents/MacOS/calyra-tauri-reference

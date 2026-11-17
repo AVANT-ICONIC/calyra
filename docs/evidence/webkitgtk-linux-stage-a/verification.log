@@ -1,0 +1,2 @@
+PASS: 4 real Linux WebKitGTK fixture runs and 6 verified 1060x800 PNGs
+LIMIT: neither Tauri shell nor macOS WKWebView, trusted OS input or comparative performance tested

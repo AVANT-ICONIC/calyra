@@ -1,0 +1,13 @@
+{
+  "name": "calyra-tauri-reference",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Tauri 2 macOS WKWebView Stage A reference for unchanged CALYRA fixtures",
+  "scripts": {
+    "tauri": "tauri",
+    "build:macos": "tauri build --bundles app"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.12.4"
+  }
+}

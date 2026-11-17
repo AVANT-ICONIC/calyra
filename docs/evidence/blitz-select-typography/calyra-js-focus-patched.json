@@ -1,0 +1,1 @@
+{"schema":"calyra.blitz-js.v1","fixture":"focus-patched","reference_js_modified":false,"javascript_execution_attempted":true,"os_input_tested":false,"gpu_tested":false,"js_error_count":0,"observations":{"after_open":{"expanded":"true","hidden":false,"focused":"inspect"},"native_command_focused":true,"after_escape":{"expanded":"false","hidden":true,"focused":"menu-toggle"}}}

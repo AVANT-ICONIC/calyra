@@ -1,0 +1,309 @@
+name: CALYRA macOS native Blitz read-only SelectData + AX gap proof
+
+# New one-shot experiment reuses Linux-tested source-pinned SelectData patches.
+# The original CALYRA CSS/JS/HTML stay byte-for-byte unchanged.
+# A painted label is NOT an interactive popup or an accessible native select.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/blitz-macos-select-ax-proof.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  macos-actual-native-select-ax:
+    runs-on: macos-15
+    timeout-minutes: 55
+    env:
+      CARGO_BUILD_JOBS: '3'
+      CARGO_TERM_COLOR: never
+      RUST_BACKTRACE: '1'
+      EVIDENCE: evidence/blitz-macos-select-ax
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/reference-fixtures
+
+      - name: Pin unchanged canonical HTML, CSS, JS and real Apple Silicon host
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$EVIDENCE"
+          test "$(uname -m)" = arm64
+          python3 adapters/tauri-reference/verify_source.py \
+            | tee "$EVIDENCE/verified-authored-source.json"
+          grep -Fq '"pass": true' "$EVIDENCE/verified-authored-source.json"
+          { sw_vers; uname -m; xcodebuild -version; rustc --version; } \
+            | tee "$EVIDENCE/runner.txt"
+          shasum -a 256 \
+            fixtures/index.html fixtures/reference.css fixtures/reference.js \
+            native/blitz/prepare_static.py native/blitz/experiments/calyra_native_window.rs \
+            harness/macos_ax_inventory.swift \
+            native/blitz/patches/document-event-chain.patch \
+            native/blitz/patches/plain-button-focus.patch \
+            native/blitz/patches/select-ua-display.patch \
+            native/blitz/patches/select-default-value.patch \
+            native/blitz/patches/select-state-accessors.patch \
+            native/blitz/patches/select-live-form-controls.patch \
+            native/blitz/experiments/apply_readonly_select.py \
+            native/blitz/experiments/select_state_readonly.rs \
+            docs/evidence/blitz-macos-native-window/actual-blitz-native-window.png \
+            docs/evidence/tauri-macos-original-ax-tree/actual-ax-tree.json \
+            > "$EVIDENCE/source-hashes.txt"
+          python3 native/blitz/prepare_static.py \
+            --output "$GITHUB_WORKSPACE/$EVIDENCE/snapshot" --fixture controls \
+            | tee "$EVIDENCE/static-fixture-input.json"
+
+      - name: Checkout exact upstream Blitz and apply only known research fixes
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$GITHUB_WORKSPACE/$EVIDENCE"
+          rustup toolchain install 1.91.0 --profile minimal \
+            > "$OUT/rustup.log" 2>&1
+          rustup default 1.91.0
+          rustc --version | tee "$OUT/rust-version.txt"
+          git clone --filter=blob:none https://github.com/DioxusLabs/blitz.git \
+            "$RUNNER_TEMP/calyra-blitz-select-ax" > "$OUT/clone.log" 2>&1
+          git -C "$RUNNER_TEMP/calyra-blitz-select-ax" checkout --detach \
+            4f61cffacee50fe4f944ebe9d0470d9a5d3997e0 \
+            > "$OUT/checkout.log" 2>&1
+          test "$(git -C "$RUNNER_TEMP/calyra-blitz-select-ax" rev-parse HEAD)" = \
+            4f61cffacee50fe4f944ebe9d0470d9a5d3997e0
+          test -z "$(git -C "$RUNNER_TEMP/calyra-blitz-select-ax" status --porcelain --untracked-files=no)"
+          for patch in \
+            document-event-chain.patch plain-button-focus.patch \
+            select-ua-display.patch select-default-value.patch \
+            select-state-accessors.patch select-live-form-controls.patch; do
+            echo "$patch" >> "$OUT/patch-order.txt"
+            git -C "$RUNNER_TEMP/calyra-blitz-select-ax" apply --check \
+              "$GITHUB_WORKSPACE/native/blitz/patches/$patch"
+            git -C "$RUNNER_TEMP/calyra-blitz-select-ax" apply \
+              "$GITHUB_WORKSPACE/native/blitz/patches/$patch"
+          done
+          python3 native/blitz/experiments/apply_readonly_select.py \
+            --source "$RUNNER_TEMP/calyra-blitz-select-ax" \
+            | tee "$OUT/read-only-patch.log"
+          cp native/blitz/experiments/select_state_readonly.rs \
+            "$RUNNER_TEMP/calyra-blitz-select-ax/packages/blitz-vibey-script/src/dom/element/select_state.rs"
+          cp native/blitz/experiments/calyra_native_window.rs \
+            "$RUNNER_TEMP/calyra-blitz-select-ax/examples/calyra_native_window.rs"
+          git -C "$RUNNER_TEMP/calyra-blitz-select-ax" diff \
+            > "$OUT/exact-experimental-upstream-diff.patch"
+          test -s "$OUT/exact-experimental-upstream-diff.patch"
+          test "$(grep -c '^diff --git ' "$OUT/exact-experimental-upstream-diff.patch")" -ge 6
+          shasum -a 256 \
+            "$RUNNER_TEMP/calyra-blitz-select-ax/examples/calyra_native_window.rs" \
+            "$RUNNER_TEMP/calyra-blitz-select-ax/Cargo.lock" \
+            "$RUNNER_TEMP/calyra-blitz-select-ax/packages/blitz/src/lib.rs" \
+            > "$OUT/pinned-upstream-and-entry-sha256.txt"
+
+      - name: Compile genuine patched native macOS Blitz Winit/Vello window
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$GITHUB_WORKSPACE/$EVIDENCE"
+          cd "$RUNNER_TEMP/calyra-blitz-select-ax"
+          set +e
+          cargo build --locked --example calyra_native_window -j 3 \
+            > "$OUT/native-build.log" 2>&1
+          code=$?
+          set -e
+          echo "$code" > "$OUT/native-build-exit-code.txt"
+          tail -n 110 "$OUT/native-build.log"
+          test "$code" -eq 0 || exit "$code"
+          EXE="$PWD/target/debug/examples/calyra_native_window"
+          test -x "$EXE"
+          file "$EXE" | tee "$OUT/native-executable-type.txt"
+          lipo -archs "$EXE" | tee "$OUT/native-executable-archs.txt"
+          grep -qw arm64 "$OUT/native-executable-archs.txt"
+          shasum -a 256 "$EXE" > "$OUT/native-executable-sha256.txt"
+          printf '%s\n' "$EXE" > "$OUT/native-executable-path.txt"
+
+      - name: Launch genuine native Blitz window and independently capture image + AX tree
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$GITHUB_WORKSPACE/$EVIDENCE"
+          swiftc -O adapters/tauri-reference/macos_native_window_probe.swift \
+            -o "$OUT/native-window-inspector"
+          swiftc -O harness/macos_ax_inventory.swift \
+            -o "$OUT/native-ax-inventory"
+          APP="$(cat "$OUT/native-executable-path.txt")"
+          SNAP="$OUT/snapshot/controls/index.html"
+          test -x "$APP" && test -s "$SNAP"
+          "$APP" "$SNAP" > "$OUT/native-app.log" 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
+          printf '%s\n' "$pid" > "$OUT/native-pid.txt"
+          found=0
+          for attempt in $(seq 1 50); do
+            kill -0 "$pid" 2>/dev/null || {
+              cat "$OUT/native-app.log"; echo 'Blitz GUI exited before window'; exit 11;
+            }
+            "$OUT/native-window-inspector" windows "$pid" \
+              > "$OUT/actual-app-window.json"
+            if python3 - "$OUT/actual-app-window.json" "$pid" <<'PY'
+          import json,sys
+          x=json.load(open(sys.argv[1]))
+          assert x['window_found'] and x['owner_pid']==int(sys.argv[2])
+          assert len(x['visible_window_candidates'])>0
+          PY
+            then found=1; break; fi
+            sleep 1
+          done
+          test "$found" -eq 1 || {
+            cat "$OUT/native-app.log"; echo 'No actual PID-owned CGWindow'; exit 12;
+          }
+          sleep 4
+          kill -0 "$pid"
+          wid="$(python3 - "$OUT/actual-app-window.json" <<'PY'
+          import json,sys
+          print(json.load(open(sys.argv[1]))['visible_window_candidates'][0]['window_id'])
+          PY
+          )"
+          echo "$wid" > "$OUT/window-id.txt"
+          screencapture -x -l "$wid" "$OUT/actual-patched-blitz-window.png"
+          "$OUT/native-window-inspector" inspect "$OUT/actual-patched-blitz-window.png" \
+            | tee "$OUT/actual-native-pixel-inspection.json"
+          set +e
+          "$OUT/native-ax-inventory" "$pid" \
+            > "$OUT/actual-native-ax-inventory.json" \
+            2> "$OUT/native-ax-error.log"
+          ax_code=$?
+          set -e
+          echo "$ax_code" > "$OUT/native-ax-exit-code.txt"
+          test "$ax_code" -eq 0 || {
+            echo 'macOS AX inspector access unavailable or failed: no role-gap claim';
+            cat "$OUT/native-ax-error.log"; exit "$ax_code";
+          }
+          ps -p "$pid" -o pid=,ppid=,rss=,vsz=,comm= \
+            | tee "$OUT/native-ps.txt"
+          kill -0 "$pid"
+
+      - name: Compare actual native Control paint with archived unpatched native Mac pixels
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$GITHUB_WORKSPACE/$EVIDENCE"
+          python3 -m venv "$RUNNER_TEMP/calyra-select-pillow"
+          "$RUNNER_TEMP/calyra-select-pillow/bin/pip" \
+            install --disable-pip-version-check Pillow \
+            > "$OUT/pillow-install.log" 2>&1
+          "$RUNNER_TEMP/calyra-select-pillow/bin/python" - <<'PY'
+          from PIL import Image,ImageChops
+          from pathlib import Path
+          import hashlib,json
+          out=Path('evidence/blitz-macos-select-ax')
+          image=out/'actual-patched-blitz-window.png'
+          baseline=Path('docs/evidence/blitz-macos-native-window/actual-blitz-native-window.png')
+          assert baseline.is_file() and image.is_file()
+          assert hashlib.sha256(baseline.read_bytes()).hexdigest() == (
+              'b00bb80f0b4297ab8b2e9cac69af61a7704028564698c457d14efc5dfc7a1133')
+          source=json.loads((out/'static-fixture-input.json').read_text())
+          assert source['css_bytes_changed'] is False
+          assert source['javascript_executed'] is False
+          paint=json.loads((out/'actual-native-pixel-inspection.json').read_text())
+          assert paint['accepted'] is True and paint['quantized_distinct_colors']>=24
+          ax=json.loads((out/'actual-native-ax-inventory.json').read_text())
+          assert ax['schema']=='calyra.macos-native-ax-inventory.v1'
+          assert ax['read_only'] is True
+          assert ax['accessibility_trusted'] is True
+          assert ax['events_posted'] is False and ax['focus_modified'] is False
+          baseline_ax=json.loads(Path('docs/evidence/tauri-macos-original-ax-tree/actual-ax-tree.json').read_text())
+          assert baseline_ax['canonical_name_field_exposed_with_value'] is True
+          with Image.open(baseline) as old, Image.open(image) as new:
+            old=old.convert('RGB'); new=new.convert('RGB')
+            same=old.size==new.size
+            change_count=None
+            roi_change_count=None
+            if same:
+              difference=ImageChops.difference(old,new)
+              change_count=sum(1 for px in difference.getdata() if max(px)>=12)
+              roi=(545,460,min(815,old.width),min(570,old.height))
+              roi_change_count=sum(1 for px in difference.crop(roi).getdata() if max(px)>=12)
+              difference.save(out/'native-window-pixel-diff.png')
+          result={
+            'schema':'calyra.blitz-macos-select-ax-contrast.v1',
+            'upstream_commit':'4f61cffacee50fe4f944ebe9d0470d9a5d3997e0',
+            'actual_patched_blitz_mac_window':True,
+            'original_html_css_js_modified':False,
+            'static_dom_adapted':True,
+            'browser_js_executed':False,
+            'original_native_baseline_png_sha256':hashlib.sha256(baseline.read_bytes()).hexdigest(),
+            'patched_native_mac_png_sha256':hashlib.sha256(image.read_bytes()).hexdigest(),
+            'same_image_geometry':same,
+            'old_geometry':list(old.size),'patched_geometry':list(new.size),
+            'all_changed_pixels_at_12':change_count,
+            'select_region_changed_pixels_at_12':roi_change_count,
+            'macos_ax_accessibility_trusted':True,
+            'blitz_ax_role_counts':ax['role_counts'],
+            'blitz_native_canonical_field_role_matches':ax['canonical_field_role_matches'],
+            'tauri_native_ax_role_counts':baseline_ax['role_counts'],
+            'tauri_native_name_field_verified':True,
+            'native_dropdown_pointer_keyboard_tested':False,
+            'real_os_input_ime_tested':False,
+            'hardware_gpu_device_verified':False,
+            'css_compatibility_accepted':False,
+            'matched_performance_benchmark':False,
+          }
+          (out/'native-select-ax-diagnostic.json').write_text(json.dumps(result,indent=2,sort_keys=True)+'\n')
+          print('Blitz patched native window: YES')
+          print('Original native select ROI changed pixels:',roi_change_count)
+          print('Native Blitz AX field matches:',ax['canonical_field_role_matches'])
+          print('Native Tauri AX roles:',baseline_ax['role_counts'])
+          PY
+
+      - name: Archive actual native Mac screenshot and read-only AX results
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$EVIDENCE"
+          DEST=docs/evidence/blitz-macos-select-ax
+          mkdir -p "$DEST"
+          cp -p "$OUT"/*.json "$OUT"/*.txt "$OUT"/*.log "$OUT"/*.patch \
+            "$OUT"/*.png "$DEST"/
+          cp -p "$OUT/snapshot/controls"/{index.html,snapshot.json} \
+            "$DEST"/
+          python3 - <<'PY'
+          from pathlib import Path
+          import json,hashlib
+          dest=Path('docs/evidence/blitz-macos-select-ax')
+          hashes={p.name:hashlib.sha256(p.read_bytes()).hexdigest()
+                  for p in dest.iterdir() if p.is_file()}
+          (dest/'original-file-sha256.json').write_text(json.dumps(hashes,indent=2,sort_keys=True)+'\n')
+          print('Archiving',len(hashes),'real first-party Mac source/AX/window files')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f "$DEST"/
+          git diff --cached --quiet && exit 0
+          git commit -m "test(evidence): preserve Mac Blitz read-only SelectData window and AX inventory"
+          git fetch origin feat/reference-fixtures
+          git rebase origin/feat/reference-fixtures
+          git push origin HEAD:refs/heads/feat/reference-fixtures
+
+      - name: Output honest native semantics verdict
+        if: always()
+        shell: bash
+        run: |
+          echo '### Native Mac Blitz SelectData + read-only OS Accessibility contrast' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Inspect native-select-ax-diagnostic.json for exact role matches and select-region pixel difference against archived original Blitz Mac window.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'A visible selected-label text is not a working native popup. Accessibility roles must be measured from actual macOS, not inferred from internal DOM.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'No original JavaScript, real OS keyboard/IME, native popup, GPU device or production benchmark acceptance.' >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-blitz-macos-select-ax-native-proof
+          path: |
+            evidence/blitz-macos-select-ax/*.json
+            evidence/blitz-macos-select-ax/*.txt
+            evidence/blitz-macos-select-ax/*.log
+            evidence/blitz-macos-select-ax/*.patch
+            evidence/blitz-macos-select-ax/*.png
+          retention-days: 14
+          if-no-files-found: warn

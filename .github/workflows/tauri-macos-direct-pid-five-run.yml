@@ -1,0 +1,184 @@
+name: CALYRA five genuine macOS WKWebView direct process resource trials
+
+# One Stage A research experiment: actual original fixture, Tauri opt-in
+# diagnostic, explicit WebKit process IDs, native libproc resource samples.
+# No unique RAM or browserless speed-win claims.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/tauri-macos-direct-pid-five-run.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  five-native-pid-trials:
+    runs-on: macos-15
+    timeout-minutes: 45
+    env:
+      CARGO_BUILD_JOBS: '3'
+      CARGO_TERM_COLOR: never
+      RUST_BACKTRACE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/reference-fixtures
+      - name: Fail-closed direct PID unit tests and canonical fixture audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=evidence/tauri-macos-direct-five
+          mkdir -p "$OUT"
+          python3 -m py_compile harness/macos_direct_pid_resource_five_run.py
+          python3 -m unittest discover -s tests -p 'test_macos_direct_pid_resource.py' -v \
+            2>&1 | tee "$OUT/direct-pid-tests.log"
+          python3 adapters/tauri-reference/verify_source.py \
+            | tee "$OUT/original-source-contract.json"
+          grep -Fq '"pass": true' "$OUT/original-source-contract.json"
+          python3 - <<'PY'
+          from pathlib import Path
+          main=Path('adapters/tauri-reference/src-tauri/src/main.rs').read_text()
+          assert 'stage-a-process-pids' in main and 'stage-a-js-probe' in main
+          assert '#[cfg(not(any(feature = "stage-a-js-probe", feature = "stage-a-process-pids")))]' in main
+          assert 'invoke_handler' not in main
+          print('PASS: normal Tauri app is bridge-free and private selector free')
+          PY
+          shasum -a 256 fixtures/index.html fixtures/reference.css fixtures/reference.js \
+            adapters/tauri-reference/src-tauri/src/main.rs \
+            adapters/tauri-reference/src-tauri/src/stage_a_process_pids.rs \
+            harness/macos_direct_pid_resource_five_run.py \
+            harness/macos_process_metadata.c \
+            adapters/tauri-reference/macos_native_window_probe.swift \
+            tests/test_macos_direct_pid_resource.py \
+            > "$OUT/source-sha256.txt"
+          sw_vers | tee "$OUT/macos-version.txt"
+          test "$(uname -m)" = arm64
+
+      - name: Build a real macOS ARM64 opt-in PID-observable Tauri application
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$GITHUB_WORKSPACE/evidence/tauri-macos-direct-five"
+          python3 adapters/tauri-reference/prepare_macos_icon.py > "$OUT/app-icon.log"
+          cd adapters/tauri-reference
+          npm ci --no-audit --no-fund > "$OUT/npm-ci.log" 2>&1
+          ./node_modules/.bin/tauri --version | tee "$OUT/tauri-version.txt"
+          npm run build:macos -- --debug --features stage-a-process-pids -- --locked \
+            2>&1 | tee "$OUT/native-build.log"
+          git diff --exit-code -- src-tauri/Cargo.lock package-lock.json
+          APP="$(find src-tauri/target/debug/bundle/macos -maxdepth 1 -name '*.app' -type d -print -quit)"
+          test -n "$APP"
+          EXE="$APP/Contents/MacOS/calyra-tauri-reference"
+          test -x "$EXE"
+          lipo -archs "$EXE" | tee "$OUT/architecture.txt"
+          grep -qw arm64 "$OUT/architecture.txt"
+          printf '%s\n' "$PWD/$EXE" > "$OUT/absolute-research-executable-path.txt"
+          shasum -a 256 "$EXE" > "$OUT/research-executable-sha256.txt"
+
+      - name: Compile non-injecting native macOS process inspectors
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$GITHUB_WORKSPACE/evidence/tauri-macos-direct-five"
+          clang -std=c11 -O2 -Wall -Wextra -Werror \
+            harness/macos_process_metadata.c -lproc -o "$OUT/process-metadata"
+          swiftc -O adapters/tauri-reference/macos_native_window_probe.swift \
+            -o "$OUT/native-window-probe"
+          test -x "$OUT/process-metadata"
+          test -x "$OUT/native-window-probe"
+
+      - name: Five independent actual Tauri WebViews with exact process and footprint samples
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$GITHUB_WORKSPACE/evidence/tauri-macos-direct-five"
+          EXE="$(cat "$OUT/absolute-research-executable-path.txt")"
+          python3 harness/macos_direct_pid_resource_five_run.py \
+            "$EXE" "$OUT/native-window-probe" "$OUT/process-metadata" "$OUT" \
+            | tee "$OUT/experiment.log"
+          python3 - "$OUT/five-run-direct-pid-result.json" <<'PY'
+          import json,sys
+          from pathlib import Path
+          path=Path(sys.argv[1])
+          d=json.loads(path.read_text())
+          assert d['schema']=='calyra.macos-direct-wkwebview-process-resources.v1'
+          assert d['trial_count']==5
+          assert d['no_browserless_engine_comparison']
+          assert d['no_unique_total_memory_or_shared_pages_deduplication']
+          assert d['web_kit_private_api_not_for_production']
+          assert len({x['ui_pid'] for x in d['trials']})==5
+          assert d['roles']['webcontent']['observed_count']==5
+          for i,item in enumerate(d['trials'],start=1):
+            assert item['trial']==i
+            assert item['native_window_id']>0
+            assert item['verified_live_pid_identity_from_private_wkwebview_research_api']
+            assert item['total_unique_application_memory_verified'] is False
+            assert (path.parent/f'trial-{i}'/'native-app.log').exists()
+            assert (path.parent/f'trial-{i}'/'verified-process-sample.json').exists()
+          print('PASS: 5 real independently sourced WKWebView-owned WebContent process IDs')
+          print('Role statistics (diagnostic only):',d['roles'])
+          print('NO claim of a unique total application RAM number.')
+          PY
+
+      - name: Preserve verified original five-run macOS evidence on research branch
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=evidence/tauri-macos-direct-five
+          DEST=docs/evidence/macos-wkwebview-direct-pid-five-run
+          mkdir -p "$DEST"
+          cp -p "$OUT"/{direct-pid-tests.log,original-source-contract.json,source-sha256.txt,macos-version.txt,app-icon.log,tauri-version.txt,native-build.log,architecture.txt,research-executable-sha256.txt,experiment.log,five-run-direct-pid-result.json} "$DEST"/
+          for i in 1 2 3 4 5; do
+            mkdir -p "$DEST/trial-$i"
+            cp -p "$OUT/trial-$i"/{native-app.log,actual-wkwebview-process-pids.json,verified-process-sample.json} "$DEST/trial-$i"/
+          done
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          p=Path('docs/evidence/macos-wkwebview-direct-pid-five-run')
+          files={str(x.relative_to(p)):hashlib.sha256(x.read_bytes()).hexdigest()
+                 for x in p.rglob('*') if x.is_file()}
+          (p/'original-file-sha256.json').write_text(
+              json.dumps(files,indent=2,sort_keys=True)+'\n')
+          print('PASS: archived',len(files),'original source/runner/process files')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f "$DEST"/
+          git diff --cached --quiet && exit 0
+          git commit -m "test(evidence): preserve five directly attributed Mac Tauri WebKit resource trials"
+          git fetch origin feat/reference-fixtures
+          git rebase origin/feat/reference-fixtures
+          git push origin HEAD:refs/heads/feat/reference-fixtures
+
+      - name: Report exact measurement limitations
+        if: always()
+        shell: bash
+        run: |
+          echo '### CALYRA five direct-PID WebKit process resource observations' >> "$GITHUB_STEP_SUMMARY"
+          echo 'WebContent/Networking/GPU IDs are optional private macOS WKWebView diagnostic selectors, never production dependencies.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Per-process RSS and physical footprint do not establish unique total app RAM. No matched browserless engine, real OS input, IME or GPU performance proof.' >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-direct-macos-wkwebview-five-run
+          path: |
+            evidence/tauri-macos-direct-five/direct-pid-tests.log
+            evidence/tauri-macos-direct-five/original-source-contract.json
+            evidence/tauri-macos-direct-five/source-sha256.txt
+            evidence/tauri-macos-direct-five/macos-version.txt
+            evidence/tauri-macos-direct-five/app-icon.log
+            evidence/tauri-macos-direct-five/tauri-version.txt
+            evidence/tauri-macos-direct-five/native-build.log
+            evidence/tauri-macos-direct-five/architecture.txt
+            evidence/tauri-macos-direct-five/research-executable-sha256.txt
+            evidence/tauri-macos-direct-five/experiment.log
+            evidence/tauri-macos-direct-five/five-run-direct-pid-result.json
+            evidence/tauri-macos-direct-five/trial-*/actual-wkwebview-process-pids.json
+            evidence/tauri-macos-direct-five/trial-*/verified-process-sample.json
+            evidence/tauri-macos-direct-five/trial-*/native-app.log
+          retention-days: 14
+          if-no-files-found: warn

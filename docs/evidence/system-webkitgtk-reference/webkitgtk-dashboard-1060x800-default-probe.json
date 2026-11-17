@@ -1,0 +1,54 @@
+{
+  "schema": "calyra.webkitgtk-reference-probe.v1",
+  "engine_class": "linux-system-webview-backend-not-tauri",
+  "webkit_version": "2.52.6",
+  "fixture": "dashboard",
+  "viewport_css_px": [
+    1060,
+    800
+  ],
+  "motion": "off",
+  "state": "default",
+  "scripted_steps": [
+    "initial"
+  ],
+  "scripted_input_class": "javascript-dom-synthetic-not-os",
+  "states": {
+    "initial": {
+      "ready": "true",
+      "fixture": "dashboard",
+      "motion": "off",
+      "active": [
+        "dashboard"
+      ],
+      "selectedNav": 1,
+      "viewport": [
+        1060,
+        800
+      ],
+      "htmlScrollWidth": 1060,
+      "styles": {
+        "mainGrid": "grid",
+        "metricsGrid": "grid",
+        "selectedColor": "rgb(232, 233, 228)",
+        "glassBackdrop": "blur(20px) saturate(1.45)"
+      },
+      "priority": "balanced",
+      "menuExpanded": "false"
+    }
+  },
+  "captures": {
+    "initial": {
+      "path": "evidence/native-stage-a/system-webkitgtk/webkitgtk-dashboard-1060x800-default-initial.png",
+      "sha256": "79f33e012b9f314fb5dd3c3261007f4d2dbc51c3416e6d41c68cb78ee3c7854d",
+      "bytes": 65796,
+      "backend": "gdk-x11-window-pixbuf"
+    }
+  },
+  "requested_local_paths": [
+    "/",
+    "/reference.css",
+    "/reference.js"
+  ],
+  "required_assets_observed": true
+}

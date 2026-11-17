@@ -1,0 +1,13 @@
+diff --git a/packages/blitz-dom/src/traversal.rs b/packages/blitz-dom/src/traversal.rs
+--- a/packages/blitz-dom/src/traversal.rs
++++ b/packages/blitz-dom/src/traversal.rs
+@@ -103,7 +103,8 @@ impl BaseDocument {
+         let mut chain = Vec::with_capacity(16);
+         chain.push(node_id);
+         chain.extend(
+-            AncestorTraverser::new(self, node_id).filter(|id| self.nodes[*id].is_element()),
++            AncestorTraverser::new(self, node_id)
++                .filter(|id| self.nodes[*id].is_element() || *id == self.root_node().id),
+         );
+         chain
+     }

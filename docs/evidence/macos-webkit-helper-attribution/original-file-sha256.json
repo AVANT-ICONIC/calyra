@@ -1,0 +1,21 @@
+{
+  "app-architectures.txt": "c1669e1d8edca98769c37d494b76442a1d6e5ffffd7b4da1fb63aef8ebaf6f01",
+  "attribution-result.json": "d0d67f14b551caefbc0fd89cc0ac7a1d9c9f332bbf3eff4d6013987f6a293b12",
+  "classification-tests.log": "539bc1f21813439760a63bd3ebdcadb26409505e7ea9feface04f467f66a9390",
+  "environment.txt": "ebb98d0dd31b7d93a0db219e50a37c06c422795a0018ac09db4fe71661c67fcb",
+  "experiment.log": "be69f84af56d6f744337407ac6c029179eb1fd05d6f76079420686197846b766",
+  "native-metadata-selftest.tsv": "4734661a8d1ffc016e4f6ae00e125b306d2c2cc9d39575941c6112c010bf2127",
+  "source-and-executable-sha256.txt": "5e52f8aee72c8102e3a5ece0bf6150cf636631095b08bec5bb5ada5cdf4fb36c",
+  "source-contract.json": "c4dc8997f17ffff6c7ac22ce2400596be3f3b0fa6eac3a37ed1b4085a66f367f",
+  "trial-1-attribution.json": "34926081492ebc9f992012aa974926c750a4868fa57e472bdc15780f52ed7e43",
+  "trial-1-native-app.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "trial-2-attribution.json": "01d032244b87c1e7cb9277886f481d397b4fe885a5c57813687f538fe185a8f5",
+  "trial-2-native-app.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "trial-3-attribution.json": "7c770564714be1c4bcf8e4addfefc754459e3dbd6d2690eddfb836277fa79fba",
+  "trial-3-native-app.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "trial-4-attribution.json": "eea407aa5bbc83343606e6babe01b7b4c723c4accdf9e3eb4e8cec099c817f96",
+  "trial-4-native-app.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "trial-5-attribution.json": "4130ba58e16ae1b5263de93b318a227107ba8185ad9556264f33a5f0831302ad",
+  "trial-5-native-app.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "verified-original-app-zip-sha256.txt": "81399b48d6712660219d6488529599ddad0567641260aeacade7951b980cdc39"
+}

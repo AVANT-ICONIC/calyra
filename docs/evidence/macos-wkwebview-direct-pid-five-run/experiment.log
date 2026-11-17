@@ -1,0 +1,6 @@
+PASS trial 1: actual WKWebView process IDs {'ui': 6536, 'webcontent': 6547, 'networking': 6550}
+PASS trial 2: actual WKWebView process IDs {'ui': 6712, 'webcontent': 6715, 'networking': 6716}
+PASS trial 3: actual WKWebView process IDs {'ui': 6945, 'webcontent': 6948, 'networking': 6949}
+PASS trial 4: actual WKWebView process IDs {'ui': 7194, 'webcontent': 7231, 'networking': 7236}
+PASS trial 5: actual WKWebView process IDs {'ui': 7593, 'webcontent': 7596, 'networking': 7597}
+PASS 5 sequential real native Tauri WKWebViews; no total unique RAM claim

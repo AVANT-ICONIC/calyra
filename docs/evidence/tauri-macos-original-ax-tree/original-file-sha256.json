@@ -1,0 +1,12 @@
+{
+  "actual-ax-tree.json": "b0dcf69415d48dcf2b20da1ce8a84182662b72d7e4fcef9b29ec9f492cd7f8c3",
+  "app-owned-windows.json": "bdfedae151d099327aed455113a9f0e3074fb55d5c55c42919f283806e7f0768",
+  "app-pid.txt": "113df6e47150e17f321df494784c695c9d4717734b29e1da129a8e5bd6bed525",
+  "host-environment.txt": "7519d3901b23053d7751ef2433b52d077178bea337d17590d2a1e0d9af31bcb1",
+  "inspector-source-sha256.txt": "ef3e23bc127a3fbd65f220150bcbc2c5fba8fedb7ba84b995aba718326e4a2e7",
+  "native-archs.txt": "c1669e1d8edca98769c37d494b76442a1d6e5ffffd7b4da1fb63aef8ebaf6f01",
+  "native-ax-error.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "native-ax-exit-code.txt": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+  "source-contract.json": "c4dc8997f17ffff6c7ac22ce2400596be3f3b0fa6eac3a37ed1b4085a66f367f",
+  "verified-original-app-zip-sha256.txt": "81399b48d6712660219d6488529599ddad0567641260aeacade7951b980cdc39"
+}

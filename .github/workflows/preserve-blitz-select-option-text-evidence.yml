@@ -1,0 +1,126 @@
+name: Archive verified CALYRA selected-option text pixels
+
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/preserve-blitz-select-option-text-evidence.yml]
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  archive:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download the original 18-file producing-run artifact
+        id: download
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: calyra-blitz-select-option-text-experiment
+          run-id: 43868624637
+          github-token: ${{ github.token }}
+          path: original
+      - name: Fall back to GitHub CLI if artifact action fails
+        if: steps.download.outcome == 'failure'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          mkdir -p original
+          gh run download 43868624637 -R AVANT-ICONIC/calyra --name calyra-blitz-select-option-text-experiment --dir original
+      - name: Verify hash, native tests, JS semantics and real pixel differences
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m venv "$RUNNER_TEMP/calyra-pillow"
+          "$RUNNER_TEMP/calyra-pillow/bin/pip" install --disable-pip-version-check Pillow
+          "$RUNNER_TEMP/calyra-pillow/bin/python" - <<'PY'
+          import hashlib, json, shutil
+          from pathlib import Path
+          from PIL import Image, ImageChops
+          root=Path('original')
+          required=['source-sha256.txt','applied-upstream-diff.patch',
+            'rust-test.log','cargo-live-paint.log','native-live-paint.log',
+            'calyra-js-option-text.json','calyra-js-select-live.json',
+            'option-text-result.json','option-text-before.png',
+            'option-text-after.png','option-text-pixel-diff.png']
+          for name in required:
+              assert (root/name).is_file() and (root/name).stat().st_size>0,name
+          result=json.loads((root/'option-text-result.json').read_text())
+          expected={
+              'schema':'calyra.blitz-option-text-paint.v1',
+              'upstream_commit':'4f61cffacee50fe4f944ebe9d0470d9a5d3997e0',
+              'renderer':'native Blitz AnyRender/Vello CPU',
+              'control_state':'native noneditable SelectData',
+              'same_document':True,'original_css_modified':False,
+              'original_js_modified':False,'javascript_executed':True,
+              'hardware_gpu':False,'os_input_tested':False,
+              'old_label':'Balanced','new_label':'Balanced updated',
+              'changed_pixels_at_12':381,'diff_bbox':[767,490,832,505]
+          }
+          for k,v in expected.items(): assert result[k]==v,(k,result.get(k),v)
+          images=('option-text-before.png','option-text-after.png','option-text-pixel-diff.png')
+          for name in images:
+              assert hashlib.sha256((root/name).read_bytes()).hexdigest()==result['images'][name]
+          with Image.open(root/images[0]) as a, Image.open(root/images[1]) as b:
+              assert a.size==b.size==(1060,800)
+              diff=ImageChops.difference(a.convert('RGB'),b.convert('RGB'))
+              count=sum(1 for x in diff.getdata() if max(x)>=12)
+              bbox=diff.getbbox()
+              with Image.open(root/images[2]) as d:
+                  assert d.convert('RGB').tobytes()==diff.tobytes()
+          assert count==381 and bbox==(767,490,832,505)
+          old=json.loads((root/'calyra-js-select-live.json').read_text())
+          assert old['js_error_count']==0 and old['observations']['same_node'] is True
+          assert len(old['observations']['snapshots'])==7
+          assert all(not s['js']['events'] for s in old['observations']['snapshots'])
+          new=json.loads((root/'calyra-js-option-text.json').read_text())
+          assert new['js_error_count']==0
+          assert new['observations']=={
+              'same_node':True,
+              'state':{'value':'balanced','index':0,'selected':True,
+                       'text':'Balanced live','events':[]},
+              'native_label':'Balanced live'}
+          rust=(root/'rust-test.log').read_text()
+          assert 'test result: ok. 11 passed; 0 failed' in rust
+          assert 'test calyra_selected_option_text_mutation_refreshes_native_label ... ok' in rust
+          log=(root/'native-live-paint.log').read_text()
+          assert 'CALYRA_LIVE_RENDER_BACKEND=Vello_CPU' in log
+          assert 'CALYRA_OPTION_TEXT_UPDATED=true' in log
+          assert 'CALYRA_LIVE_SELECT_DATA=read_only_no_editor' in log
+          for line in (root/'source-sha256.txt').read_text().splitlines():
+              digest,path=line.split(maxsplit=1)
+              f=Path(path.lstrip('*'))
+              assert hashlib.sha256(f.read_bytes()).hexdigest()==digest,path
+          for name,digest in {
+              'reference.css':'04635269a8fbd790c87316a03c6469a157806201e58fd730212f632fc86b7b9c',
+              'reference.js':'9d565203fc9c3450b0c61d7774cb2322b14ed3e3325926122b17f583e81cf3de'
+          }.items():
+              assert hashlib.sha256((Path('fixtures')/name).read_bytes()).hexdigest()==digest
+          files=[x for x in root.rglob('*') if x.is_file()]
+          assert len(files)==18,len(files)
+          dest=Path('docs/evidence/blitz-select-option-text')
+          dest.mkdir(parents=True,exist_ok=True)
+          for src in files:
+              assert not src.is_symlink()
+              target=dest/src.relative_to(root)
+              target.parent.mkdir(parents=True,exist_ok=True)
+              shutil.copyfile(src,target)
+              assert hashlib.sha256(src.read_bytes()).digest()==hashlib.sha256(target.read_bytes()).digest()
+          print('PASS: 18 exact original files, 11/11 Rust tests, 381 native Vello CPU pixels',bbox)
+          PY
+      - name: Commit byte-exact original evidence on feature branch only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+users.noreply.github.com'
+          git add -f docs/evidence/blitz-select-option-text/
+          if git diff --cached --quiet; then exit 0; fi
+          git commit -m "docs(evidence): preserve verified native option-text pixels"
+          git push origin HEAD:feat/reference-fixtures

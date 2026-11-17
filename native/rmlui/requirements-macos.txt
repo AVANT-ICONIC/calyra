@@ -1,0 +1,3 @@
+# Isolated Python tooling for native Stage A reports; no browser/PDF dependencies.
+Pillow==12.3.0
+jsonschema==4.26.0

@@ -1,0 +1,1 @@
+{"schema":"calyra.blitz-js.v1","fixture":"option-text","reference_js_modified":false,"javascript_execution_attempted":true,"os_input_tested":false,"gpu_tested":false,"js_error_count":0,"observations":{"same_node":true,"state":{"value":"balanced","index":0,"selected":true,"text":"Balanced live","events":[]},"native_label":"Balanced live"}}

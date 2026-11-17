@@ -1,0 +1,714 @@
+diff --git a/packages/blitz-dom/assets/default.css b/packages/blitz-dom/assets/default.css
+index 38da3b31..9b5b0f2e 100644
+--- a/packages/blitz-dom/assets/default.css
++++ b/packages/blitz-dom/assets/default.css
+@@ -117,6 +117,7 @@ textarea {
+ /* https://html.spec.whatwg.org/multipage/rendering.html#the-select-element-2
+    (select only has native appearance here) */
+ select {
++    display: inline-block; /* CALYRA experiment: native appearance still unimplemented */
+     letter-spacing: initial;
+     word-spacing: initial;
+     line-height: initial;
+diff --git a/packages/blitz-dom/src/accessibility.rs b/packages/blitz-dom/src/accessibility.rs
+index a60aa14f..39f5fb00 100644
+--- a/packages/blitz-dom/src/accessibility.rs
++++ b/packages/blitz-dom/src/accessibility.rs
+@@ -96,6 +96,127 @@ impl BaseDocument {
+         }
+     }
+ 
++
++    /// CALYRA AX experiment: collect descendant visible text without including
++    /// aria-hidden ornamental spans. Not a complete HTML accessible-name algorithm.
++    fn calyra_ax_visible_text(&self, node: &BlitzDomNode, out: &mut FlatText) {
++        if node.attr(local_name!("aria-hidden")) == Some("true") {
++            return;
++        }
++        match &node.data {
++            NodeData::Text(data) => out.push(&data.content),
++            NodeData::Element(..) | NodeData::AnonymousBlock(..) => {
++                for child_id in &node.children {
++                    if let Some(child) = self.get_node(*child_id) {
++                        // Compute actual rendered CSS block boundaries rather than
++                        // inserting spaces based on the HTML tag or fixture text.
++                        let is_block = child.display_style().is_some_and(|display|
++                            matches!(display.outside(),
++                                style::values::specified::box_::DisplayOutside::Block
++                                | style::values::specified::box_::DisplayOutside::TableCaption
++                                | style::values::specified::box_::DisplayOutside::InternalTable));
++                        if is_block && !out.text.is_empty() {
++                            out.break_word();
++                        }
++                        self.calyra_ax_visible_text(child, out);
++                        if is_block && !out.text.is_empty() {
++                            out.break_word();
++                        }
++                    }
++                }
++            }
++            _ => {}
++        }
++    }
++
++    /// Only the common HTML 'label for', enclosing 'label', and native button
++    /// text cases. Preserve aria-label and aria-labelledby precedence elsewhere.
++    fn calyra_ax_associated_name(&self, node: &BlitzDomNode) -> Option<String> {
++        let element = node.element_data()?;
++        let is_control = matches!(
++            &*element.name.local,
++            "input" | "select" | "textarea" | "button"
++        );
++        if !is_control {
++            return None;
++        }
++        let mut text = FlatText::default();
++        if let Some(target) = node.attr(local_name!("id")) {
++            self.visit(|_, maybe_label| {
++                if text.text.is_empty()
++                    && maybe_label
++                        .element_data()
++                        .is_some_and(|el| el.name.local == local_name!("label"))
++                    && maybe_label.attr(local_name!("for")) == Some(target)
++                {
++                    self.calyra_ax_visible_text(maybe_label, &mut text);
++                }
++            });
++        }
++        if text.text.is_empty() {
++            let mut ancestor = node.parent;
++            while let Some(parent_id) = ancestor {
++                let Some(parent) = self.get_node(parent_id) else {
++                    break;
++                };
++                if parent.data.is_element_with_tag_name(&local_name!("label")) {
++                    self.calyra_ax_visible_text(parent, &mut text);
++                    break;
++                }
++                ancestor = parent.parent;
++            }
++        }
++        if text.text.is_empty() && element.name.local == local_name!("button") {
++            self.calyra_ax_visible_text(node, &mut text);
++        }
++        if text.text.is_empty() { None } else { Some(text.text) }
++    }
++
++    /// Record already-available native input state. For type=range, Blitz has
++    /// no live RangeInput special data at this pinned revision: only the static
++    /// attribute-derived value is exposed, which is NOT live range semantics.
++    fn calyra_ax_form_state(&self, node: &BlitzDomNode, builder: &mut AccessKitNode) {
++        let Some(el) = node.element_data() else { return };
++        if el.name.local == local_name!("select") {
++            if let Some(data) = el.select_data() {
++                builder.set_value(data.label.clone());
++            }
++        } else if el.name.local == local_name!("input") {
++            match el.attr(local_name!("type")).unwrap_or("text") {
++                "checkbox" | "radio" => {
++                    let checked = el.checkbox_input_checked()
++                        .unwrap_or(el.has_attr(local_name!("checked")));
++                    builder.set_toggled(if checked {
++                        accesskit::Toggled::True
++                    } else {
++                        accesskit::Toggled::False
++                    });
++                    // The native AX adapter should derive the checkbox state
++                    // from toggled. Confirm both role and AXValue on macOS.
++                }
++                "range" => {
++                    if let Some(range) = el.range_data() {
++                        builder.set_value(range.value_text());
++                        builder.set_numeric_value(range.value);
++                        builder.set_min_numeric_value(range.minimum);
++                        builder.set_max_numeric_value(range.maximum);
++                    }
++                }
++                _ => {
++                    if let Some(data) = el.text_input_data() {
++                        builder.set_value(data.editor.raw_text().to_string());
++                    } else if let Some(initial) = el.attr(local_name!("value")) {
++                        builder.set_value(initial);
++                    }
++                }
++            }
++        } else if el.name.local == local_name!("textarea") {
++            if let Some(data) = el.text_input_data() {
++                builder.set_value(data.editor.raw_text().to_string());
++            }
++        }
++    }
++
+     fn referenced_dom_ids_to_node_ids<'a>(
+         &'a self,
+         nodes_reference: &'a str,
+@@ -151,7 +272,12 @@ impl BaseDocument {
+ 
+             if let Some(aria_label) = element_data.attr(local_name!("aria-label")) {
+                 builder.set_label(aria_label);
++            } else if element_data.attr(local_name!("aria-labelledby")).is_none() {
++                if let Some(native_name) = self.calyra_ax_associated_name(node) {
++                    builder.set_label(native_name);
++                }
+             }
++            self.calyra_ax_form_state(node, &mut builder);
+             if let Some(aria_description) = element_data.attr(local_name!("aria-description")) {
+                 builder.set_description(aria_description);
+             }
+diff --git a/packages/blitz-dom/src/document.rs b/packages/blitz-dom/src/document.rs
+index e8c5af62..fb40a564 100644
+--- a/packages/blitz-dom/src/document.rs
++++ b/packages/blitz-dom/src/document.rs
+@@ -649,6 +649,60 @@ impl BaseDocument {
+         self.nodes.get_mut(node_id)
+     }
+ 
++    /// CALYRA Stage A: selectedness lives on the native DOM select.
++    /// Rebuild only the label's noneditable Parley layout, not the document.
++    pub fn calyra_set_select_selection(&mut self, select_id: NodeId, selected: Option<NodeId>) {
++        let Some(select_node) = self.nodes.get(select_id) else { return };
++        if select_node.element_data().and_then(|el| el.select_data()).is_none() {
++            return;
++        }
++        let label = selected.and_then(|id| self.nodes.get(id))
++            .map(|node| node.text_content().trim().to_string())
++            .unwrap_or_default();
++        let text_style = select_node.primary_styles()
++            .as_ref()
++            .map(|s| crate::stylo_to_parley::style(select_id, s))
++            .unwrap_or_default();
++        let direction = select_node.primary_styles().as_ref().map(|s|
++            crate::stylo_to_parley::base_direction(
++                s.clone_direction(), s.clone_unicode_bidi()
++            ));
++        let scale = self.viewport.scale_f64() as f32;
++        let data = self.nodes[select_id].element_data_mut().unwrap()
++            .select_data_mut().unwrap();
++        data.selected_option = selected;
++        data.label = label.clone();
++
++        let mut fonts = self.font_ctx.lock().unwrap();
++        let mut builder = self.layout_ctx.tree_builder(
++            &mut fonts, scale, true, &text_style
++        );
++        if let Some(direction) = direction {
++            builder.set_base_direction(direction);
++        }
++        builder.push_text(&label);
++        builder.build_into(&mut data.layout);
++        data.layout.break_all_lines(None);
++        self.shell_provider.request_redraw();
++    }
++
++    /// CALYRA experimental native range current state mutation.
++    /// Native state is not the value HTML attribute/defaultValue. Programmatic
++    /// writes never dispatch synthetic input/change user events.
++    pub fn calyra_set_range_current(&mut self, id: NodeId, raw: &str) -> bool {
++        let changed = self.nodes.get_mut(id)
++            .and_then(|node| node.element_data_mut())
++            .and_then(|el| el.range_data_mut())
++            .is_some_and(|data| data.set_current(raw));
++        if changed {
++            self.has_changes = true;
++            self.nodes[id].insert_damage(ALL_DAMAGE);
++            self.nodes[id].mark_ancestors_dirty();
++            self.shell_provider.request_redraw();
++        }
++        changed
++    }
++
+     pub fn get_focussed_node_id(&self) -> Option<NodeId> {
+         self.focus_node_id
+             .or(self.try_root_element().map(|el| el.id))
+diff --git a/packages/blitz-dom/src/events/pointer.rs b/packages/blitz-dom/src/events/pointer.rs
+index 9617ee68..cd78be19 100644
+--- a/packages/blitz-dom/src/events/pointer.rs
++++ b/packages/blitz-dom/src/events/pointer.rs
+@@ -766,6 +766,12 @@ pub(crate) fn handle_click(
+                         doc.submit_form(*form_owner, node_id);
+                     }
+                 }
++                // Plain buttons are handled click targets, even if JavaScript
++                // has already moved focus to another element synchronously.
++                // Do not clear the programmatic focus in the fallback below.
++                local_name!("button") if el.attr(local_name!("type")) == Some("button") => {
++                    break 'matched true;
++                }
+                 #[cfg(feature = "file-input")]
+                 local_name!("input") if el.attr(local_name!("type")) == Some("file") => {
+                     use crate::qual_name;
+diff --git a/packages/blitz-dom/src/layout/construct.rs b/packages/blitz-dom/src/layout/construct.rs
+index 67a2f01e..ee48c251 100644
+--- a/packages/blitz-dom/src/layout/construct.rs
++++ b/packages/blitz-dom/src/layout/construct.rs
+@@ -443,9 +443,18 @@ fn collect_layout_children_with_wrap(
+             } else if matches!(type_attr, Some("checkbox" | "radio")) {
+                 create_checkbox_input(doc, container_node_id);
+                 return;
++            } else if matches!(type_attr, Some("range")) {
++                create_range_input(doc, container_node_id);
++                return;
+             }
+         }
+ 
++        // CALYRA Stage A: create a native read-only label, never TextInputData.
++        if tag_name == "select" {
++            create_select_label(doc, container_node_id);
++            return;
++        }
++
+         #[cfg(feature = "svg")]
+         if matches!(tag_name, "svg") {
+             let outer_html = doc.get_node(container_node_id).unwrap().svg_source();
+@@ -856,6 +865,33 @@ fn collect_complex_layout_children(
+     out.maybe_push_anon_block(doc);
+ }
+ 
++fn create_select_label(doc: &mut BaseDocument, select_id: NodeId) {
++    // Initial current selection uses the final selected attribute, or first direct
++    // option. Subsequent reconstruction keeps the native current selection.
++    let (selected, already_created) = {
++        let select = &doc.nodes[select_id];
++        let existing = select.element_data().and_then(|el| el.select_data());
++        let selected = if let Some(data) = existing {
++            data.selected_option
++        } else {
++            let options: Vec<NodeId> = select.children.iter().copied().filter(|id| {
++                doc.get_node(*id).is_some_and(|node|
++                    node.data.is_element_with_tag_name(&local_name!("option")))
++            }).collect();
++            options.iter().copied().rev().find(|id| {
++                doc.get_node(*id).is_some_and(|node|
++                    node.attr(local_name!("selected")).is_some())
++            }).or_else(|| options.first().copied())
++        };
++        (selected, existing.is_some())
++    };
++    if !already_created {
++        doc.nodes[select_id].element_data_mut().unwrap().special_data =
++            SpecialElementData::Select(crate::node::SelectData::default());
++    }
++    doc.calyra_set_select_selection(select_id, selected);
++}
++
+ fn create_text_editor(doc: &mut BaseDocument, input_element_id: NodeId, is_multiline: bool) {
+     let node = &mut doc.nodes[input_element_id];
+     let parley_style = node
+@@ -925,6 +961,16 @@ fn create_text_editor(doc: &mut BaseDocument, input_element_id: NodeId, is_multi
+     editor.refresh_layout(&mut doc.font_ctx.lock().unwrap(), &mut doc.layout_ctx);
+ }
+ 
++fn create_range_input(doc: &mut BaseDocument, id: NodeId) {
++    let el = doc.nodes[id].element_data_mut().unwrap();
++    if el.range_data().is_none() {
++        // Only the first construction may initialize current from attributes.
++        // Subsequent layout/CSS reconstruction must preserve live currentValue.
++        let data = crate::node::RangeData::from_element(el);
++        el.special_data = SpecialElementData::Range(data);
++    }
++}
++
+ fn create_checkbox_input(doc: &mut BaseDocument, input_element_id: NodeId) {
+     let node = &mut doc.nodes[input_element_id];
+ 
+diff --git a/packages/blitz-dom/src/mutator.rs b/packages/blitz-dom/src/mutator.rs
+index 4a08e384..99109882 100644
+--- a/packages/blitz-dom/src/mutator.rs
++++ b/packages/blitz-dom/src/mutator.rs
+@@ -1313,6 +1313,8 @@ impl<'doc> DocumentMutator<'doc> {
+                 }
+                 SpecialElementData::TableRoot(_) => {}
+                 SpecialElementData::TextInput(_) => {}
++                SpecialElementData::Select(_) => {}
++                SpecialElementData::Range(_) => {}
+                 SpecialElementData::CheckboxInput(_) => {}
+                 #[cfg(feature = "file-input")]
+                 SpecialElementData::FileInput(_) => {}
+diff --git a/packages/blitz-dom/src/node/element.rs b/packages/blitz-dom/src/node/element.rs
+index 0370ba8c..caf42491 100644
+--- a/packages/blitz-dom/src/node/element.rs
++++ b/packages/blitz-dom/src/node/element.rs
+@@ -33,7 +33,7 @@ use super::svg::SvgImageData;
+ use super::{Attribute, Attributes};
+ use crate::Document;
+ use crate::layout::table::TableContext;
+-use crate::node::{TextBrush, TextInputData, TextLayout};
++use crate::node::{RangeData, SelectData, TextBrush, TextInputData, TextLayout};
+ 
+ #[cfg(feature = "custom-widget")]
+ use super::custom_widget::CustomWidgetData;
+@@ -385,6 +385,10 @@ pub enum SpecialElementData {
+     TableRoot(Arc<TableContext>),
+     /// Parley text editor (text inputs)
+     TextInput(TextInputData),
++    /// Read-only selected-option label (no editor, caret, clipboard or IME).
++    Select(SelectData),
++    /// One native numeric range value, separate from HTML defaultValue.
++    Range(RangeData),
+     /// Checkbox checked state
+     CheckboxInput(bool),
+     /// Selected files
+@@ -406,6 +410,8 @@ impl Clone for SpecialElementData {
+             Self::Canvas(data) => Self::Canvas(data.clone()),
+             Self::TableRoot(data) => Self::TableRoot(data.clone()),
+             Self::TextInput(data) => Self::TextInput(data.clone()),
++            Self::Select(data) => Self::Select(data.clone()),
++            Self::Range(data) => Self::Range(data.clone()),
+             Self::CheckboxInput(data) => Self::CheckboxInput(*data),
+             #[cfg(feature = "file-input")]
+             Self::FileInput(data) => Self::FileInput(data.clone()),
+@@ -602,6 +608,34 @@ impl ElementData {
+         }
+     }
+ 
++    pub fn range_data(&self) -> Option<&RangeData> {
++        match &self.special_data {
++            SpecialElementData::Range(data) => Some(data),
++            _ => None,
++        }
++    }
++
++    pub fn range_data_mut(&mut self) -> Option<&mut RangeData> {
++        match &mut self.special_data {
++            SpecialElementData::Range(data) => Some(data),
++            _ => None,
++        }
++    }
++
++    pub fn select_data(&self) -> Option<&SelectData> {
++        match &self.special_data {
++            SpecialElementData::Select(data) => Some(data),
++            _ => None,
++        }
++    }
++
++    pub fn select_data_mut(&mut self) -> Option<&mut SelectData> {
++        match &mut self.special_data {
++            SpecialElementData::Select(data) => Some(data),
++            _ => None,
++        }
++    }
++
+     pub fn text_input_data(&self) -> Option<&TextInputData> {
+         match &self.special_data {
+             SpecialElementData::TextInput(data) => Some(data),
+@@ -950,6 +984,8 @@ impl std::fmt::Debug for SpecialElementData {
+             SpecialElementData::Canvas(_) => f.write_str("NodeSpecificData::Canvas"),
+             SpecialElementData::TableRoot(_) => f.write_str("NodeSpecificData::TableRoot"),
+             SpecialElementData::TextInput(_) => f.write_str("NodeSpecificData::TextInput"),
++            SpecialElementData::Select(_) => f.write_str("NodeSpecificData::Select"),
++            SpecialElementData::Range(_) => f.write_str("NodeSpecificData::Range"),
+             SpecialElementData::CheckboxInput(_) => f.write_str("NodeSpecificData::CheckboxInput"),
+             #[cfg(feature = "file-input")]
+             SpecialElementData::FileInput(_) => f.write_str("NodeSpecificData::FileInput"),
+diff --git a/packages/blitz-dom/src/node/mod.rs b/packages/blitz-dom/src/node/mod.rs
+index cfd38a16..758b5ad1 100644
+--- a/packages/blitz-dom/src/node/mod.rs
++++ b/packages/blitz-dom/src/node/mod.rs
+@@ -11,6 +11,7 @@ mod stylo_data;
+ #[cfg(feature = "svg")]
+ mod svg;
+ mod text;
++mod range;
+ 
+ pub use attributes::{Attribute, Attributes};
+ #[cfg(feature = "custom-widget")]
+@@ -28,4 +29,5 @@ pub use scrollbar::{ScrollbarColor, ScrollbarRef, ScrollbarWidth};
+ pub use stylo_data::ComputedStyleRef;
+ #[cfg(feature = "svg")]
+ pub use svg::{SvgImageData, SvgIntrinsicDimensions};
+-pub use text::{GeneratedTextInputEvent, INLINE_BOX_CHAR, TextBrush, TextInputData, TextLayout};
++pub use text::{GeneratedTextInputEvent, INLINE_BOX_CHAR, SelectData, TextBrush, TextInputData, TextLayout};
++pub use range::RangeData;
+diff --git a/packages/blitz-dom/src/node/text.rs b/packages/blitz-dom/src/node/text.rs
+index 04f8a3fa..40c21a57 100644
+--- a/packages/blitz-dom/src/node/text.rs
++++ b/packages/blitz-dom/src/node/text.rs
+@@ -89,6 +89,14 @@ pub enum GeneratedTextInputEvent {
+     Submit,
+ }
+ 
++/// CALYRA Stage A: a noneditable selected-option label and current selection.
++#[derive(Clone, Default)]
++pub struct SelectData {
++    pub selected_option: Option<NodeId>,
++    pub label: String,
++    pub layout: parley::layout::Layout<TextBrush>,
++}
++
+ pub struct TextInputData {
+     /// A parley TextEditor instance
+     pub editor: Box<parley::PlainEditor<TextBrush>>,
+diff --git a/packages/blitz-dom/src/traversal.rs b/packages/blitz-dom/src/traversal.rs
+index 68291594..979ea307 100644
+--- a/packages/blitz-dom/src/traversal.rs
++++ b/packages/blitz-dom/src/traversal.rs
+@@ -103,7 +103,8 @@ impl BaseDocument {
+         let mut chain = Vec::with_capacity(16);
+         chain.push(node_id);
+         chain.extend(
+-            AncestorTraverser::new(self, node_id).filter(|id| self.nodes[*id].is_element()),
++            AncestorTraverser::new(self, node_id)
++                .filter(|id| self.nodes[*id].is_element() || *id == self.root_node().id),
+         );
+         chain
+     }
+diff --git a/packages/blitz-paint/src/render.rs b/packages/blitz-paint/src/render.rs
+index 5a8294df..c574efc6 100644
+--- a/packages/blitz-paint/src/render.rs
++++ b/packages/blitz-paint/src/render.rs
+@@ -22,8 +22,8 @@ use crate::text::{DrawTextContext, TextPaintOptions};
+ use crate::{CustomWidgetSceneMap, SELECTION_COLOR};
+ use anyrender::{AntiAliasing, PaintScene, Scene};
+ use blitz_dom::node::{
+-    ListItemLayout, ListItemLayoutPosition, Marker, NodeData, RasterImageData, TextInputData,
+-    TextNodeData,
++    ListItemLayout, ListItemLayoutPosition, Marker, NodeData, RasterImageData, SelectData,
++    TextInputData, TextNodeData,
+ };
+ use blitz_dom::{BaseDocument, ElementData, Node, NodeId, local_name};
+ use blitz_traits::devtools::DevtoolSettings;
+@@ -350,6 +350,7 @@ impl<'dom, 'a> BlitzDomPainter<'dom, 'a> {
+             && (element.and_then(|e| e.raster_image_data()).is_some()
+                 || element.and_then(|e| e.sub_doc_data()).is_some()
+                 || element.and_then(|e| e.text_input_data()).is_some()
++                || element.and_then(|e| e.select_data()).is_some()
+                 || contain_paint
+                 || !matches!(box_style.overflow_x, Overflow::Visible)
+                 || !matches!(box_style.overflow_y, Overflow::Visible))
+@@ -724,6 +725,7 @@ impl<'dom, 'a> BlitzDomPainter<'dom, 'a> {
+                                 cx.draw_sub_document(scene);
+                                 cx.draw_input(scene);
+                                 cx.draw_text_input_text(scene, content_position);
++                                cx.draw_select_label(scene, content_position);
+                                 cx.draw_inline_layout(scene, content_position);
+                                 cx.draw_marker(scene, content_position);
+                                 cx.draw_children(scene, cx.transform, child_clip_rect);
+@@ -815,6 +817,7 @@ impl<'dom, 'a> BlitzDomPainter<'dom, 'a> {
+                 _ => None,
+             },
+             text_input: element.text_input_data(),
++            select_data: element.select_data(),
+             list_item: element.list_item_data.as_deref(),
+             devtools: self.dom.devtools(),
+             custom_widget_scene,
+@@ -868,6 +871,7 @@ struct ElementCx<'dom, 'a> {
+     #[cfg(feature = "svg")]
+     svg: Option<&'dom blitz_dom::node::SvgImageData>,
+     text_input: Option<&'dom TextInputData>,
++    select_data: Option<&'dom SelectData>,
+     list_item: Option<&'dom ListItemLayout>,
+     devtools: &'dom DevtoolSettings,
+     #[cfg_attr(not(feature = "custom-widget"), expect(unused))]
+@@ -1136,6 +1140,25 @@ impl ElementCx<'_, '_> {
+         }
+     }
+ 
++    fn draw_select_label(&self, scene: &mut impl PaintScene, pos: Point) {
++        let Some(select) = self.select_data else { return };
++        // Reuse the native glyph painter only. Unlike the TextInput path,
++        // no editor exists to render or accept a caret, selection or IME.
++        let content_height = self.node.final_layout().content_box_height();
++        let label_height = select.layout.height() / self.scale as f32;
++        let y_offset = ((content_height - label_height) / 2.0).max(0.0);
++        let transform = self.transform * Affine::translate((
++            pos.x * self.scale,
++            (pos.y + y_offset as f64) * self.scale,
++        ));
++        let mut draw_ctx = self.context.draw_text_context.borrow_mut();
++        crate::text::stroke_text(
++            scene, select.layout.lines(), self.context.dom, transform,
++            TextPaintOptions { scale: self.scale, brush_override: None },
++            self.node.id, &mut draw_ctx,
++        );
++    }
++
+     fn draw_marker(&self, scene: &mut impl PaintScene, pos: Point) {
+         if let Some(ListItemLayout {
+             marker,
+diff --git a/packages/blitz-paint/src/render/form_controls.rs b/packages/blitz-paint/src/render/form_controls.rs
+index 802e2500..3d544c8b 100644
+--- a/packages/blitz-paint/src/render/form_controls.rs
++++ b/packages/blitz-paint/src/render/form_controls.rs
+@@ -11,11 +11,48 @@ impl ElementCx<'_, '_> {
+         if self.element.name.local != local_name!("input") {
+             return;
+         }
++        let type_attr = self.node.attr(local_name!("type"));
++        if type_attr == Some("range") {
++            if let Some(range) = self.element.range_data() {
++                let border = self.frame.border_box;
++                let width = border.width();
++                let height = border.height();
++                if width > 2.0 && height > 2.0 {
++                    let radius = (height * 0.34).clamp(5.0, 9.0);
++                    let left = border.x0 + radius;
++                    let right = (border.x1 - radius).max(left);
++                    let middle = border.center().y;
++                    let line_height = (height * 0.16).clamp(2.0, 5.0);
++                    let line = kurbo::Rect::new(left, middle - line_height / 2.0,
++                        right, middle + line_height / 2.0).to_rounded_rect(line_height / 2.0);
++                    let x = left + (right - left) * range.progress();
++                    let progress_line = kurbo::Rect::new(left, middle - line_height / 2.0,
++                        x.max(left), middle + line_height / 2.0)
++                        .to_rounded_rect(line_height / 2.0);
++                    let accent = if self.node.attr(local_name!("disabled")).is_some() {
++                        Color::from_rgba8(150, 150, 150, 255)
++                    } else {
++                        self.style.clone_color().as_srgb_color()
++                    };
++                    scene.fill(Fill::NonZero, self.transform,
++                        Color::from_rgba8(108, 117, 131, 255),
++                        None, &line, AntiAliasing::Enabled);
++                    if x > left {
++                        scene.fill(Fill::NonZero, self.transform, accent,
++                            None, &progress_line, AntiAliasing::Enabled);
++                    }
++                    let thumb = Circle::new(Point::new(x, middle), radius);
++                    scene.fill(Fill::NonZero, self.transform,
++                        Color::WHITE, None, &thumb, AntiAliasing::Enabled);
++                    scene.stroke(&Stroke { width: 1.5, ..Stroke::default() },
++                        self.transform, accent, None, &thumb, AntiAliasing::Enabled);
++                }
++            }
++            return;
++        }
+         let Some(checked) = self.element.checkbox_input_checked() else {
+             return;
+         };
+-
+-        let type_attr = self.node.attr(local_name!("type"));
+         let disabled = self.node.attr(local_name!("disabled")).is_some();
+ 
+         // TODO this should be coming from css accent-color, but I couldn't find how to retrieve it
+diff --git a/packages/blitz-vibey-script/src/dom/element.rs b/packages/blitz-vibey-script/src/dom/element.rs
+index c0fe2153..194a4aba 100644
+--- a/packages/blitz-vibey-script/src/dom/element.rs
++++ b/packages/blitz-vibey-script/src/dom/element.rs
+@@ -8,6 +8,7 @@ use super::{define_accessor, define_method, dom_ctx, js_str, node_wrapper, this_
+ 
+ mod attributes;
+ mod form_controls;
++mod select_state;
+ mod geometry;
+ mod markup;
+ mod scrolling;
+@@ -41,6 +42,13 @@ pub(crate) fn init_element_proto(proto: &JsObject, context: &mut Context) {
+         Some(form_controls::set_value),
+         context,
+     );
++    // CALYRA single-select Stage A experiment: current vs default selectedness.
++    define_accessor(proto, "selectedIndex", Some(select_state::get_selected_index),
++        Some(select_state::set_selected_index), context);
++    define_accessor(proto, "selected", Some(select_state::get_selected),
++        Some(select_state::set_selected), context);
++    define_accessor(proto, "defaultSelected", Some(select_state::get_default_selected),
++        Some(select_state::set_default_selected), context);
+     define_accessor(
+         proto,
+         "checked",
+diff --git a/packages/blitz-vibey-script/src/dom/element/form_controls.rs b/packages/blitz-vibey-script/src/dom/element/form_controls.rs
+index c1f267c7..33daf871 100644
+--- a/packages/blitz-vibey-script/src/dom/element/form_controls.rs
++++ b/packages/blitz-vibey-script/src/dom/element/form_controls.rs
+@@ -68,18 +68,54 @@ pub(super) fn set_autofocus(
+ pub(super) fn get_value(this: &JsValue, _: &[JsValue], context: &mut Context) -> JsResult<JsValue> {
+     let ctx = dom_ctx(context)?;
+     let node_id = this_node_id(this)?;
+-    let value = {
++    if super::select_state::is_select(&ctx, node_id) {
++        return super::select_state::get_value(this, &[], context);
++    }
++    // Native RangeData is the single current value authority. The
++    // raw HTML 'value' attribute remains the defaultValue, not live state.
++    let current_range_value = {
+         let doc = ctx.doc.borrow();
+         doc.get_node(node_id)
+             .and_then(|node| node.element_data())
+-            .map(|element| match element.text_input_data() {
+-                Some(input_data) => input_data.editor.raw_text().to_string(),
+-                None => element
+-                    .attrs()
+-                    .iter()
+-                    .find(|attr| &*attr.name.local == "value")
+-                    .map(|attr| attr.value.clone())
+-                    .unwrap_or_default(),
++            .and_then(|el| el.range_data())
++            .map(|range| range.value_text())
++    };
++    if let Some(value) = current_range_value {
++        return Ok(js_str(&value));
++    }
++    let value = {
++        let doc = ctx.doc.borrow();
++        doc.get_node(node_id)
++            .map(|node| {
++                let Some(element) = node.element_data() else {
++                    return String::new();
++                };
++                // CALYRA Stage A experiment: read an explicit selected option,
++                // else the first option. This deliberately does not implement
++                // HTMLSelectElement's full live selectedness/value setter.
++                if element.name.local == blitz_dom::local_name!("select") {
++                    let mut first = None;
++                    for &child in &node.children {
++                        let Some(option) = doc.get_node(child) else { continue };
++                        let Some(opt) = option.element_data() else { continue };
++                        if opt.name.local != blitz_dom::local_name!("option") { continue; }
++                        let val = opt.attr(blitz_dom::local_name!("value"))
++                            .map(str::to_string)
++                            .unwrap_or_else(|| option.text_content().trim().to_string());
++                        if first.is_none() { first = Some(val.clone()); }
++                        if opt.attr(blitz_dom::local_name!("selected")).is_some() {
++                            return val;
++                        }
++                    }
++                    return first.unwrap_or_default();
++                }
++                match element.text_input_data() {
++                    Some(input_data) => input_data.editor.raw_text().to_string(),
++                    None => element.attrs().iter()
++                        .find(|attr| &*attr.name.local == "value")
++                        .map(|attr| attr.value.clone())
++                        .unwrap_or_default(),
++                }
+             })
+             .unwrap_or_default()
+     };
+@@ -91,6 +127,27 @@ pub(super) fn set_value(
+     args: &[JsValue],
+     context: &mut Context,
+ ) -> JsResult<JsValue> {
++    let ctx = dom_ctx(context)?;
++    let node_id = this_node_id(this)?;
++    if super::select_state::is_select(&ctx, node_id) {
++        return super::select_state::set_value(this, args, context);
++    }
++    let value = crate::dom::to_rust_string(
++        args.first().unwrap_or(&JsValue::undefined()), context)?;
++    let range_id = {
++        let ctx = dom_ctx(context)?;
++        let id = this_node_id(this)?;
++        let is_range = ctx.doc.borrow().get_node(id)
++            .and_then(|node| node.element_data())
++            .and_then(|el| el.range_data())
++            .is_some();
++        if is_range { Some(id) } else { None }
++    };
++    if let Some(id) = range_id {
++        let ctx = dom_ctx(context)?;
++        ctx.doc.borrow_mut().calyra_set_range_current(id, &value);
++        return Ok(JsValue::undefined());
++    }
+     attr_setter("value", this, args, context)
+ }
+ 
+diff --git a/tests/blitz-tests/tests/all.rs b/tests/blitz-tests/tests/all.rs
+index 1a56a9d6..fc1f9827 100644
+--- a/tests/blitz-tests/tests/all.rs
++++ b/tests/blitz-tests/tests/all.rs
+@@ -101,3 +101,4 @@ fn all_test_files_are_included() {
+         }
+     }
+ }
++mod calyra_ax_form_semantics;

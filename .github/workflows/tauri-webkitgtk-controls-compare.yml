@@ -1,0 +1,94 @@
+name: CALYRA actual Tauri versus system WebKitGTK controls pixels
+
+# Cheap exact-asset diagnostic. No rebuilding browsers or Tauri app.
+# Verified source-pinned producing run 43941143858; avoid accidental expensive rebuilds.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  archived-original-diff:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install image validator
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends python3-pil
+      - name: Verify original native PNGs by SHA-256 and produce region-aware raw diff
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/comparisons/tauri-webkitgtk-controls
+          /usr/bin/python3 harness/compare_tauri_webkitgtk_controls.py \
+            --repo . --out evidence/comparisons/tauri-webkitgtk-controls \
+            | tee evidence/comparisons/tauri-webkitgtk-controls/verification.log
+          sha256sum \
+            docs/evidence/tauri-linux-window-pixels/tauri-native-window.png \
+            docs/evidence/system-webkitgtk-reference/webkitgtk-controls-1060x800-default-initial.png \
+            harness/compare_tauri_webkitgtk_controls.py \
+            > evidence/comparisons/tauri-webkitgtk-controls/source-sha256.txt
+      - name: Verify output integrity and commit evidence on research branch only
+        shell: bash
+        run: |
+          set -euo pipefail
+          root=evidence/comparisons/tauri-webkitgtk-controls
+          /usr/bin/python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          from PIL import Image,ImageChops
+          root=Path('evidence/comparisons/tauri-webkitgtk-controls')
+          r=json.loads((root/'tauri-vs-webkitgtk-comparison.json').read_text())
+          assert r['schema']=='calyra.tauri-webkitgtk-exploratory-controls-comparison.v1'
+          assert r['actual_tauri_runtime_source'] is True
+          assert r['hardware_gpu_measured'] is False and r['wkwebview_macos_tested'] is False
+          assert r['native_os_input_tested'] is False and r['performance_measured'] is False
+          for name,sha in r['images'].items():
+              assert hashlib.sha256((root/name).read_bytes()).hexdigest()==sha
+          with Image.open(r['sources']['tauri']['path']) as a,Image.open(r['sources']['webkitgtk']['path']) as b:
+              d=ImageChops.difference(a.convert('RGB'),b.convert('RGB'))
+              with Image.open(root/'tauri-vs-webkitgtk-raw-difference.png') as stored:
+                  assert d.tobytes()==stored.convert('RGB').tobytes()
+              pixels=sum(max(p)>=12 for p in d.getdata())
+          assert pixels==r['regions']['whole_view']['changed_at_12']
+          assert sum(1 for p in root.rglob('*') if p.is_file())>=5
+          print('PASS: independently verified full raw diff of archived native images',pixels)
+          PY
+          sha256sum -c "$root/source-sha256.txt"
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for attempt in 1 2 3 4 5; do
+            git fetch origin feat/reference-fixtures
+            git checkout -B feat/reference-fixtures FETCH_HEAD
+            mkdir -p docs/evidence/comparisons/tauri-webkitgtk-controls
+            cp -a evidence/comparisons/tauri-webkitgtk-controls/. docs/evidence/comparisons/tauri-webkitgtk-controls/
+            git add -f docs/evidence/comparisons/tauri-webkitgtk-controls/
+            if git diff --cached --quiet; then
+              echo 'Identical comparison already preserved'
+              exit 0
+            fi
+            git commit -m "docs(evidence): preserve original Tauri versus WebKitGTK controls diff"
+            if git push origin HEAD:feat/reference-fixtures; then
+              echo "PASS: native comparison archive completed on attempt=$attempt"
+              exit 0
+            fi
+            sleep 1
+          done
+          exit 1
+      - name: Explicit comparison limitations
+        if: always()
+        shell: bash
+        run: |
+          echo 'Native actual Tauri 2 Linux window vs independently verified WebKitGTK Controls: uncorrected per-channel RGB differences only; different CI jobs, capture paths and fonts. Not pixel parity acceptance, GPU, OS input, CSS-property coverage or performance comparison.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-tauri-vs-webkitgtk-controls-original-diff
+          path: evidence/comparisons/tauri-webkitgtk-controls/
+          retention-days: 14
+          if-no-files-found: warn

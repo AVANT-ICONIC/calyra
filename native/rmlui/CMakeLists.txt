@@ -1,0 +1,28 @@
+cmake_minimum_required(VERSION 3.21)
+project(CALYRA_RmlUi_StageA VERSION 0.1 LANGUAGES C CXX)
+# Explicit upstream checkout. No silent source download or browser fallback.
+set(CALYRA_RMLUI_SOURCE "" CACHE PATH "Path to official RmlUi 6.3 checkout")
+if(NOT EXISTS "${CALYRA_RMLUI_SOURCE}/CMakeLists.txt")
+  message(FATAL_ERROR "Missing RmlUi source; clone the pinned commit from native/rmlui/README.md and provide -DCALYRA_RMLUI_SOURCE=<path>.")
+endif()
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(BUILD_SHARED_LIBS OFF CACHE BOOL "Static RmlUi" FORCE)
+set(RMLUI_BACKEND "GLFW_GL3" CACHE STRING "GLFW native OpenGL 3" FORCE)
+set(RMLUI_FONT_ENGINE "freetype" CACHE STRING "Native FreeType font engine" FORCE)
+set(RMLUI_SAMPLES OFF CACHE BOOL "No upstream sample targets" FORCE)
+set(RMLUI_SHELL ON CACHE BOOL "Enable upstream backend implementation" FORCE)
+set(RMLUI_PRECOMPILED_HEADERS OFF CACHE BOOL "Disable PCH" FORCE)
+add_subdirectory("${CALYRA_RMLUI_SOURCE}" "${CMAKE_BINARY_DIR}/rmlui_upstream" EXCLUDE_FROM_ALL)
+add_executable(calyra_rmlui_probe probe.cpp)
+target_include_directories(calyra_rmlui_probe PRIVATE "${CALYRA_RMLUI_SOURCE}/Backends")
+target_link_libraries(calyra_rmlui_probe PRIVATE RmlUi::RmlUi rmlui_backend_GLFW_GL3)
+# Our probe itself calls glGetString/glReadPixels. The upstream GLFW_GL3
+# backend loads most GL entrypoints dynamically, so it does not provide
+# the link dependency for the probe's direct OpenGL API calls.
+if(APPLE)
+  target_link_libraries(calyra_rmlui_probe PRIVATE "-framework OpenGL")
+else()
+  find_package(OpenGL REQUIRED)
+  target_link_libraries(calyra_rmlui_probe PRIVATE OpenGL::GL)
+endif()

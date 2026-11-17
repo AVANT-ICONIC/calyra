@@ -1,0 +1,61 @@
+name: Preserve CALYRA native evidence
+
+# One-shot archival of independently verified output from run 43665651869.
+# Triggered only by the creation/modification of this file on the PR branch.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/preserve-native-evidence.yml]
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  preserve:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Download exact successful native run artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: calyra-native-rmlui-linux
+          run-id: 43665651869
+          github-token: ${{ github.token }}
+          path: verified-native-evidence
+      - name: Verify original pixel evidence and preserve in docs
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p docs/evidence
+          cp verified-native-evidence/rmlui-adapted-frame.png docs/evidence/rmlui-6.3-linux-adapted.png
+          cp verified-native-evidence/rmlui-direct-frame.png docs/evidence/rmlui-6.3-linux-direct.png
+          printf '%s  %s\n' \
+            5dc9c5fb0d28fc6befafca766524e82245025d1b1ca8420b6b0114cbca27b73f docs/evidence/rmlui-6.3-linux-adapted.png \
+            9abe44d95656648d856655ef5d34d906aed532cd2090c72f6b71e5d02f2b5be1 docs/evidence/rmlui-6.3-linux-direct.png \
+            | sha256sum -c -
+          python3 - <<'PY'
+          import struct
+          for path in ("docs/evidence/rmlui-6.3-linux-adapted.png", "docs/evidence/rmlui-6.3-linux-direct.png"):
+              with open(path,"rb") as f:
+                  png=f.read(24)
+              assert png[:8] == b"\x89PNG\r\n\x1a\n"
+              assert struct.unpack(">II",png[16:24]) == (1060,740)
+              print("Verified exact PNG", path)
+          PY
+      - name: Commit only the two verified images to the existing PR branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -f docs/evidence/rmlui-6.3-linux-adapted.png docs/evidence/rmlui-6.3-linux-direct.png
+          if git diff --cached --quiet; then
+            echo "Evidence already present; no commit necessary"
+            exit 0
+          fi
+          git commit -m "docs(evidence): preserve exact successful RmlUi 6.3 native screenshots"
+          git push origin HEAD:feat/reference-fixtures

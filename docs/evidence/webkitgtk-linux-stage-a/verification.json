@@ -1,0 +1,188 @@
+{
+  "schema": "calyra.system-webview.stage-a-verification.v1",
+  "pass": true,
+  "reference_engine": "Linux WebKitGTK 4.1, not the Tauri shell or macOS WKWebView",
+  "screenshot_count": 6,
+  "fixture_count": 4,
+  "webkit_version": "2.52.6",
+  "original_asset_sha256": {
+    "index.html": "aa9fa23b242f06be7dc5b760f0f8379ce750d8fe2cd67a977daf1a4ff1bd848a",
+    "reference.css": "04635269a8fbd790c87316a03c6469a157806201e58fd730212f632fc86b7b9c",
+    "reference.js": "9d565203fc9c3450b0c61d7774cb2322b14ed3e3325926122b17f583e81cf3de"
+  },
+  "all_tests_untrusted_js_interaction": true,
+  "physical_os_input_tested": false,
+  "hardware_gpu_verified": false,
+  "tauri_shell_tested": false,
+  "macos_wkwebview_tested": false,
+  "performance_comparison_eligible": false,
+  "reason_not_comparable": "single Xvfb per-fixture Linux process samples, shared-memory RSS, no same-environment native baseline or repeated measurements",
+  "fixtures": {
+    "controls": {
+      "webkit_version": "2.52.6",
+      "ms_to_js_ready_single_run": 1443.75,
+      "pngs": [
+        "controls-after-dom-events.png",
+        "controls-initial.png"
+      ],
+      "process_rss_diagnostic": {
+        "available": true,
+        "method": "single ps RSS sample, host PID and reachable child PID tree",
+        "rss_sum_kib": 544632,
+        "shared_memory_double_count_possible": true,
+        "excludes_external_xvfb_and_system_daemons": true,
+        "processes": [
+          {
+            "pid": 3265,
+            "ppid": 3264,
+            "rss_kib": 197640,
+            "name": "python3"
+          },
+          {
+            "pid": 3295,
+            "ppid": 3265,
+            "rss_kib": 61748,
+            "name": "WebKitNetworkPr"
+          },
+          {
+            "pid": 3297,
+            "ppid": 3265,
+            "rss_kib": 280924,
+            "name": "WebKitWebProces"
+          },
+          {
+            "pid": 3341,
+            "ppid": 3265,
+            "rss_kib": 4320,
+            "name": "ps"
+          }
+        ]
+      },
+      "programmatic_events_only": true
+    },
+    "dashboard": {
+      "webkit_version": "2.52.6",
+      "ms_to_js_ready_single_run": 1085.49,
+      "pngs": [
+        "dashboard-initial.png"
+      ],
+      "process_rss_diagnostic": {
+        "available": true,
+        "method": "single ps RSS sample, host PID and reachable child PID tree",
+        "rss_sum_kib": 552644,
+        "shared_memory_double_count_possible": true,
+        "excludes_external_xvfb_and_system_daemons": true,
+        "processes": [
+          {
+            "pid": 3346,
+            "ppid": 3264,
+            "rss_kib": 198444,
+            "name": "python3"
+          },
+          {
+            "pid": 3375,
+            "ppid": 3346,
+            "rss_kib": 54552,
+            "name": "WebKitNetworkPr"
+          },
+          {
+            "pid": 3377,
+            "ppid": 3346,
+            "rss_kib": 295320,
+            "name": "WebKitWebProces"
+          },
+          {
+            "pid": 3417,
+            "ppid": 3346,
+            "rss_kib": 4328,
+            "name": "ps"
+          }
+        ]
+      },
+      "programmatic_events_only": true
+    },
+    "visual": {
+      "webkit_version": "2.52.6",
+      "ms_to_js_ready_single_run": 1057.84,
+      "pngs": [
+        "visual-initial.png"
+      ],
+      "process_rss_diagnostic": {
+        "available": true,
+        "method": "single ps RSS sample, host PID and reachable child PID tree",
+        "rss_sum_kib": 553308,
+        "shared_memory_double_count_possible": true,
+        "excludes_external_xvfb_and_system_daemons": true,
+        "processes": [
+          {
+            "pid": 3422,
+            "ppid": 3264,
+            "rss_kib": 191384,
+            "name": "python3"
+          },
+          {
+            "pid": 3451,
+            "ppid": 3422,
+            "rss_kib": 54524,
+            "name": "WebKitNetworkPr"
+          },
+          {
+            "pid": 3453,
+            "ppid": 3422,
+            "rss_kib": 303076,
+            "name": "WebKitWebProces"
+          },
+          {
+            "pid": 3493,
+            "ppid": 3422,
+            "rss_kib": 4324,
+            "name": "ps"
+          }
+        ]
+      },
+      "programmatic_events_only": true
+    },
+    "interaction": {
+      "webkit_version": "2.52.6",
+      "ms_to_js_ready_single_run": 1053.48,
+      "pngs": [
+        "interaction-after-dom-events.png",
+        "interaction-initial.png"
+      ],
+      "process_rss_diagnostic": {
+        "available": true,
+        "method": "single ps RSS sample, host PID and reachable child PID tree",
+        "rss_sum_kib": 556788,
+        "shared_memory_double_count_possible": true,
+        "excludes_external_xvfb_and_system_daemons": true,
+        "processes": [
+          {
+            "pid": 3498,
+            "ppid": 3264,
+            "rss_kib": 194892,
+            "name": "python3"
+          },
+          {
+            "pid": 3527,
+            "ppid": 3498,
+            "rss_kib": 54544,
+            "name": "WebKitNetworkPr"
+          },
+          {
+            "pid": 3529,
+            "ppid": 3498,
+            "rss_kib": 303024,
+            "name": "WebKitWebProces"
+          },
+          {
+            "pid": 3569,
+            "ppid": 3498,
+            "rss_kib": 4328,
+            "name": "ps"
+          }
+        ]
+      },
+      "programmatic_events_only": true
+    }
+  }
+}

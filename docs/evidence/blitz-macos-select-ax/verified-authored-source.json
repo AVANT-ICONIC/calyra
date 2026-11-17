@@ -1,0 +1,20 @@
+{
+  "schema": "calyra.tauri-macos-source-contract.v1",
+  "pass": true,
+  "app_kind": "Tauri 2 with OS-provided macOS WKWebView",
+  "build_status": "NOT_TESTED_BY_THIS_SCRIPT",
+  "os_input_tested": false,
+  "hardware_gpu_verified": false,
+  "tauri_cli_version": "2.12.4",
+  "original_assets_modified": false,
+  "canonical_sha256": {
+    "index.html": "aa9fa23b242f06be7dc5b760f0f8379ce750d8fe2cd67a977daf1a4ff1bd848a",
+    "reference.css": "04635269a8fbd790c87316a03c6469a157806201e58fd730212f632fc86b7b9c",
+    "reference.js": "9d565203fc9c3450b0c61d7774cb2322b14ed3e3325926122b17f583e81cf3de"
+  },
+  "source_root": "/Users/runner/work/calyra/calyra/fixtures",
+  "expected_macos_window_css_px": [
+    1060,
+    800
+  ]
+}

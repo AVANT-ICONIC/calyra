@@ -1,0 +1,236 @@
+name: CALYRA native CSS typography invalidation proof
+
+# Historical one-shot Rust/Boa and Vello CPU proof.
+# Verified in CI #43919838241; avoid expensive reruns on documentation edits.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  source-pinned-native-proof:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 55
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install native prerequisites
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends build-essential pkg-config libssl-dev libfontconfig-dev libx11-dev libxkbcommon-dev libwayland-dev libasound2-dev git ca-certificates python3-venv
+          rustup toolchain install 1.91.0 --profile minimal
+          rustup default 1.91.0
+      - name: Pin original author content and exact Blitz source
+        shell: bash
+        run: |
+          set -euo pipefail
+          echo '04635269a8fbd790c87316a03c6469a157806201e58fd730212f632fc86b7b9c  fixtures/reference.css' | sha256sum -c -
+          echo '9d565203fc9c3450b0c61d7774cb2322b14ed3e3325926122b17f583e81cf3de  fixtures/reference.js' | sha256sum -c -
+          git clone --filter=blob:none https://github.com/DioxusLabs/blitz.git "$RUNNER_TEMP/blitz"
+          git -C "$RUNNER_TEMP/blitz" checkout --detach 4f61cffacee50fe4f944ebe9d0470d9a5d3997e0
+          test "$(git -C "$RUNNER_TEMP/blitz" rev-parse HEAD)" = 4f61cffacee50fe4f944ebe9d0470d9a5d3997e0
+          test -z "$(git -C "$RUNNER_TEMP/blitz" status --porcelain --untracked-files=no)"
+      - name: Apply isolated patches and collect source hashes
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/native-stage-a/blitz-select-typography
+          sha256sum \
+            native/blitz/patches/document-event-chain.patch \
+            native/blitz/patches/plain-button-focus.patch \
+            native/blitz/patches/select-ua-display.patch \
+            native/blitz/patches/select-default-value.patch \
+            native/blitz/patches/select-state-accessors.patch \
+            native/blitz/patches/select-live-form-controls.patch \
+            native/blitz/experiments/apply_readonly_select.py \
+            native/blitz/experiments/apply_select_option_text_refresh.py \
+            native/blitz/experiments/apply_select_typography_refresh.py \
+            native/blitz/experiments/select_state_readonly.rs \
+            native/blitz/experiments/calyra_select_typography_screenshot.rs \
+            native/blitz/reference_js_probe.rs \
+            native/blitz/patches/patched_focus_regression.rs \
+            native/blitz/patches/patched_readonly_select_regression.rs \
+            native/blitz/patches/patched_option_text_regression.rs \
+            native/blitz/patches/patched_select_typography_regression.rs \
+            > evidence/native-stage-a/blitz-select-typography/source-sha256.txt
+          for patch in document-event-chain.patch plain-button-focus.patch select-ua-display.patch select-default-value.patch select-state-accessors.patch select-live-form-controls.patch; do
+            git -C "$RUNNER_TEMP/blitz" apply --check "$GITHUB_WORKSPACE/native/blitz/patches/$patch"
+            git -C "$RUNNER_TEMP/blitz" apply "$GITHUB_WORKSPACE/native/blitz/patches/$patch"
+          done
+          python3 native/blitz/experiments/apply_readonly_select.py --source "$RUNNER_TEMP/blitz"
+          python3 native/blitz/experiments/apply_select_option_text_refresh.py --source "$RUNNER_TEMP/blitz"
+          python3 native/blitz/experiments/apply_select_typography_refresh.py --source "$RUNNER_TEMP/blitz"
+          cp native/blitz/experiments/select_state_readonly.rs "$RUNNER_TEMP/blitz/packages/blitz-vibey-script/src/dom/element/select_state.rs"
+          cp native/blitz/experiments/calyra_select_typography_screenshot.rs "$RUNNER_TEMP/blitz/examples/calyra_select_typography_screenshot.rs"
+          git -C "$RUNNER_TEMP/blitz" diff > evidence/native-stage-a/blitz-select-typography/applied-upstream-diff.patch
+          cp native/blitz/reference_js_probe.rs "$RUNNER_TEMP/blitz/packages/blitz-vibey-script/tests/calyra_reference.rs"
+          cat native/blitz/patches/patched_focus_regression.rs native/blitz/patches/patched_readonly_select_regression.rs native/blitz/patches/patched_option_text_regression.rs native/blitz/patches/patched_select_typography_regression.rs >> "$RUNNER_TEMP/blitz/packages/blitz-vibey-script/tests/calyra_reference.rs"
+      - name: Compile and run 12 native Rust/Boa tests
+        shell: bash
+        env:
+          CARGO_BUILD_JOBS: '2'
+          CARGO_TERM_COLOR: never
+        run: |
+          set -euo pipefail
+          export CALYRA_CANONICAL_HTML="$GITHUB_WORKSPACE/fixtures/index.html"
+          export CALYRA_CANONICAL_CSS="$GITHUB_WORKSPACE/fixtures/reference.css"
+          export CALYRA_CANONICAL_JS="$GITHUB_WORKSPACE/fixtures/reference.js"
+          export CALYRA_JS_OUT="$GITHUB_WORKSPACE/evidence/native-stage-a/blitz-select-typography"
+          cd "$RUNNER_TEMP/blitz"
+          cargo test --locked -p blitz-vibey-script --test calyra_reference -- --nocapture 2>&1 | tee "$CALYRA_JS_OUT/rust-test.log"
+      - name: Verify JS state, CSS metrics and event silence
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('evidence/native-stage-a/blitz-select-typography')
+          rust=(root/'rust-test.log').read_text()
+          assert 'test result: ok. 12 passed; 0 failed' in rust
+          assert 'test calyra_select_typography_restyles_without_selection_or_text_mutation ... ok' in rust
+          for suffix in ('select-live','option-text','select-typography'):
+              obj=json.loads((root/f'calyra-js-{suffix}.json').read_text())
+              assert obj['js_error_count']==0 and obj['reference_js_modified'] is False
+          live=json.loads((root/'calyra-js-select-live.json').read_text())['observations']
+          assert live['same_node'] is True and len(live['snapshots'])==7
+          assert all(s['js']['events']==[] for s in live['snapshots'])
+          text=json.loads((root/'calyra-js-option-text.json').read_text())['observations']
+          assert text['native_label']=='Balanced live' and text['state']['events']==[]
+          style=json.loads((root/'calyra-js-select-typography.json').read_text())['observations']
+          assert style['same_node'] is True and style['computed_typography_changed'] is True
+          assert style['height_large']>style['height_before']*1.2
+          assert style['height_small']<style['height_large']
+          assert style['state']=={
+              'value':'balanced','index':0,'text':'Balanced','selected':True,'events':[]
+          }
+          print('PASS: 12/12 native tests, seven existing states, CSS-only shaping and event silence')
+          PY
+      - name: Build actual optimized native Vello CPU screenshot example
+        shell: bash
+        env:
+          CARGO_BUILD_JOBS: '2'
+          CARGO_TERM_COLOR: never
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/blitz"
+          cargo build --locked --release --example calyra_select_typography_screenshot -j 2 2>&1 | tee "$GITHUB_WORKSPACE/evidence/native-stage-a/blitz-select-typography/cargo-live-paint.log"
+          test -x target/release/examples/calyra_select_typography_screenshot
+      - name: Capture same-document original CSS before and after font change
+        shell: bash
+        run: |
+          set -euo pipefail
+          export CALYRA_CANONICAL_HTML="$GITHUB_WORKSPACE/fixtures/index.html"
+          export CALYRA_CANONICAL_CSS="$GITHUB_WORKSPACE/fixtures/reference.css"
+          export CALYRA_CANONICAL_JS="$GITHUB_WORKSPACE/fixtures/reference.js"
+          export CALYRA_LIVE_PAINT_OUT="$GITHUB_WORKSPACE/evidence/native-stage-a/blitz-select-typography"
+          "$RUNNER_TEMP/blitz/target/release/examples/calyra_select_typography_screenshot" 2>&1 | tee "$CALYRA_LIVE_PAINT_OUT/native-live-paint.log"
+          grep -Fq 'CALYRA_TYPOGRAPHY_STYLE_CHANGED=true' "$CALYRA_LIVE_PAINT_OUT/native-live-paint.log"
+          grep -Fq 'CALYRA_LIVE_SELECT_DATA=read_only_no_editor' "$CALYRA_LIVE_PAINT_OUT/native-live-paint.log"
+          python3 -m venv "$RUNNER_TEMP/calyra-pillow"
+          "$RUNNER_TEMP/calyra-pillow/bin/pip" install --disable-pip-version-check Pillow
+          "$RUNNER_TEMP/calyra-pillow/bin/python" - <<'PY'
+          import hashlib,json,os,re
+          from pathlib import Path
+          from PIL import Image,ImageChops
+          root=Path(os.environ['CALYRA_LIVE_PAINT_OUT'])
+          before=root/'typography-before.png'
+          after=root/'typography-after.png'
+          assert before.is_file() and after.is_file()
+          with Image.open(before) as a,Image.open(after) as b:
+              assert a.size==b.size==(1060,800)
+              diff=ImageChops.difference(a.convert('RGB'),b.convert('RGB'))
+              count=sum(1 for px in diff.getdata() if max(px)>=12)
+              bbox=diff.getbbox()
+              diff.save(root/'typography-pixel-diff.png')
+          assert count>=40,(count,bbox)
+          assert bbox and 450<=bbox[0]<bbox[2]<=950 and 350<=bbox[1]<bbox[3]<=650,(count,bbox)
+          log=(root/'native-live-paint.log').read_text()
+          def height(label):
+              match=re.search(r'^CALYRA_TYPOGRAPHY_HEIGHT_'+label+r'=([0-9.]+)$',log,re.M)
+              assert match,label
+              return float(match.group(1))
+          h0,h1=height('BEFORE'),height('AFTER')
+          assert h1>h0*1.2,(h0,h1)
+          result={
+              'schema':'calyra.blitz-select-typography-paint.v1',
+              'upstream_commit':'4f61cffacee50fe4f944ebe9d0470d9a5d3997e0',
+              'renderer':'native Blitz AnyRender/Vello CPU',
+              'same_document':True,'selected_option_changed':False,
+              'original_css_modified':False,'original_js_modified':False,
+              'javascript_executed':True,'hardware_gpu':False,'os_input_tested':False,
+              'control_state':'native noneditable SelectData',
+              'old_label':'Balanced','new_label':'Balanced',
+              'font_size_after':'32px','height_before':h0,'height_after':h1,
+              'changed_pixels_at_12':count,'diff_bbox':bbox,
+              'images':{p.name:hashlib.sha256(p.read_bytes()).hexdigest()
+                  for p in (before,after,root/'typography-pixel-diff.png')}
+          }
+          (root/'typography-result.json').write_text(json.dumps(result,indent=2)+'\n')
+          print('PASS: same-document real CSS typography pixels',count,bbox,'height',h0,'->',h1)
+          PY
+      - name: Verify and preserve byte-exact evidence on this feature branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="evidence/native-stage-a/blitz-select-typography"
+          sha256sum -c "$root/source-sha256.txt"
+          "$RUNNER_TEMP/calyra-pillow/bin/python" - <<'PY'
+          import hashlib,json,shutil
+          from pathlib import Path
+          from PIL import Image,ImageChops
+          root=Path('evidence/native-stage-a/blitz-select-typography')
+          r=json.loads((root/'typography-result.json').read_text())
+          assert r['schema']=='calyra.blitz-select-typography-paint.v1'
+          assert r['same_document'] is True and r['selected_option_changed'] is False
+          assert r['old_label']==r['new_label']=='Balanced'
+          assert r['height_after']>r['height_before']*1.2
+          names=('typography-before.png','typography-after.png','typography-pixel-diff.png')
+          for name in names:
+              assert hashlib.sha256((root/name).read_bytes()).hexdigest()==r['images'][name]
+          with Image.open(root/names[0]) as a,Image.open(root/names[1]) as b:
+              diff=ImageChops.difference(a.convert('RGB'),b.convert('RGB'))
+              count=sum(1 for x in diff.getdata() if max(x)>=12)
+              bbox=diff.getbbox()
+              with Image.open(root/names[2]) as d:
+                  assert d.convert('RGB').tobytes()==diff.tobytes()
+          assert count==r['changed_pixels_at_12'] and bbox==tuple(r['diff_bbox'])
+          assert 'test result: ok. 12 passed; 0 failed' in (root/'rust-test.log').read_text()
+          style=json.loads((root/'calyra-js-select-typography.json').read_text())['observations']
+          assert style['state']['events']==[] and style['height_large']>style['height_before']*1.2
+          files=[p for p in root.rglob('*') if p.is_file()]
+          assert len(files)>=18,len(files)
+          dest=Path('docs/evidence/blitz-select-typography')
+          dest.mkdir(parents=True,exist_ok=True)
+          for p in files:
+              assert not p.is_symlink()
+              target=dest/p.relative_to(root)
+              target.parent.mkdir(parents=True,exist_ok=True)
+              shutil.copyfile(p,target)
+              assert hashlib.sha256(p.read_bytes()).digest()==hashlib.sha256(target.read_bytes()).digest()
+          print('PASS: archived',len(files),'exact files, 12 native tests, real Vello CPU CSS-only ink',count,bbox)
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+users.noreply.github.com'
+          git add -f docs/evidence/blitz-select-typography/
+          if git diff --cached --quiet; then
+            echo "Identical evidence already archived"
+            exit 0
+          fi
+          git commit -m "docs(evidence): preserve computed CSS typography native pixels"
+          git push origin HEAD:feat/reference-fixtures
+      - name: Preserve failure and scope in job summary
+        if: always()
+        shell: bash
+        run: |
+          echo '### CALYRA native CSS-only select typography proof' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Source-pinned disposable Blitz checkout; canonical CSS/JS unchanged. This does not prove OS input, a11y, actual dropdown, hardware GPU, all stylesheet/class changes or performance.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-blitz-select-typography-experiment
+          path: evidence/native-stage-a/blitz-select-typography/
+          retention-days: 7
+          if-no-files-found: warn

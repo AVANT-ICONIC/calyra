@@ -1,0 +1,30 @@
+{
+  "schema": "calyra.blitz-select-typography-paint.v1",
+  "upstream_commit": "4f61cffacee50fe4f944ebe9d0470d9a5d3997e0",
+  "renderer": "native Blitz AnyRender/Vello CPU",
+  "same_document": true,
+  "selected_option_changed": false,
+  "original_css_modified": false,
+  "original_js_modified": false,
+  "javascript_executed": true,
+  "hardware_gpu": false,
+  "os_input_tested": false,
+  "control_state": "native noneditable SelectData",
+  "old_label": "Balanced",
+  "new_label": "Balanced",
+  "font_size_after": "32px",
+  "height_before": 19.0,
+  "height_after": 38.0,
+  "changed_pixels_at_12": 1639,
+  "diff_bbox": [
+    688,
+    483,
+    833,
+    507
+  ],
+  "images": {
+    "typography-before.png": "485552ed102b35a3934fa3aeb0adac00bb974ef876f932a2a0c5fd374a39188a",
+    "typography-after.png": "f89c8f68b73141d32304ea87e31b485263952f46da2819b497021d8db1d03f10",
+    "typography-pixel-diff.png": "d785af3883928add1ac1834390efd78cee9ade84376b45769e77fdd28b2ce627"
+  }
+}

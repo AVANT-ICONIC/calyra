@@ -1,0 +1,2 @@
+8a40e787fcd359c8b1154e67cb0852ca7ead795618c588984d25775b089d9a40  adapters/tauri-reference/macos_event_access_preflight.swift
+83401eea095b63e6f0a81e65a4f4a224a9f8c26cd551bfc9bf84fbcd9b5572f8  evidence/macos-os-input/preflight.json

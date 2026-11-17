@@ -1,0 +1,63 @@
+name: CALYRA Tauri source and packaging contract preflight
+
+# Cheap, independent source validation; NEVER claim this builds or runs WKWebView.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/tauri-static-contract.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  static-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 8
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify exact canonical author content and Tauri source contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 adapters/tauri-reference/verify_source.py | tee /tmp/calyra-tauri-source-contract.json
+          grep -Fq '"pass": true' /tmp/calyra-tauri-source-contract.json
+          python3 -m py_compile adapters/tauri-reference/verify_source.py adapters/tauri-reference/prepare_macos_icon.py
+          git diff --exit-code -- fixtures/index.html fixtures/reference.css fixtures/reference.js
+      - name: Validate Rust manifest and formatting without compiling macOS app
+        shell: bash
+        run: |
+          set -euo pipefail
+          rustc --version
+          cargo fmt --version
+          cargo fmt --manifest-path adapters/tauri-reference/src-tauri/Cargo.toml --all -- --check
+          cd adapters/tauri-reference/src-tauri
+          cargo metadata --no-deps --format-version 1 > /tmp/calyra-tauri-metadata.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path('/tmp/calyra-tauri-metadata.json').read_text())
+          roots=[p for p in data['packages'] if p['name']=='calyra-tauri-reference']
+          assert len(roots)==1
+          deps={x['name'] for x in roots[0]['dependencies']}
+          assert {'tauri','tauri-build'} <= deps
+          print('PASS: valid Cargo manifest for actual Tauri host; no native app build implied')
+          PY
+      - name: Validate pinned npm manifest and static Tauri CLI dependency
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd adapters/tauri-reference
+          npm install --package-lock-only --no-audit --no-fund
+          node - <<'NODE'
+          const assert=require('node:assert/strict');
+          const manifest=require('./package.json');
+          const lock=require('./package-lock.json');
+          assert.equal(manifest.devDependencies['@tauri-apps/cli'],'2.12.4');
+          assert.equal(lock.packages['node_modules/@tauri-apps/cli'].version,'2.12.4');
+          console.log('PASS: exact Tauri CLI package resolved');
+          NODE
+      - name: Document boundary
+        if: always()
+        run: |
+          echo 'The checks above validate source hashes/configuration and CLI dependency only. No macOS app compiled here and no WKWebView runtime input/paint or performance was tested.' >> "$GITHUB_STEP_SUMMARY"

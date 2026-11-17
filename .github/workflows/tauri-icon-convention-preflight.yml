@@ -1,0 +1,41 @@
+name: CALYRA Tauri default icon.png and original-source preflight
+
+# Cheap cross-platform proof of the exact fix for macOS Tauri proc-macro.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/tauri-icon-convention-preflight.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  icon-contract:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate exactly matching generated default and source icon
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m py_compile adapters/tauri-reference/prepare_macos_icon.py
+          python3 adapters/tauri-reference/prepare_macos_icon.py
+          python3 - <<'PY'
+          from pathlib import Path
+          import struct, hashlib
+          root=Path('adapters/tauri-reference/src-tauri/icons')
+          source=root/'calyra-reference-source.png'
+          default=root/'icon.png'
+          assert source.is_file() and default.is_file()
+          assert source.read_bytes()==default.read_bytes(), 'Tauri default icon differs from deterministic resource'
+          raw=default.read_bytes()
+          assert raw[:8]==b'\x89PNG\r\n\x1a\n', 'Tauri icon.png not a PNG'
+          width,height=struct.unpack('>II',raw[16:24])
+          assert width==height==1024,(width,height)
+          print('PASS: Tauri default icon.png exists and is byte-identical to 1024x1024 reference')
+          print('SHA256:',hashlib.sha256(raw).hexdigest())
+          PY
+          python3 adapters/tauri-reference/verify_source.py
+          git diff --exit-code -- fixtures/index.html fixtures/reference.css fixtures/reference.js

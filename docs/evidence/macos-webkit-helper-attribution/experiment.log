@@ -1,0 +1,6 @@
+trial 1: native Tauri window=24 confirmed WebKit=0; new unconfirmed WebKit=2
+trial 2: native Tauri window=33 confirmed WebKit=0; new unconfirmed WebKit=2
+trial 3: native Tauri window=40 confirmed WebKit=0; new unconfirmed WebKit=7
+trial 4: native Tauri window=47 confirmed WebKit=0; new unconfirmed WebKit=2
+trial 5: native Tauri window=54 confirmed WebKit=0; new unconfirmed WebKit=2
+PASS: 5 native-window trials and honest process attribution categories

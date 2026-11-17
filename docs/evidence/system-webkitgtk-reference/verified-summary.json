@@ -1,0 +1,107 @@
+{
+  "schema": "calyra.system-webkitgtk-stage-a.v1",
+  "candidate": "linux-system-webkitgtk-backend",
+  "tauri_app_executed": false,
+  "macos_wkwebview_tested": false,
+  "hardware_gpu_tested": false,
+  "os_level_input_tested": false,
+  "canonical_assets_unchanged": true,
+  "comparable_performance_measured": false,
+  "scenario_count": 6,
+  "png_count": 8,
+  "runs": [
+    {
+      "fixture": "controls",
+      "state": "default",
+      "viewport_css_px": [
+        1060,
+        800
+      ],
+      "capture_count": 2,
+      "webkit_version": "2.52.6",
+      "engine_kind": "linux-system-webkitgtk-not-tauri",
+      "scripted_actions": [
+        "initial",
+        "controls_action"
+      ],
+      "eligibility": "restricted"
+    },
+    {
+      "fixture": "dashboard",
+      "state": "default",
+      "viewport_css_px": [
+        1060,
+        800
+      ],
+      "capture_count": 1,
+      "webkit_version": "2.52.6",
+      "engine_kind": "linux-system-webkitgtk-not-tauri",
+      "scripted_actions": [
+        "initial"
+      ],
+      "eligibility": "restricted"
+    },
+    {
+      "fixture": "visual",
+      "state": "default",
+      "viewport_css_px": [
+        1060,
+        800
+      ],
+      "capture_count": 1,
+      "webkit_version": "2.52.6",
+      "engine_kind": "linux-system-webkitgtk-not-tauri",
+      "scripted_actions": [
+        "initial"
+      ],
+      "eligibility": "restricted"
+    },
+    {
+      "fixture": "interaction",
+      "state": "default",
+      "viewport_css_px": [
+        1060,
+        800
+      ],
+      "capture_count": 2,
+      "webkit_version": "2.52.6",
+      "engine_kind": "linux-system-webkitgtk-not-tauri",
+      "scripted_actions": [
+        "initial",
+        "menu_open",
+        "menu_close"
+      ],
+      "eligibility": "restricted"
+    },
+    {
+      "fixture": "interaction",
+      "state": "menu-open",
+      "viewport_css_px": [
+        1060,
+        800
+      ],
+      "capture_count": 1,
+      "webkit_version": "2.52.6",
+      "engine_kind": "linux-system-webkitgtk-not-tauri",
+      "scripted_actions": [
+        "initial"
+      ],
+      "eligibility": "restricted"
+    },
+    {
+      "fixture": "dashboard",
+      "state": "default",
+      "viewport_css_px": [
+        390,
+        844
+      ],
+      "capture_count": 1,
+      "webkit_version": "2.52.6",
+      "engine_kind": "linux-system-webkitgtk-not-tauri",
+      "scripted_actions": [
+        "initial"
+      ],
+      "eligibility": "restricted"
+    }
+  ]
+}

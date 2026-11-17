@@ -1,0 +1,112 @@
+name: Archive CALYRA original macOS WKWebView first-frame evidence
+
+# Source-hashed, one-shot archival of already verified real macOS screenshots.
+# No rebuilding, no modified canonical fixtures, no main-branch updates.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/archive-tauri-macos-window-evidence.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  preserve-native-macos-frame:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/reference-fixtures
+      - uses: actions/download-artifact@v4
+        with:
+          name: calyra-macos-real-window-pixel-probe
+          run-id: 43996877529
+          github-token: ${{ github.token }}
+          path: archived-original
+      - name: Independently verify exact original screenshot and metadata
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib,json,struct
+          from pathlib import Path
+          root=Path('archived-original')
+          expected={
+              'archs.txt','absolute-app-path.txt','canonical-source.json',
+              'capture.log','app-owned-windows.json','app-process.txt',
+              'native-window-pixel-report.json','native-window-png-sha256.txt',
+              'tauri-macos-app-window.png','verified-original-zip-sha256.txt',
+          }
+          observed={p.name for p in root.iterdir() if p.is_file()}
+          assert observed==expected,(observed,expected)
+          screenshot=root/'tauri-macos-app-window.png'
+          sha=hashlib.sha256(screenshot.read_bytes()).hexdigest()
+          assert sha=='fe0ba545fa469f84211ab79aebbe90d1df8d7fc6e2a940336c8292c26f110d24',sha
+          assert (root/'native-window-png-sha256.txt').read_text().split()[0]==sha
+          b=screenshot.read_bytes()[:24]
+          assert b[:8]==b'\x89PNG\r\n\x1a\n'
+          width,height=struct.unpack('>II',b[16:24])
+          assert (width,height)==(1136,793),(width,height)
+          pixels=json.loads((root/'native-window-pixel-report.json').read_text())
+          assert pixels['accepted'] is True
+          assert pixels['width']==width and pixels['height']==height
+          assert pixels['quantized_distinct_colors']==40
+          assert pixels['sampled_pixels']==1444
+          windows=json.loads((root/'app-owned-windows.json').read_text())
+          assert windows['window_found'] is True and windows['owner_pid']==1497
+          assert any(w['window_id']==28 and w['owner_pid']==1497
+                    for w in windows['visible_window_candidates'])
+          assert 'arm64' in (root/'archs.txt').read_text().split()
+          source=json.loads((root/'canonical-source.json').read_text())
+          assert source['pass'] is True and source['original_assets_modified'] is False
+          canonical={'index.html':'aa9fa23b242f06be7dc5b760f0f8379ce750d8fe2cd67a977daf1a4ff1bd848a',
+                     'reference.css':'04635269a8fbd790c87316a03c6469a157806201e58fd730212f632fc86b7b9c',
+                     'reference.js':'9d565203fc9c3450b0c61d7774cb2322b14ed3e3325926122b17f583e81cf3de'}
+          assert source['canonical_sha256']==canonical
+          for name,digest in canonical.items():
+              assert hashlib.sha256((Path('fixtures')/name).read_bytes()).hexdigest()==digest,name
+          print('PASS: exact unmodified source, Mac-owned PID/window, arm64, original screenshot SHA and 1136x793 PNG')
+          PY
+      - name: Archive original bytes on research branch, without force
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEST=docs/evidence/tauri-macos-wkwebview-first-frame
+          mkdir -p "$DEST"
+          cp -p archived-original/* "$DEST"/
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          target=Path('docs/evidence/tauri-macos-wkwebview-first-frame')
+          record={
+            'schema':'calyra.macos-tauri-frame-archive.v1',
+            'producing_run':'https://github.com/AVANT-ICONIC/calyra/actions/runs/43996877529',
+            'producing_artifact_id':14289913955,
+            'source_app_build_run':'https://github.com/AVANT-ICONIC/calyra/actions/runs/43996164957',
+            'source_app_artifact_id':14290436244,
+            'source_app_build_commit':'778f3640dbb224f4bb139ae7fa2caef80f5f208a',
+            'frame_probe_commit':'11b367a9fa598890853ff2986a985f1ad341d50e',
+            'app_window_owner_pid':1497,
+            'app_window_id':28,
+            'screenshot_sha256':'fe0ba545fa469f84211ab79aebbe90d1df8d7fc6e2a940336c8292c26f110d24',
+            'verified_native_macos_app_owned_window_pixels':True,
+            'verified_original_javascript_inside_tauri':False,
+            'verified_trusted_os_keyboard_or_pointer':False,
+            'verified_hardware_gpu':False,
+            'verified_matched_cpu_or_ram_benchmark':False,
+          }
+          (target/'provenance.json').write_text(json.dumps(record,indent=2,sort_keys=True)+'\n')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          # docs/evidence is intentionally ignored; force-add only the exact
+          # verified archive directory, never weaken the repository ignore rules.
+          git add -f "$DEST"/
+          git diff --cached --quiet && { echo 'Evidence already archived'; exit 0; }
+          git commit -m "test(evidence): preserve real macOS arm64 Tauri WKWebView first frame"
+          git fetch origin feat/reference-fixtures
+          git rebase origin/feat/reference-fixtures
+          git push origin HEAD:refs/heads/feat/reference-fixtures

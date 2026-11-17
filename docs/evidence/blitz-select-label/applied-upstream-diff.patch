@@ -1,0 +1,169 @@
+diff --git a/packages/blitz-dom/assets/default.css b/packages/blitz-dom/assets/default.css
+index 38da3b31..9b5b0f2e 100644
+--- a/packages/blitz-dom/assets/default.css
++++ b/packages/blitz-dom/assets/default.css
+@@ -117,6 +117,7 @@ textarea {
+ /* https://html.spec.whatwg.org/multipage/rendering.html#the-select-element-2
+    (select only has native appearance here) */
+ select {
++    display: inline-block; /* CALYRA experiment: native appearance still unimplemented */
+     letter-spacing: initial;
+     word-spacing: initial;
+     line-height: initial;
+diff --git a/packages/blitz-dom/src/events/keyboard.rs b/packages/blitz-dom/src/events/keyboard.rs
+index b2147e5c..480e1be6 100644
+--- a/packages/blitz-dom/src/events/keyboard.rs
++++ b/packages/blitz-dom/src/events/keyboard.rs
+@@ -67,6 +67,11 @@ pub(crate) fn handle_key_or_input_event<F: FnMut(DomEvent)>(
+         }
+ 
+         let node = &mut doc.nodes[node_id];
++        // The select label reuses Parley's text paint path, not editing.
++        // Do not route text/keyboard defaults into the visual-only buffer.
++        if node.data.is_element_with_tag_name(&local_name!("select")) {
++            return;
++        }
+         let Some(element_data) = node.element_data_mut() else {
+             return;
+         };
+diff --git a/packages/blitz-dom/src/events/pointer.rs b/packages/blitz-dom/src/events/pointer.rs
+index 9617ee68..cd78be19 100644
+--- a/packages/blitz-dom/src/events/pointer.rs
++++ b/packages/blitz-dom/src/events/pointer.rs
+@@ -766,6 +766,12 @@ pub(crate) fn handle_click(
+                         doc.submit_form(*form_owner, node_id);
+                     }
+                 }
++                // Plain buttons are handled click targets, even if JavaScript
++                // has already moved focus to another element synchronously.
++                // Do not clear the programmatic focus in the fallback below.
++                local_name!("button") if el.attr(local_name!("type")) == Some("button") => {
++                    break 'matched true;
++                }
+                 #[cfg(feature = "file-input")]
+                 local_name!("input") if el.attr(local_name!("type")) == Some("file") => {
+                     use crate::qual_name;
+diff --git a/packages/blitz-dom/src/layout/construct.rs b/packages/blitz-dom/src/layout/construct.rs
+index 67a2f01e..2da95d1c 100644
+--- a/packages/blitz-dom/src/layout/construct.rs
++++ b/packages/blitz-dom/src/layout/construct.rs
+@@ -446,6 +446,14 @@ fn collect_layout_children_with_wrap(
+             }
+         }
+ 
++        // CALYRA Stage A: experimental read-only label paint for select.
++        // The existing Parley single-line editor is a paint buffer only,
++        // not a working popup or full HTMLSelectElement implementation.
++        if tag_name == "select" {
++            create_text_editor(doc, container_node_id, false);
++            return;
++        }
++
+         #[cfg(feature = "svg")]
+         if matches!(tag_name, "svg") {
+             let outer_html = doc.get_node(container_node_id).unwrap().svg_source();
+@@ -857,6 +865,29 @@ fn collect_complex_layout_children(
+ }
+ 
+ fn create_text_editor(doc: &mut BaseDocument, input_element_id: NodeId, is_multiline: bool) {
++    // CALYRA Stage A: choose the initially selected option's *label* for the
++    // visual buffer. Never rewrite the author DOM or the actual option values.
++    let label = {
++        let select = &doc.nodes[input_element_id];
++        if select.data.is_element_with_tag_name(&local_name!("select")) {
++            let mut first_label = None;
++            let mut selected_label = None;
++            for &child_id in &select.children {
++                let Some(option) = doc.get_node(child_id) else { continue };
++                let Some(element) = option.element_data() else { continue };
++                if element.name.local != local_name!("option") { continue; }
++                let text = option.text_content().trim().to_string();
++                if first_label.is_none() { first_label = Some(text.clone()); }
++                if element.has_attr(local_name!("selected")) {
++                    selected_label = Some(text);
++                    break;
++                }
++            }
++            Some(selected_label.or(first_label).unwrap_or_default())
++        } else {
++            None
++        }
++    };
+     let node = &mut doc.nodes[input_element_id];
+     let parley_style = node
+         .primary_styles()
+@@ -872,7 +903,9 @@ fn create_text_editor(doc: &mut BaseDocument, input_element_id: NodeId, is_multi
+         .map(|s| stylo_to_parley::base_direction(s.clone_direction(), s.clone_unicode_bidi()))
+         .unwrap_or(parley::BaseDirection::Auto);
+ 
+-    let initial_text = if is_multiline {
++    let initial_text = if let Some(label) = label {
++        label
++    } else if is_multiline {
+         node.text_content()
+     } else {
+         node.attr(local_name!("value")).unwrap_or("").to_string()
+diff --git a/packages/blitz-dom/src/traversal.rs b/packages/blitz-dom/src/traversal.rs
+index 68291594..979ea307 100644
+--- a/packages/blitz-dom/src/traversal.rs
++++ b/packages/blitz-dom/src/traversal.rs
+@@ -103,7 +103,8 @@ impl BaseDocument {
+         let mut chain = Vec::with_capacity(16);
+         chain.push(node_id);
+         chain.extend(
+-            AncestorTraverser::new(self, node_id).filter(|id| self.nodes[*id].is_element()),
++            AncestorTraverser::new(self, node_id)
++                .filter(|id| self.nodes[*id].is_element() || *id == self.root_node().id),
+         );
+         chain
+     }
+diff --git a/packages/blitz-vibey-script/src/dom/element/form_controls.rs b/packages/blitz-vibey-script/src/dom/element/form_controls.rs
+index c1f267c7..559b13f3 100644
+--- a/packages/blitz-vibey-script/src/dom/element/form_controls.rs
++++ b/packages/blitz-vibey-script/src/dom/element/form_controls.rs
+@@ -71,15 +71,36 @@ pub(super) fn get_value(this: &JsValue, _: &[JsValue], context: &mut Context) ->
+     let value = {
+         let doc = ctx.doc.borrow();
+         doc.get_node(node_id)
+-            .and_then(|node| node.element_data())
+-            .map(|element| match element.text_input_data() {
+-                Some(input_data) => input_data.editor.raw_text().to_string(),
+-                None => element
+-                    .attrs()
+-                    .iter()
+-                    .find(|attr| &*attr.name.local == "value")
+-                    .map(|attr| attr.value.clone())
+-                    .unwrap_or_default(),
++            .map(|node| {
++                let Some(element) = node.element_data() else {
++                    return String::new();
++                };
++                // CALYRA Stage A experiment: read an explicit selected option,
++                // else the first option. This deliberately does not implement
++                // HTMLSelectElement's full live selectedness/value setter.
++                if element.name.local == blitz_dom::local_name!("select") {
++                    let mut first = None;
++                    for &child in &node.children {
++                        let Some(option) = doc.get_node(child) else { continue };
++                        let Some(opt) = option.element_data() else { continue };
++                        if opt.name.local != blitz_dom::local_name!("option") { continue; }
++                        let val = opt.attr(blitz_dom::local_name!("value"))
++                            .map(str::to_string)
++                            .unwrap_or_else(|| option.text_content().trim().to_string());
++                        if first.is_none() { first = Some(val.clone()); }
++                        if opt.attr(blitz_dom::local_name!("selected")).is_some() {
++                            return val;
++                        }
++                    }
++                    return first.unwrap_or_default();
++                }
++                match element.text_input_data() {
++                    Some(input_data) => input_data.editor.raw_text().to_string(),
++                    None => element.attrs().iter()
++                        .find(|attr| &*attr.name.local == "value")
++                        .map(|attr| attr.value.clone())
++                        .unwrap_or_default(),
++                }
+             })
+             .unwrap_or_default()
+     };

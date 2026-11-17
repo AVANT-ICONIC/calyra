@@ -1,0 +1,20 @@
+{
+  "environment.txt": "a708eebdcf573a02dcc12cc1cbbf7b342f9153139cd841a26f9c8df09d163959",
+  "executable-architecture.txt": "c1669e1d8edca98769c37d494b76442a1d6e5ffffd7b4da1fb63aef8ebaf6f01",
+  "experiment.log": "9828d4baee762448e984e08fc89c3e320ab907e1bb17380447bba73e666ae416",
+  "result.json": "a92e8522cc510876d673b15bc536719a12ee7b9e77017484eb03d439322e7cb5",
+  "source-contract.json": "c4dc8997f17ffff6c7ac22ce2400596be3f3b0fa6eac3a37ed1b4085a66f367f",
+  "source-executable-sha256.txt": "7477a8d1c30682c5bfdcb8a36d978b164b83d40338ac02733efd4b891e23f988",
+  "swift-build.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "trial-1-native-app.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "trial-1.json": "3f9b38f353810daf9aede8dfc7a3f57341192b1a8cd7ba5969fade0d5c888819",
+  "trial-2-native-app.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "trial-2.json": "e483c891e8f16c776a293ece1d150bf272a780de017c67f63819c8fd0f4c278a",
+  "trial-3-native-app.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "trial-3.json": "7c1dd28ce790eca1253de0a98445b71bea1622b72947fdad34e11cb100313efb",
+  "trial-4-native-app.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "trial-4.json": "59cb06b5dcc8d0b988e5e9029dcf1a4ad9c6eaa7c0ee08ffbbb151c76500d18d",
+  "trial-5-native-app.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "trial-5.json": "93a56b5acea1a1842be8057d3e18222b186bf5ada56ee0815a613bb2eb95a889",
+  "verified-app-zip-sha256.txt": "81399b48d6712660219d6488529599ddad0567641260aeacade7951b980cdc39"
+}

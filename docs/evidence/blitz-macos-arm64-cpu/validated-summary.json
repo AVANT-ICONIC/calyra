@@ -1,0 +1,18 @@
+{
+  "schema": "calyra.blitz-macos-static-cpu.v1",
+  "passed_fixtures": [
+    "controls",
+    "dashboard",
+    "visual",
+    "interaction"
+  ],
+  "blitz_source_unpatched": true,
+  "canonical_css_unmodified": true,
+  "static_dom_adapted": true,
+  "original_js_executed": false,
+  "gpu_rendering_proven": false,
+  "os_input_proven": false,
+  "native_window_proven": false,
+  "same_hardware_tauri_ram_speed_comparison": false,
+  "full_open_spec_4_2_done": false
+}

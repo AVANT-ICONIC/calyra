@@ -1,0 +1,34 @@
+Mac host: 15.8.2 / arm64
+App: /Users/runner/work/calyra/calyra/evidence/tauri-macos-window-probe/unpacked/CALYRA Stage A Reference.app
+Launching archived Tauri app through Launch Services...
+  PID COMM
+ 1497 /Users/runner/work/calyra/calyra/evidence/tauri-macos-window-probe/unpacked/CALYRA Stage A Reference.app/Contents/MacOS/calyra-tauri-reference
+owner_pid=1497
+{
+  "owner_pid" : 1497,
+  "schema" : "calyra.macos-app-window-list.v1",
+  "visible_window_candidates" : [
+    {
+      "height" : 681,
+      "layer" : 0,
+      "owner_pid" : 1497,
+      "width" : 1024,
+      "window_id" : 28
+    }
+  ],
+  "window_found" : true
+}
+app_owned_window_id=28
+{
+  "accepted" : true,
+  "height" : 793,
+  "nonwhite_sampled_pixels" : 1444,
+  "pixel_gate_only_not_css_or_js_parity" : true,
+  "quantized_distinct_colors" : 40,
+  "sampled_pixels" : 1444,
+  "schema" : "calyra.macos-window-pixels.v1",
+  "width" : 1136
+}
+fe0ba545fa469f84211ab79aebbe90d1df8d7fc6e2a940336c8292c26f110d24  evidence/tauri-macos-window-probe/tauri-macos-app-window.png
+PASS: live PID + own visible WindowServer ID + nonblank native macOS screenshot.
+NOT VERIFIED: original JS semantics, pointer/keyboard input, CSS pixel parity, hardware GPU or performance.

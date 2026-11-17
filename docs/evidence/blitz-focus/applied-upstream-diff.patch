@@ -1,0 +1,31 @@
+diff --git a/packages/blitz-dom/src/events/pointer.rs b/packages/blitz-dom/src/events/pointer.rs
+index 9617ee68..cd78be19 100644
+--- a/packages/blitz-dom/src/events/pointer.rs
++++ b/packages/blitz-dom/src/events/pointer.rs
+@@ -766,6 +766,12 @@ pub(crate) fn handle_click(
+                         doc.submit_form(*form_owner, node_id);
+                     }
+                 }
++                // Plain buttons are handled click targets, even if JavaScript
++                // has already moved focus to another element synchronously.
++                // Do not clear the programmatic focus in the fallback below.
++                local_name!("button") if el.attr(local_name!("type")) == Some("button") => {
++                    break 'matched true;
++                }
+                 #[cfg(feature = "file-input")]
+                 local_name!("input") if el.attr(local_name!("type")) == Some("file") => {
+                     use crate::qual_name;
+diff --git a/packages/blitz-dom/src/traversal.rs b/packages/blitz-dom/src/traversal.rs
+index 68291594..979ea307 100644
+--- a/packages/blitz-dom/src/traversal.rs
++++ b/packages/blitz-dom/src/traversal.rs
+@@ -103,7 +103,8 @@ impl BaseDocument {
+         let mut chain = Vec::with_capacity(16);
+         chain.push(node_id);
+         chain.extend(
+-            AncestorTraverser::new(self, node_id).filter(|id| self.nodes[*id].is_element()),
++            AncestorTraverser::new(self, node_id)
++                .filter(|id| self.nodes[*id].is_element() || *id == self.root_node().id),
+         );
+         chain
+     }

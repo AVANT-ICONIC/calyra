@@ -1,0 +1,25 @@
+{
+  "schema": "calyra.blitz-static-input.v1",
+  "fixture": "controls",
+  "canonical_sha256": {
+    "index.html": "aa9fa23b242f06be7dc5b760f0f8379ce750d8fe2cd67a977daf1a4ff1bd848a",
+    "reference.css": "04635269a8fbd790c87316a03c6469a157806201e58fd730212f632fc86b7b9c",
+    "reference.js": "9d565203fc9c3450b0c61d7774cb2322b14ed3e3325926122b17f583e81cf3de"
+  },
+  "generated_html_sha256": "b49e6fdd217c38dba705602a68526f01c797072986401d92b4bf7fe5b9b62a72",
+  "css_bytes_changed": false,
+  "html_patched": true,
+  "javascript_executed": false,
+  "network_resources_used": false,
+  "adaptations": [
+    "Canonical stylesheet inlined verbatim into one style element; link delivery changed",
+    "Removed script tag; browser JavaScript not run",
+    "Set data-fixture to controls; marked its case active and its navigation link selected",
+    "Set data-motion=off and data-ready=true as static render state"
+  ],
+  "limitations": [
+    "This is a static HTML/CSS paint probe, NOT browser JavaScript or event behavior",
+    "Existing hidden controls/sections remain in the DOM; only one .case is active",
+    "Input/focus/IME/OS accessibility are not evaluated"
+  ]
+}

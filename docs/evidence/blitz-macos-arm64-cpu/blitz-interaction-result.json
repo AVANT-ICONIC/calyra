@@ -1,0 +1,70 @@
+{
+  "schema": "calyra.adapter-result.v1",
+  "adapter": {
+    "id": "blitz-0.3.0-beta.4-vello-cpu",
+    "version": "0.3.0-beta.4",
+    "kind": "browserless-software"
+  },
+  "fixture": {
+    "name": "interaction",
+    "version": "0.1.0",
+    "width_css_px": 1060,
+    "height_css_px": 800,
+    "state": "default",
+    "motion": "off"
+  },
+  "source": {
+    "html_sha256": "aa9fa23b242f06be7dc5b760f0f8379ce750d8fe2cd67a977daf1a4ff1bd848a",
+    "css_sha256": "04635269a8fbd790c87316a03c6469a157806201e58fd730212f632fc86b7b9c",
+    "js_sha256": "9d565203fc9c3450b0c61d7774cb2322b14ed3e3325926122b17f583e81cf3de",
+    "css_modified": false,
+    "dom_patched": true,
+    "js_executed": false,
+    "external_network_used": false,
+    "adaptations": [
+      "CSS text inserted verbatim into a style element instead of an external link",
+      "Native static HTML snapshot sets active fixture and selected nav state",
+      "Script tag omitted: no JavaScript or input interaction"
+    ]
+  },
+  "environment": {
+    "os": "macOS-15.8.2-arm64-arm-64bit-Mach-O",
+    "architecture": "arm64",
+    "python_version": "3.15.2"
+  },
+  "execution": {
+    "browser_engine": false,
+    "gpu_backed": false,
+    "interactive": false,
+    "render_backend": "Blitz 0.3.0-beta.4, Stylo/Taffy and AnyRender/Vello CPU"
+  },
+  "capture": {
+    "success": true,
+    "page_count": 1,
+    "png_paths": [
+      "/Users/runner/work/calyra/calyra/evidence/blitz-macos-cpu/blitz-interaction-raw.png",
+      "/Users/runner/work/calyra/calyra/evidence/blitz-macos-cpu/blitz-interaction-viewport.png"
+    ],
+    "pdf_path": null,
+    "pixel_scale": 2.0,
+    "measured_performance": false
+  },
+  "coverage": {
+    "pointer": "untested",
+    "keyboard": "untested",
+    "focus-order": "untested",
+    "scroll": "untested",
+    "aria-expanded": "untested",
+    "escape": "untested",
+    "input": "untested",
+    "javascript": "unsupported",
+    "input-events": "untested"
+  },
+  "eligibility": "restricted",
+  "limitations": [
+    "Static, non-interactive rendering only: no JavaScript, input, IME or accessibility proof",
+    "Screenshot uses Vello CPU; cannot prove native windowing or hardware GPU",
+    "One 1060 CSS-px wide capture; no performance or compatibility pass-rate",
+    "Native screenshot generated; no CSS property has been scored direct from pixels alone"
+  ]
+}

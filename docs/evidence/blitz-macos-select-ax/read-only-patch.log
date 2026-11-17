@@ -1,0 +1,8 @@
+CALYRA_READONLY_PATCHED=packages/blitz-dom/src/node/text.rs
+CALYRA_READONLY_PATCHED=packages/blitz-dom/src/node/mod.rs
+CALYRA_READONLY_PATCHED=packages/blitz-dom/src/node/element.rs
+CALYRA_READONLY_PATCHED=packages/blitz-dom/src/layout/construct.rs
+CALYRA_READONLY_PATCHED=packages/blitz-dom/src/document.rs
+CALYRA_READONLY_PATCHED=packages/blitz-paint/src/render.rs
+CALYRA_READONLY_PATCHED=packages/blitz-dom/src/mutator.rs
+CALYRA_READONLY_PATCH_COMPLETE=1

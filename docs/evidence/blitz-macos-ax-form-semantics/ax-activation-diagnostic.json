@@ -1,0 +1,152 @@
+{
+  "accesskit_implementation_completeness_verified": false,
+  "activation_exercised_by_read_only_query_only": true,
+  "after_count": 107,
+  "after_roles": {
+    "AXApplication": 1,
+    "AXButton": 5,
+    "AXCheckBox": 1,
+    "AXGroup": 16,
+    "AXLink": 5,
+    "AXMenu": 3,
+    "AXMenuBar": 1,
+    "AXMenuBarItem": 2,
+    "AXMenuItem": 36,
+    "AXPopUpButton": 1,
+    "AXSlider": 1,
+    "AXStaticText": 5,
+    "AXTextField": 1,
+    "AXUnknown": 27,
+    "AXWindow": 1,
+    "Heading": 1
+  },
+  "backend_event_log_observations": {
+    "actual_ax_tree_built": true,
+    "app_initial_tree_dispatched": true,
+    "backend_accesskit_initial_tree_received": true,
+    "update_if_active_called": true
+  },
+  "before_count": 107,
+  "before_roles": {
+    "AXApplication": 1,
+    "AXButton": 5,
+    "AXCheckBox": 1,
+    "AXGroup": 16,
+    "AXLink": 5,
+    "AXMenu": 3,
+    "AXMenuBar": 1,
+    "AXMenuBarItem": 2,
+    "AXMenuItem": 36,
+    "AXPopUpButton": 1,
+    "AXSlider": 1,
+    "AXStaticText": 5,
+    "AXTextField": 1,
+    "AXUnknown": 27,
+    "AXWindow": 1,
+    "Heading": 1
+  },
+  "initial_ax_fields_found": {
+    "apply_settings": false,
+    "display_name": false,
+    "enable_effects": false,
+    "material_intensity": false,
+    "render_priority": false,
+    "reset": false
+  },
+  "no_accessibility_actions_or_native_events_posted": true,
+  "no_mac_focus_value_mutation": true,
+  "read_only_hit_tests": [
+    {
+      "ax_error": 0,
+      "child_count": 1,
+      "fraction_x": 0.2,
+      "fraction_y": 0.25,
+      "returned_element": true,
+      "role": "AXGroup",
+      "x": 272,
+      "y": 196
+    },
+    {
+      "ax_error": 0,
+      "child_count": 1,
+      "fraction_x": 0.5,
+      "fraction_y": 0.25,
+      "returned_element": true,
+      "role": "AXGroup",
+      "x": 512,
+      "y": 196
+    },
+    {
+      "ax_error": 0,
+      "child_count": 1,
+      "fraction_x": 0.8,
+      "fraction_y": 0.25,
+      "returned_element": true,
+      "role": "AXGroup",
+      "x": 752,
+      "y": 196
+    },
+    {
+      "ax_error": 0,
+      "child_count": 1,
+      "fraction_x": 0.2,
+      "fraction_y": 0.5,
+      "returned_element": true,
+      "role": "AXGroup",
+      "x": 272,
+      "y": 353
+    },
+    {
+      "ax_error": 0,
+      "child_count": 1,
+      "fraction_x": 0.5,
+      "fraction_y": 0.5,
+      "returned_element": true,
+      "role": "AXGroup",
+      "x": 512,
+      "y": 353
+    },
+    {
+      "ax_error": 0,
+      "child_count": 1,
+      "fraction_x": 0.8,
+      "fraction_y": 0.5,
+      "returned_element": true,
+      "role": "AXGroup",
+      "x": 752,
+      "y": 353
+    },
+    {
+      "ax_error": 0,
+      "child_count": 1,
+      "fraction_x": 0.2,
+      "fraction_y": 0.7,
+      "returned_element": true,
+      "role": "AXGroup",
+      "x": 272,
+      "y": 478.6000061035156
+    },
+    {
+      "ax_error": 0,
+      "child_count": 1,
+      "fraction_x": 0.5,
+      "fraction_y": 0.7,
+      "returned_element": true,
+      "role": "AXGroup",
+      "x": 512,
+      "y": 478.6000061035156
+    },
+    {
+      "ax_error": 0,
+      "child_count": 1,
+      "fraction_x": 0.8,
+      "fraction_y": 0.7,
+      "returned_element": true,
+      "role": "AXGroup",
+      "x": 752,
+      "y": 478.6000061035156
+    }
+  ],
+  "schema": "calyra.blitz-macos-ax-activation-diagnostic.v1",
+  "voiceover_ime_real_user_input_tested": false
+}

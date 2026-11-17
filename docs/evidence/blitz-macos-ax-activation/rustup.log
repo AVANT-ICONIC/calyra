@@ -1,0 +1,8 @@
+info: syncing channel updates for 1.91.0-aarch64-apple-darwin
+info: latest update on 2025-10-30 for version 1.91.0 (f8297e351 2025-10-28)
+info: downloading 3 components
+
+  1.91.0-aarch64-apple-darwin installed - rustc 1.91.0 (f8297e351 2025-10-28)
+
+info: self-update is disabled for this build of rustup
+info: any updates to rustup will need to be fetched with your system package manager

@@ -1,0 +1,16 @@
+{
+  "actual-wkwebview-process-pids.json": "ea4932a3ae48b7047897c5a329a8d4c268e46239d3afcc09228cea5f8183e9bd",
+  "app-icon.log": "ccd7ea3247049975e04af8b93cc2da354b5d30ecdd054431cec5bb7434820a20",
+  "architecture.txt": "c1669e1d8edca98769c37d494b76442a1d6e5ffffd7b4da1fb63aef8ebaf6f01",
+  "live-app-pid.txt": "feea5a6aa65f3b9d7fc5c69d3f1f7a9312aa2bf300127b4dd7ca1dc7011de07f",
+  "macos-version.txt": "e0a9e270c507499fb163b6bb80e62f10c6fca344ce2c93fa2987fe42caf94b29",
+  "native-app.log": "428e901c1dca840addef2c9a5832b34b4e0b8df39fd3761f099aeb89d9373a5b",
+  "native-build.log": "2b3f39f9c8e3586a706d72a78e5c34f1fd1f94db2a4fc369d2448550a2241871",
+  "native-owned-process-footprint.tsv": "ab13b177d19778c07073de6bd051706ddcd438a849abcedc9fd83ff0399d12db",
+  "original-source.json": "c4dc8997f17ffff6c7ac22ce2400596be3f3b0fa6eac3a37ed1b4085a66f367f",
+  "relevant-process-snapshot.txt": "c73c2fd1c2ca85ef0dd9659f56695315d94f5c5e5f4d1af22393b4cff6cff1f1",
+  "research-executable-sha256.txt": "5c586cd957c9a2a0fcf0a49b355b4b12f2a72a7817e2dc36730f2f4c74d199ef",
+  "selected-process-pids.txt": "f22f52500fc7e564233d968cde029722efcf9e16e92780a09971f1afc9af3036",
+  "source-sha256.txt": "acf16b9e94aa799d4baeef45f3587bfba1b2423d7d5390d4603dacf96fb80570",
+  "tauri-version.txt": "9b3bfd97bdbbb1caca492a182482702522f4861cac9c38b60655010daaf0a7e3"
+}

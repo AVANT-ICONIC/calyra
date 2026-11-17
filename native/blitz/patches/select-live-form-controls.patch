@@ -1,0 +1,39 @@
+diff --git a/packages/blitz-vibey-script/src/dom/element/form_controls.rs b/packages/blitz-vibey-script/src/dom/element/form_controls.rs
+--- a/packages/blitz-vibey-script/src/dom/element/form_controls.rs
++++ b/packages/blitz-vibey-script/src/dom/element/form_controls.rs
+@@ -67,6 +67,9 @@
+ 
+-pub(super) fn get_value(this: &JsValue, _: &[JsValue], context: &mut Context) -> JsResult<JsValue> {
+-    let ctx = dom_ctx(context)?;
+-    let node_id = this_node_id(this)?;
+-    let value = {
++pub(super) fn get_value(this: &JsValue, _: &[JsValue], context: &mut Context) -> JsResult<JsValue> {
++    let ctx = dom_ctx(context)?;
++    let node_id = this_node_id(this)?;
++    if super::select_state::is_select(&ctx, node_id) {
++        return super::select_state::get_value(this, &[], context);
++    }
++    let value = {
+         let doc = ctx.doc.borrow();
+@@ -88,9 +91,14 @@
+ 
+-pub(super) fn set_value(
+-    this: &JsValue,
+-    args: &[JsValue],
+-    context: &mut Context,
+-) -> JsResult<JsValue> {
+-    attr_setter("value", this, args, context)
+-}
++pub(super) fn set_value(
++    this: &JsValue,
++    args: &[JsValue],
++    context: &mut Context,
++) -> JsResult<JsValue> {
++    let ctx = dom_ctx(context)?;
++    let node_id = this_node_id(this)?;
++    if super::select_state::is_select(&ctx, node_id) {
++        return super::select_state::set_value(this, args, context);
++    }
++    attr_setter("value", this, args, context)
++}
+ 

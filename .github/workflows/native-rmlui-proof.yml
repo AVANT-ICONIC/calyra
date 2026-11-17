@@ -1,0 +1,156 @@
+name: CALYRA native RmlUi proof
+
+# Focused Linux proof after splitting upstream EndFrame and GLFW buffer swap.
+# Later source changes do not repeatedly consume runners.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/native-rmlui-proof.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: calyra-rmlui-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux-native-frame:
+    name: Linux / real RmlUi 6.3 / software GL allowed
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install native development libraries
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends cmake g++ git pkg-config libglfw3-dev libfreetype-dev libgl1-mesa-dev libx11-dev libxrandr-dev libxi-dev libxcursor-dev xvfb xauth mesa-utils fonts-dejavu-core
+      - name: Clone and verify official RmlUi revision
+        run: |
+          git clone --no-checkout https://github.com/mikke89/RmlUi.git "$RUNNER_TEMP/rmlui-6.3"
+          git -C "$RUNNER_TEMP/rmlui-6.3" checkout --detach ba95ffe8bfb6370efb2cdcca927eaad4710c5413
+          test "$(git -C "$RUNNER_TEMP/rmlui-6.3" rev-parse HEAD)" = ba95ffe8bfb6370efb2cdcca927eaad4710c5413
+          test -z "$(git -C "$RUNNER_TEMP/rmlui-6.3" status --porcelain --untracked-files=no)"
+      - name: Isolate Python verification dependencies
+        run: |
+          python3 -m venv "$RUNNER_TEMP/calyra-python"
+          "$RUNNER_TEMP/calyra-python/bin/pip" install --disable-pip-version-check Pillow jsonschema
+      - name: Build and capture real native frames
+        id: native
+        shell: bash
+        env:
+          LIBGL_ALWAYS_SOFTWARE: '1'
+          MESA_GL_VERSION_OVERRIDE: '3.3'
+        run: |
+          set +e
+          mkdir -p evidence/native-stage-a/rmlui
+          xvfb-run -a -s '-screen 0 1280x900x24 +extension GLX' \
+            "$RUNNER_TEMP/calyra-python/bin/python" harness/run_rmlui.py \
+              --source "$RUNNER_TEMP/rmlui-6.3" --font /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf \
+              --mode adapted --build 2>&1 | tee evidence/native-stage-a/rmlui/ci-adapted.log
+          adapted_status=${PIPESTATUS[0]}
+          echo "adapted_exit=$adapted_status" >> "$GITHUB_OUTPUT"
+          xvfb-run -a -s '-screen 0 1280x900x24 +extension GLX' \
+            "$RUNNER_TEMP/calyra-python/bin/python" harness/run_rmlui.py \
+              --source "$RUNNER_TEMP/rmlui-6.3" --font /usr/share/fonts/truetype/dejavu/DejaVuSans.ttf \
+              --mode direct 2>&1 | tee evidence/native-stage-a/rmlui/ci-direct.log
+          echo "direct_exit=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+          # A green job requires an authentic adapted native frame.
+          # Unsupported direct CSS is allowed but its result must be preserved.
+          test "$adapted_status" -eq 0
+      - name: Record Linux outcome
+        if: always()
+        run: |
+          echo "### Linux native RmlUi" >> "$GITHUB_STEP_SUMMARY"
+          echo "Adapted exit: ${{ steps.native.outputs.adapted_exit }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Direct exit: ${{ steps.native.outputs.direct_exit }}" >> "$GITHUB_STEP_SUMMARY"
+          for file in evidence/native-stage-a/rmlui/rmlui-*-result.json; do
+            if test -f "$file"; then
+              python3 -c 'import json,sys; x=json.load(open(sys.argv[1])); print(x["eligibility"], x["execution"]["render_backend"], x["limitations"][-1])' "$file" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-native-rmlui-linux
+          path: evidence/native-stage-a/rmlui/
+          if-no-files-found: warn
+          retention-days: 7
+
+  macos-arm64-native:
+    # Already proven buildable on Apple Silicon in run 43664566957.
+    # Skip redundant Mac billing on the focused Linux GL linker repair.
+    # Run manually for a future display/context change.
+    if: github.event_name == 'workflow_dispatch'
+    name: Apple Silicon macOS 15 / compile and native frame attempt
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Confirm Apple Silicon and install dependencies
+        shell: bash
+        run: |
+          test "$(uname -m)" = arm64
+          sw_vers
+          brew install glfw freetype cmake
+      - name: Clone and verify official RmlUi revision
+        run: |
+          git clone --no-checkout https://github.com/mikke89/RmlUi.git "$RUNNER_TEMP/rmlui-6.3"
+          git -C "$RUNNER_TEMP/rmlui-6.3" checkout --detach ba95ffe8bfb6370efb2cdcca927eaad4710c5413
+          test "$(git -C "$RUNNER_TEMP/rmlui-6.3" rev-parse HEAD)" = ba95ffe8bfb6370efb2cdcca927eaad4710c5413
+          test -z "$(git -C "$RUNNER_TEMP/rmlui-6.3" status --porcelain --untracked-files=no)"
+      - name: Isolate Python verification dependencies
+        run: |
+          python3 -m venv "$RUNNER_TEMP/calyra-python"
+          "$RUNNER_TEMP/calyra-python/bin/pip" install --disable-pip-version-check Pillow jsonschema
+      - name: Compile native and attempt both CSS modes
+        id: native
+        shell: bash
+        run: |
+          set +e
+          mkdir -p evidence/native-stage-a/rmlui
+          for formula in glfw freetype; do
+            prefix="$(brew --prefix "$formula")"
+            export CMAKE_PREFIX_PATH="${prefix}:${CMAKE_PREFIX_PATH:-}"
+            export PKG_CONFIG_PATH="${prefix}/lib/pkgconfig:${PKG_CONFIG_PATH:-}"
+          done
+          font='/System/Library/Fonts/Supplemental/Arial.ttf'
+          if ! test -f "$font"; then
+            font="$(find /System/Library/Fonts /Library/Fonts -name '*.ttf' -type f -print -quit)"
+          fi
+          "$RUNNER_TEMP/calyra-python/bin/python" harness/run_rmlui.py \
+            --source "$RUNNER_TEMP/rmlui-6.3" --font "$font" \
+            --mode adapted --build 2>&1 | tee evidence/native-stage-a/rmlui/ci-adapted.log
+          adapted_status=${PIPESTATUS[0]}
+          echo "adapted_exit=$adapted_status" >> "$GITHUB_OUTPUT"
+          "$RUNNER_TEMP/calyra-python/bin/python" harness/run_rmlui.py \
+            --source "$RUNNER_TEMP/rmlui-6.3" --font "$font" \
+            --mode direct 2>&1 | tee evidence/native-stage-a/rmlui/ci-direct.log
+          echo "direct_exit=${PIPESTATUS[0]}" >> "$GITHUB_OUTPUT"
+          # An Apple Silicon build with no usable desktop GL is not a
+          # verified native framebuffer: log it and fail, not greenwash it.
+          test "$adapted_status" -eq 0
+      - name: Record Apple Silicon result
+        if: always()
+        run: |
+          echo "### Apple Silicon native RmlUi" >> "$GITHUB_STEP_SUMMARY"
+          echo "Adapted exit: ${{ steps.native.outputs.adapted_exit }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "Direct exit: ${{ steps.native.outputs.direct_exit }}" >> "$GITHUB_STEP_SUMMARY"
+          if test -f evidence/native-stage-a/rmlui/rmlui-build-provenance.json; then
+            echo 'A native executable with checked SHA-256 provenance was built.' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo 'No successfully verified native executable provenance.' >> "$GITHUB_STEP_SUMMARY"
+          fi
+          for file in evidence/native-stage-a/rmlui/rmlui-*-result.json; do
+            if test -f "$file"; then
+              python3 -c 'import json,sys; x=json.load(open(sys.argv[1])); print(x["eligibility"], x["execution"]["render_backend"], x["limitations"][-1])' "$file" >> "$GITHUB_STEP_SUMMARY"
+            fi
+          done
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-native-rmlui-macos-arm64
+          path: evidence/native-stage-a/rmlui/
+          if-no-files-found: warn
+          retention-days: 7

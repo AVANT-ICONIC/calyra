@@ -1,0 +1,14 @@
+{
+  "accessibility_trusted" : true,
+  "actual_input_delivered_to_tauri" : false,
+  "events_posted" : false,
+  "listen_event_access" : true,
+  "os_event_injection_preflight_permitted" : true,
+  "permission_prompt_requested" : false,
+  "physical_keyboard_or_mouse_tested" : false,
+  "platform" : "Version 15.8.2 (Build 24H232)",
+  "post_event_access" : true,
+  "schema" : "calyra.macos-real-os-input-preflight.v1",
+  "scope" : "GitHub-hosted macOS runner, current Swift process only",
+  "screen_capture_access_for_swift_process" : true
+}

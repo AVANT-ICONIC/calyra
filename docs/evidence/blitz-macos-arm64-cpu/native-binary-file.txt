@@ -1,0 +1,1 @@
+/Users/runner/work/_temp/calyra-blitz-upstream/target/release/examples/screenshot: Mach-O 64-bit executable arm64

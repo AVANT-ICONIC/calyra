@@ -1,0 +1,190 @@
+name: CALYRA Blitz select idempotent JS setters regression
+
+# One-time experiment. The upstream checkout is patched only *after* verifying
+# its pinned clean SHA. No CALYRA reference assets or original JS are changed.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/native-blitz-select-idempotent-proof.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  linux-patched-dom:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install upstream build prerequisites
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends build-essential pkg-config libssl-dev libfontconfig-dev libx11-dev libxkbcommon-dev libwayland-dev libasound2-dev git ca-certificates python3-venv
+      - name: Pin Rust
+        run: |
+          rustup toolchain install 1.91.0 --profile minimal
+          rustup default 1.91.0
+          rustc --version
+      - name: Pin canonical HTML, CSS and JS
+        run: |
+          set -euo pipefail
+          echo '04635269a8fbd790c87316a03c6469a157806201e58fd730212f632fc86b7b9c  fixtures/reference.css' | sha256sum -c -
+          echo '9d565203fc9c3450b0c61d7774cb2322b14ed3e3325926122b17f583e81cf3de  fixtures/reference.js' | sha256sum -c -
+      - name: Clone pinned clean upstream source
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none https://github.com/DioxusLabs/blitz.git "$RUNNER_TEMP/blitz"
+          git -C "$RUNNER_TEMP/blitz" checkout --detach 4f61cffacee50fe4f944ebe9d0470d9a5d3997e0
+          test "$(git -C "$RUNNER_TEMP/blitz" rev-parse HEAD)" = 4f61cffacee50fe4f944ebe9d0470d9a5d3997e0
+          test -z "$(git -C "$RUNNER_TEMP/blitz" status --porcelain --untracked-files=no)"
+      - name: Apply pinned baseline and isolated noneditable SelectData adapter
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/native-stage-a/blitz-select-idempotent
+          sha256sum \
+            native/blitz/patches/document-event-chain.patch \
+            native/blitz/patches/plain-button-focus.patch \
+            native/blitz/patches/select-ua-display.patch \
+            native/blitz/patches/select-default-value.patch \
+            native/blitz/patches/select-state-accessors.patch \
+            native/blitz/patches/select-live-form-controls.patch \
+            native/blitz/experiments/apply_readonly_select.py \
+            native/blitz/experiments/select_state_readonly.rs \
+            native/blitz/experiments/calyra_readonly_screenshot.rs \
+            native/blitz/reference_js_probe.rs \
+            native/blitz/patches/patched_focus_regression.rs \
+            native/blitz/patches/patched_readonly_select_regression.rs \
+            > evidence/native-stage-a/blitz-select-idempotent/source-sha256.txt
+          for patch in \
+            document-event-chain.patch plain-button-focus.patch \
+            select-ua-display.patch select-default-value.patch \
+            select-state-accessors.patch select-live-form-controls.patch; do
+            echo "CALYRA_APPLY_PATCH=$patch"
+            git -C "$RUNNER_TEMP/blitz" apply --check "$GITHUB_WORKSPACE/native/blitz/patches/$patch"
+            git -C "$RUNNER_TEMP/blitz" apply "$GITHUB_WORKSPACE/native/blitz/patches/$patch"
+          done
+          python3 native/blitz/experiments/apply_readonly_select.py --source "$RUNNER_TEMP/blitz"
+          grep -Fq "SpecialElementData::Select(_) => {}" "$RUNNER_TEMP/blitz/packages/blitz-dom/src/mutator.rs"
+          cp native/blitz/experiments/select_state_readonly.rs \
+            "$RUNNER_TEMP/blitz/packages/blitz-vibey-script/src/dom/element/select_state.rs"
+          cp native/blitz/experiments/calyra_readonly_screenshot.rs \
+            "$RUNNER_TEMP/blitz/examples/calyra_readonly_screenshot.rs"
+          git -C "$RUNNER_TEMP/blitz" diff > evidence/native-stage-a/blitz-select-idempotent/applied-upstream-diff.patch
+          cp native/blitz/reference_js_probe.rs \
+            "$RUNNER_TEMP/blitz/packages/blitz-vibey-script/tests/calyra_reference.rs"
+          cat native/blitz/patches/patched_focus_regression.rs \
+            native/blitz/patches/patched_readonly_select_regression.rs \
+            >> "$RUNNER_TEMP/blitz/packages/blitz-vibey-script/tests/calyra_reference.rs"
+      - name: Run original CALYRA script and idempotence regressions against native engine
+        shell: bash
+        env:
+          CARGO_BUILD_JOBS: '2'
+          CARGO_TERM_COLOR: never
+        run: |
+          set -o pipefail
+          export CALYRA_CANONICAL_HTML="$GITHUB_WORKSPACE/fixtures/index.html"
+          export CALYRA_CANONICAL_CSS="$GITHUB_WORKSPACE/fixtures/reference.css"
+          export CALYRA_CANONICAL_JS="$GITHUB_WORKSPACE/fixtures/reference.js"
+          export CALYRA_JS_OUT="$GITHUB_WORKSPACE/evidence/native-stage-a/blitz-select-idempotent"
+          test -d "$CALYRA_JS_OUT"
+          echo "CALYRA_EVIDENCE_DIR=$CALYRA_JS_OUT"
+          cd "$RUNNER_TEMP/blitz"
+          cargo test --locked -p blitz-vibey-script --test calyra_reference -- --nocapture 2>&1 | tee "$CALYRA_JS_OUT/rust-test.log"
+      - name: Verify read-only select state and native integration results
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('evidence/native-stage-a/blitz-select-idempotent')
+          for scene in ('focus-patched','destination-focus-patched','escape-patched'):
+            report=json.loads((root/f'calyra-js-{scene}.json').read_text())
+            assert report['reference_js_modified'] is False
+            assert report['js_error_count']==0
+            assert report['os_input_tested'] is False and report['gpu_tested'] is False
+          live=json.loads((root/'calyra-js-select-live.json').read_text())
+          assert live['reference_js_modified'] is False and live['js_error_count']==0
+          assert live['observations']['same_node'] is True
+          expected=[
+            ('initial',0,'balanced','Balanced',[True,False,False],[False,False,False]),
+            ('value=quality',1,'quality','Visual fidelity',[False,True,False],[False,False,False]),
+            ('selectedIndex=2',2,'performance','Performance',[False,False,True],[False,False,False]),
+            ('option0.selected=true',0,'balanced','Balanced',[True,False,False],[False,False,False]),
+            ('value=nonexistent',-1,'','',[False,False,False],[False,False,False]),
+            ('selectedIndex=1',1,'quality','Visual fidelity',[False,True,False],[False,False,False]),
+            ('option2.defaultSelected=true',1,'quality','Visual fidelity',[False,True,False],[False,False,True]),
+          ]
+          observations=live['observations']['snapshots']
+          assert len(observations)==len(expected)
+          for snapshot,(name,index,value,label,selected,defaults) in zip(observations,expected):
+            assert snapshot['name']==name,(name,snapshot)
+            assert snapshot['js']=={'index':index,'value':value,'selected':selected,'defaultSelected':defaults,'events':[]},(name,snapshot)
+            assert snapshot['native_label']==label,(name,snapshot)
+          print('PASS: read-only select, no duplicated Boa state, seven reactive DOM states')
+          PY
+      - name: Verify exact source no-op guard and 10 Rust tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -Fq 'if current(ctx, select) == chosen {' native/blitz/experiments/select_state_readonly.rs
+          python3 - <<'PY'
+          from pathlib import Path
+          log=Path('evidence/native-stage-a/blitz-select-idempotent/rust-test.log').read_text()
+          assert 'test result: ok. 10 passed; 0 failed' in log
+          assert 'test calyra_select_idempotent_js_writes_preserve_native_state_without_events ... ok' in log
+          print('PASS: 10/10 compiled native Rust/Boa tests, including repeated JS writes')
+          PY
+      - name: Archive proof separately from the original read-only pixels
+        shell: bash
+        run: |
+          set -euo pipefail
+          root="evidence/native-stage-a/blitz-select-idempotent"
+          sha256sum -c "$root/source-sha256.txt"
+          python3 - <<'PY'
+          import hashlib, json, shutil
+          from pathlib import Path
+          root=Path('evidence/native-stage-a/blitz-select-idempotent')
+          report=json.loads((root/'calyra-js-select-live.json').read_text())
+          assert report['observations']['same_node'] is True
+          assert len(report['observations']['snapshots']) == 7
+          assert report['js_error_count']==0
+          assert all(s['js']['events']==[] for s in report['observations']['snapshots'])
+          original=Path('docs/evidence/blitz-select-readonly/live-paint-result.json')
+          assert original.is_file(), 'original pixel proof must stay intact'
+          baseline=hashlib.sha256(original.read_bytes()).hexdigest()
+          dest=Path('docs/evidence/blitz-select-idempotent')
+          dest.mkdir(parents=True,exist_ok=True)
+          files=[p for p in root.rglob('*') if p.is_file()]
+          assert len(files)>=10,len(files)
+          for src in files:
+              assert not src.is_symlink()
+              tgt=dest/src.relative_to(root)
+              tgt.parent.mkdir(parents=True,exist_ok=True)
+              shutil.copyfile(src,tgt)
+              assert hashlib.sha256(src.read_bytes()).digest()==hashlib.sha256(tgt.read_bytes()).digest()
+          assert hashlib.sha256(original.read_bytes()).hexdigest()==baseline
+          print('PASS: preserved',len(files),'source-pinned files separately; old pixel receipt unchanged')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f docs/evidence/blitz-select-idempotent/
+          if git diff --cached --quiet; then
+            echo "Identical proof already archived"
+            exit 0
+          fi
+          git commit -m "docs(evidence): preserve exact-head native idempotent select regression"
+          git push origin HEAD:feat/reference-fixtures
+      - name: Preserve logs and failures
+        if: always()
+        run: |
+          echo '### CALYRA native select idempotent setter regression' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Only JS no-op setter guard and native Rust/Boa semantics checked at this head. No new pixel, OS input, hardware GPU or production proof. Prior read-only Vello CPU pixel evidence is preserved separately.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-blitz-select-idempotent-rust-proof
+          path: evidence/native-stage-a/blitz-select-idempotent/
+          retention-days: 7
+          if-no-files-found: warn

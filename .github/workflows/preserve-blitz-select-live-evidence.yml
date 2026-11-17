@@ -1,0 +1,145 @@
+name: Preserve CALYRA same-document live-select native pixel evidence
+
+# One-shot archive of original, SHA-256-verified native CI artifacts.
+# Trigger only by edits to this YAML, never by ordinary source commits.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/preserve-blitz-select-live-evidence.yml]
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  archive:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download exactly the verified native proof
+        uses: actions/download-artifact@v4
+        with:
+          name: calyra-blitz-select-live-paint-experiment
+          run-id: 43778999121
+          github-token: ${{ github.token }}
+          path: original
+      - name: Verify origin, both live native PNGs, scene transition, source and log
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 -m venv "$RUNNER_TEMP/calyra-archive-pillow"
+          "$RUNNER_TEMP/calyra-archive-pillow/bin/pip" install --disable-pip-version-check Pillow
+          "$RUNNER_TEMP/calyra-archive-pillow/bin/python" - <<'PY'
+          import hashlib, json, shutil
+          from pathlib import Path
+          from PIL import Image, ImageChops
+
+          src=Path('original')
+          required=[
+              'live-before-balanced.png',
+              'live-after-quality.png',
+              'live-paint-pixel-diff.png',
+              'live-paint-result.json',
+              'native-live-paint.log',
+              'cargo-live-paint.log',
+              'rust-test.log',
+              'calyra-js-select-live.json',
+              'source-sha256.txt',
+              'applied-upstream-diff.patch',
+          ]
+          for filename in required:
+              file=src/filename
+              assert file.is_file() and file.stat().st_size>0, filename
+
+          result=json.loads((src/'live-paint-result.json').read_text())
+          assert result['schema']=='calyra.blitz-live-select-paint.v1'
+          assert result['upstream_commit']=='4f61cffacee50fe4f944ebe9d0470d9a5d3997e0'
+          assert result['renderer']=='native Blitz AnyRender/Vello CPU'
+          assert result['same_document'] is True
+          assert result['original_css_modified'] is False
+          assert result['original_js_modified'] is False
+          assert result['javascript_executed'] is True
+          assert result['hardware_gpu'] is False
+          assert result['os_input_tested'] is False
+          assert result['old_label']=='Balanced'
+          assert result['new_label']=='Visual fidelity'
+
+          for filename in ('live-before-balanced.png','live-after-quality.png','live-paint-pixel-diff.png'):
+              digest=hashlib.sha256((src/filename).read_bytes()).hexdigest()
+              assert result['images'][filename]==digest, filename
+
+          with Image.open(src/'live-before-balanced.png') as original, Image.open(src/'live-after-quality.png') as selected:
+              assert original.size==selected.size==(1060,800)
+              diff=ImageChops.difference(original.convert('RGB'), selected.convert('RGB'))
+              count=sum(1 for rgb in diff.getdata() if max(rgb)>=12)
+              bbox=diff.getbbox()
+              with Image.open(src/'live-paint-pixel-diff.png') as saved_diff:
+                  assert saved_diff.convert('RGB').tobytes()==diff.tobytes()
+          assert count==732,(count,bbox)
+          assert bbox==(687,490,794,505),(count,bbox)
+          assert result['changed_pixels_at_12']==count
+          assert result['diff_bbox']==list(bbox)
+
+          js=json.loads((src/'calyra-js-select-live.json').read_text())
+          assert js['schema']=='calyra.blitz-js.v1'
+          assert js['reference_js_modified'] is False
+          assert js['os_input_tested'] is False and js['gpu_tested'] is False
+          assert js['js_error_count']==0
+          assert js['observations']['same_node'] is True
+          snaps=js['observations']['snapshots']
+          assert len(snaps)==7
+          assert snaps[0]['native_label']=='Balanced'
+          assert snaps[1]['native_label']=='Visual fidelity'
+          assert all(not s['js']['events'] for s in snaps)
+
+          log=(src/'native-live-paint.log').read_text()
+          for marker in (
+              'CALYRA_LIVE_SAME_DOCUMENT=true',
+              'CALYRA_LIVE_FROM=Balanced',
+              'CALYRA_LIVE_TO=Visual fidelity',
+              'CALYRA_LIVE_RENDER_BACKEND=Vello_CPU',
+          ):
+              assert marker in log,marker
+          assert 'test result: ok. 9 passed; 0 failed' in (src/'rust-test.log').read_text()
+          assert 'Finished `release` profile' in (src/'cargo-live-paint.log').read_text()
+
+          manifest=(src/'source-sha256.txt').read_text().splitlines()
+          assert len(manifest)>=16
+          for line in manifest:
+              digest,rel=line.split(maxsplit=1)
+              rel=rel.lstrip('*')
+              assert len(digest)==64 and (Path(rel).is_file()),rel
+              assert hashlib.sha256(Path(rel).read_bytes()).hexdigest()==digest,rel
+          assert hashlib.sha256(Path('fixtures/reference.css').read_bytes()).hexdigest()=='04635269a8fbd790c87316a03c6469a157806201e58fd730212f632fc86b7b9c'
+          assert hashlib.sha256(Path('fixtures/reference.js').read_bytes()).hexdigest()=='9d565203fc9c3450b0c61d7774cb2322b14ed3e3325926122b17f583e81cf3de'
+          upstream=(src/'applied-upstream-diff.patch').read_text()
+          for filename in ('packages/blitz-dom/src/document.rs','packages/blitz-dom/src/layout/construct.rs','packages/blitz-vibey-script/src/dom/element/form_controls.rs'):
+              assert filename in upstream,filename
+
+          all_files=[p for p in src.rglob('*') if p.is_file()]
+          assert len(all_files)>=len(required),len(all_files)
+          assert all(not p.is_symlink() and p.relative_to(src).parts[0]!='..' for p in all_files)
+          dest=Path('docs/evidence/blitz-select-live')
+          dest.mkdir(parents=True,exist_ok=True)
+          for p in all_files:
+              target=dest/p.relative_to(src)
+              target.parent.mkdir(parents=True,exist_ok=True)
+              shutil.copyfile(p,target)
+              assert hashlib.sha256(target.read_bytes()).digest()==hashlib.sha256(p.read_bytes()).digest()
+          print('PASS: actual live Vello CPU selected-option transition, 732 changed pixels in',bbox)
+          print('PASS: 9 original native Rust tests, 7 coherent live states, pinned source and',len(all_files),'byte-exact original files')
+          PY
+      - name: Commit verified original artifacts to same draft branch only
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f docs/evidence/blitz-select-live/
+          if git diff --cached --quiet; then
+            echo 'Already archived'
+            exit 0
+          fi
+          git commit -m 'docs(evidence): archive exact live native Blitz selected-label pixels'
+          git push origin HEAD:feat/reference-fixtures

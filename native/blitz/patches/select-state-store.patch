@@ -1,0 +1,15 @@
+diff --git a/packages/blitz-vibey-script/src/state.rs b/packages/blitz-vibey-script/src/state.rs
+--- a/packages/blitz-vibey-script/src/state.rs
++++ b/packages/blitz-vibey-script/src/state.rs
+@@ -69,7 +69,10 @@
+     /// DOM wrappers must be cached so that a given DOM node is always represented
+     /// by the *same* JS object: scripts rely on object identity (`===`) and on
+     /// expando properties persisting across accesses.
+-    pub node_wrappers: HashMap<NodeId, JsObject>,
++    pub node_wrappers: HashMap<NodeId, JsObject>,
++    /// CALYRA Stage A trial: current select option independent of markup default.
++    /// None is an explicit empty selection; missing entry means uninitialized.
++    pub select_current: HashMap<NodeId, Option<NodeId>>,
+     /// The document's single JS Selection wrapper.
+     pub selection: Option<JsObject>,
+     /// Event listeners registered on nodes, keyed by node id then event type.

@@ -1,0 +1,14 @@
+{
+  "owner_pid" : 21157,
+  "schema" : "calyra.macos-app-window-list.v1",
+  "visible_window_candidates" : [
+    {
+      "height" : 628,
+      "layer" : 0,
+      "owner_pid" : 21157,
+      "width" : 800,
+      "window_id" : 24
+    }
+  ],
+  "window_found" : true
+}

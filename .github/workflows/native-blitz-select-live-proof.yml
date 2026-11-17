@@ -1,0 +1,155 @@
+name: CALYRA Blitz live select state and repaint proof
+
+# One-time experiment. The upstream checkout is patched only *after* verifying
+# its pinned clean SHA. No CALYRA reference assets or original JS are changed.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/native-blitz-select-live-proof.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  linux-patched-dom:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install upstream build prerequisites
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends build-essential pkg-config libssl-dev libfontconfig-dev libx11-dev libxkbcommon-dev libwayland-dev libasound2-dev git ca-certificates
+      - name: Pin Rust
+        run: |
+          rustup toolchain install 1.91.0 --profile minimal
+          rustup default 1.91.0
+          rustc --version
+      - name: Pin canonical HTML, CSS and JS
+        run: |
+          set -euo pipefail
+          echo '04635269a8fbd790c87316a03c6469a157806201e58fd730212f632fc86b7b9c  fixtures/reference.css' | sha256sum -c -
+          echo '9d565203fc9c3450b0c61d7774cb2322b14ed3e3325926122b17f583e81cf3de  fixtures/reference.js' | sha256sum -c -
+      - name: Clone pinned clean upstream source
+        run: |
+          set -euo pipefail
+          git clone --filter=blob:none https://github.com/DioxusLabs/blitz.git "$RUNNER_TEMP/blitz"
+          git -C "$RUNNER_TEMP/blitz" checkout --detach 4f61cffacee50fe4f944ebe9d0470d9a5d3997e0
+          test "$(git -C "$RUNNER_TEMP/blitz" rev-parse HEAD)" = 4f61cffacee50fe4f944ebe9d0470d9a5d3997e0
+          test -z "$(git -C "$RUNNER_TEMP/blitz" status --porcelain --untracked-files=no)"
+      - name: Apply isolated initial-paint and live-selectedness engine trials
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/native-stage-a/blitz-select-live
+          sha256sum native/blitz/patches/document-event-chain.patch native/blitz/patches/plain-button-focus.patch native/blitz/patches/select-ua-display.patch native/blitz/patches/select-default-value.patch native/blitz/patches/select-label-parley.patch native/blitz/patches/select-label-readonly.patch native/blitz/patches/select-state-store.patch native/blitz/patches/select-state-accessors.patch native/blitz/patches/select-live-form-controls.patch native/blitz/patches/select-live-label-sync.patch native/blitz/experiments/select_state.rs native/blitz/reference_js_probe.rs native/blitz/patches/patched_focus_regression.rs native/blitz/patches/patched_label_paint_regression.rs native/blitz/patches/patched_live_select_regression.rs > evidence/native-stage-a/blitz-select-live/source-sha256.txt
+          git -C "$RUNNER_TEMP/blitz" apply --check "$GITHUB_WORKSPACE/native/blitz/patches/document-event-chain.patch"
+          git -C "$RUNNER_TEMP/blitz" apply "$GITHUB_WORKSPACE/native/blitz/patches/document-event-chain.patch"
+          git -C "$RUNNER_TEMP/blitz" apply --check "$GITHUB_WORKSPACE/native/blitz/patches/plain-button-focus.patch"
+          git -C "$RUNNER_TEMP/blitz" apply "$GITHUB_WORKSPACE/native/blitz/patches/plain-button-focus.patch"
+          for patch in select-ua-display.patch select-default-value.patch; do
+            git -C "$RUNNER_TEMP/blitz" apply --check "$GITHUB_WORKSPACE/native/blitz/patches/$patch"
+            git -C "$RUNNER_TEMP/blitz" apply "$GITHUB_WORKSPACE/native/blitz/patches/$patch"
+          done
+          for patch in select-label-parley.patch select-label-readonly.patch select-state-store.patch select-state-accessors.patch select-live-form-controls.patch select-live-label-sync.patch; do
+            echo "CALYRA_APPLY_PATCH=$patch"
+            git -C "$RUNNER_TEMP/blitz" apply --check "$GITHUB_WORKSPACE/native/blitz/patches/$patch"
+            git -C "$RUNNER_TEMP/blitz" apply "$GITHUB_WORKSPACE/native/blitz/patches/$patch"
+          done
+          cp native/blitz/experiments/select_state.rs "$RUNNER_TEMP/blitz/packages/blitz-vibey-script/src/dom/element/select_state.rs"
+          git -C "$RUNNER_TEMP/blitz" diff -- packages/blitz-dom/src/traversal.rs packages/blitz-dom/src/events/pointer.rs packages/blitz-dom/src/document.rs packages/blitz-dom/src/events/keyboard.rs packages/blitz-dom/src/layout/construct.rs packages/blitz-dom/assets/default.css packages/blitz-vibey-script/src/state.rs packages/blitz-vibey-script/src/dom/element.rs packages/blitz-vibey-script/src/dom/element/form_controls.rs > evidence/native-stage-a/blitz-select-live/applied-upstream-diff.patch
+          cp native/blitz/reference_js_probe.rs "$RUNNER_TEMP/blitz/packages/blitz-vibey-script/tests/calyra_reference.rs"
+          cat native/blitz/patches/patched_focus_regression.rs >> "$RUNNER_TEMP/blitz/packages/blitz-vibey-script/tests/calyra_reference.rs"
+          cat native/blitz/patches/patched_label_paint_regression.rs native/blitz/patches/patched_live_select_regression.rs >> "$RUNNER_TEMP/blitz/packages/blitz-vibey-script/tests/calyra_reference.rs"
+      - name: Run original CALYRA script against patched native engine
+        shell: bash
+        env:
+          CARGO_BUILD_JOBS: '2'
+          CARGO_TERM_COLOR: never
+        run: |
+          set -o pipefail
+          export CALYRA_CANONICAL_HTML="$GITHUB_WORKSPACE/fixtures/index.html"
+          export CALYRA_CANONICAL_CSS="$GITHUB_WORKSPACE/fixtures/reference.css"
+          export CALYRA_CANONICAL_JS="$GITHUB_WORKSPACE/fixtures/reference.js"
+          export CALYRA_JS_OUT="$GITHUB_WORKSPACE/evidence/native-stage-a/blitz-select-live"
+          test -d "$CALYRA_JS_OUT"
+          echo "CALYRA_EVIDENCE_DIR=$CALYRA_JS_OUT"
+          cd "$RUNNER_TEMP/blitz"
+          cargo test --locked -p blitz-vibey-script --test calyra_reference -- --nocapture 2>&1 | tee "$CALYRA_JS_OUT/rust-test.log"
+      - name: Verify actual application handler and key event
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('evidence/native-stage-a/blitz-select-live')
+          report=json.loads((root/'calyra-js-escape-patched.json').read_text())
+          assert report['schema']=='calyra.blitz-js.v1'
+          assert report['reference_js_modified'] is False
+          assert report['js_error_count']==0
+          assert report['os_input_tested'] is False
+          assert report['gpu_tested'] is False
+          outcome=report['observations']
+          assert outcome['before']['expanded']=='true'
+          assert outcome['after']['expanded']=='false'
+          assert outcome['after']['hidden'] is True
+          assert any(x.get('key')=='Escape' for x in outcome['after']['trace'])
+          for scene in ('focus-patched','destination-focus-patched'):
+              r=json.loads((root/f'calyra-js-{scene}.json').read_text())
+              assert r['reference_js_modified'] is False
+              assert r['js_error_count']==0
+              assert r['os_input_tested'] is False
+              assert r['gpu_tested'] is False
+          f=json.loads((root/'calyra-js-focus-patched.json').read_text())['observations']
+          assert f['native_command_focused'] is True
+          assert f['after_open']['focused']=='inspect'
+          assert f['after_open']['expanded']=='true'
+          assert f['after_escape']=={'expanded':'false','hidden':True,'focused':'menu-toggle'}
+          d=json.loads((root/'calyra-js-destination-focus-patched.json').read_text())['observations']
+          assert d['native_destination_focused'] is True
+          assert d['after_click']['focused']=='destination'
+          # The earlier attribute-backed probe intentionally expected
+          # setAttribute('selected') to change live current selection.
+          # Chromium's current/default separation supersedes that expectation.
+          label=json.loads((root/'calyra-js-select-label.json').read_text())
+          assert label['reference_js_modified'] is False
+          assert label['js_error_count']==0
+          assert label['observations']['parley_label']=='Balanced'
+          live=json.loads((root/'calyra-js-select-live.json').read_text())
+          assert live['schema']=='calyra.blitz-js.v1'
+          assert live['reference_js_modified'] is False
+          assert live['javascript_execution_attempted'] is True
+          assert live['js_error_count']==0
+          assert live['os_input_tested'] is False and live['gpu_tested'] is False
+          o=live['observations']
+          assert o['same_node'] is True
+          expected=[
+            ('initial',0,'balanced','Balanced',[True,False,False],[False,False,False]),
+            ('value=quality',1,'quality','Visual fidelity',[False,True,False],[False,False,False]),
+            ('selectedIndex=2',2,'performance','Performance',[False,False,True],[False,False,False]),
+            ('option0.selected=true',0,'balanced','Balanced',[True,False,False],[False,False,False]),
+            ('value=nonexistent',-1,'','',[False,False,False],[False,False,False]),
+            ('selectedIndex=1',1,'quality','Visual fidelity',[False,True,False],[False,False,False]),
+            ('option2.defaultSelected=true',1,'quality','Visual fidelity',[False,True,False],[False,False,True]),
+          ]
+          assert len(o['snapshots'])==len(expected)
+          for snapshot,(name,index,value,label,selected,defaults) in zip(o['snapshots'],expected):
+            assert snapshot['name']==name,(name,snapshot)
+            assert snapshot['js']=={'index':index,'value':value,'selected':selected,'defaultSelected':defaults,'events':[]},(name,snapshot)
+            assert snapshot['native_label']==label,(name,snapshot)
+          print('PASS: value, selectedIndex, option.selected, no synthetic events and in-place Parley label sync')
+          PY
+      - name: Preserve reproducibility and failed attempts
+        if: always()
+        run: |
+          echo '### CALYRA native Blitz / live current selectedness & label sync' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Upstream 4f61cff, modified only in disposable CI checkout. Original CALYRA CSS/JS untouched. Six earlier engine patches plus isolated live-state experiment; canonical HTML/CSS/JS unchanged. No dropdown, OS input, a11y, GPU or browser-level parity.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Synthetic internal UI events, not real OS keyboard input, GPU or production fix.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-blitz-select-live-experiment
+          path: evidence/native-stage-a/blitz-select-live/
+          retention-days: 7
+          if-no-files-found: warn

@@ -1,0 +1,1 @@
+/Users/runner/work/_temp/calyra-blitz-select-ax/target/debug/examples/calyra_native_window: Mach-O 64-bit executable arm64

@@ -1,0 +1,128 @@
+name: CALYRA real Tauri WebKitGTK native window pixel proof
+
+# Experimental X11 capture of the ACTUAL Tauri 2 Linux executable.
+# This is not a macOS WKWebView test, trusted OS input or perf benchmark.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/tauri-linux-window-pixels.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  real-tauri-window:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    env:
+      CARGO_BUILD_JOBS: '2'
+      CARGO_TERM_COLOR: never
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Tauri Linux WebKitGTK and X11 snapshot tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev \
+            librsvg2-dev libxdo-dev libssl-dev pkg-config build-essential \
+            xvfb xauth fonts-dejavu-core x11-apps xdotool imagemagick python3-pil
+          mkdir -p evidence/tauri-linux-window-pixels
+          {
+            uname -a
+            rustc --version
+            pkg-config --modversion webkit2gtk-4.1
+          } > evidence/tauri-linux-window-pixels/environment.txt
+      - name: Check source, pinned lock files and native icon
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 adapters/tauri-reference/verify_source.py > evidence/tauri-linux-window-pixels/source-contract.json
+          python3 adapters/tauri-reference/prepare_macos_icon.py
+          test -s adapters/tauri-reference/src-tauri/icons/calyra-reference-source.png
+          cd adapters/tauri-reference
+          npm ci --no-audit --no-fund
+          test -s src-tauri/Cargo.lock
+          sha256sum package-lock.json src-tauri/Cargo.lock \
+            > "$GITHUB_WORKSPACE/evidence/tauri-linux-window-pixels/dependency-lock-hashes.txt"
+      - name: Compile genuine Tauri 2 Linux shell with exact saved lockfile
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd adapters/tauri-reference
+          npm run tauri -- build --debug --no-bundle -- --locked 2>&1 \
+            | tee "$GITHUB_WORKSPACE/evidence/tauri-linux-window-pixels/build.log"
+          test -x src-tauri/target/debug/calyra-tauri-reference
+          git diff --exit-code -- src-tauri/Cargo.lock package-lock.json
+      - name: Capture the genuine Tauri window, reject blank or fake frames
+        shell: bash
+        run: |
+          set -euo pipefail
+          xvfb-run -a -s '-screen 0 1600x1200x24 -nolisten tcp' bash -euo pipefail -c '
+            export GDK_BACKEND=x11
+            export LIBGL_ALWAYS_SOFTWARE=1
+            export WEBKIT_DISABLE_SANDBOX_THIS_IS_DANGEROUS=1
+            bin=adapters/tauri-reference/src-tauri/target/debug/calyra-tauri-reference
+            "$bin" > evidence/tauri-linux-window-pixels/native-runtime.log 2>&1 &
+            pid=$!
+            trap "kill $pid >/dev/null 2>&1 || true" EXIT
+            python3 harness/tauri_x11_capture.py \
+              --pid "$pid" --out evidence/tauri-linux-window-pixels
+            kill -0 "$pid"
+            echo CALYRA_REAL_TAURI_NATIVE_WINDOW=true \
+              | tee evidence/tauri-linux-window-pixels/runtime-summary.txt
+          '
+      - name: Preserve verified native screenshot on active research branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          root=Path('evidence/tauri-linux-window-pixels')
+          report=json.loads((root/'native-window-result.json').read_text())
+          assert report['success'] is True
+          assert report['macos_wkwebview_tested'] is False
+          assert report['sampled_distinct_colors']>=30
+          image=root/report['image']
+          assert hashlib.sha256(image.read_bytes()).hexdigest()==report['image_sha256']
+          print('PASS: native screenshot verified:',image,report['sampled_distinct_colors'])
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          for attempt in 1 2 3 4 5; do
+            git fetch origin feat/reference-fixtures
+            git checkout -B feat/reference-fixtures FETCH_HEAD
+            dst=docs/evidence/tauri-linux-window-pixels
+            mkdir -p "$dst"
+            cp evidence/tauri-linux-window-pixels/tauri-native-window.png "$dst/"
+            cp evidence/tauri-linux-window-pixels/native-window-result.json "$dst/"
+            cp evidence/tauri-linux-window-pixels/environment.txt "$dst/"
+            cp evidence/tauri-linux-window-pixels/dependency-lock-hashes.txt "$dst/"
+            cp evidence/tauri-linux-window-pixels/runtime-summary.txt "$dst/"
+            git add -f "$dst/"
+            if git diff --cached --quiet; then
+              echo 'Identical native proof already archived'
+              exit 0
+            fi
+            git commit -m 'docs(evidence): preserve actual Tauri Linux window pixels'
+            if git push origin HEAD:feat/reference-fixtures; then
+              echo "PASS: native Tauri window proof archived, attempt=$attempt"
+              exit 0
+            fi
+            sleep 1
+          done
+          exit 1
+      - name: Limit scope
+        if: always()
+        run: |
+          echo 'This workflow captures the actual running Tauri 2 Linux WebKitGTK window under Xvfb via X11. Does not prove macOS WKWebView, GPU, true OS input, IME, accessibility, or comparative performance. Blank X11 frames are failures, not replacement screenshots.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-tauri-native-x11-pixel-proof
+          path: evidence/tauri-linux-window-pixels/
+          retention-days: 14
+          if-no-files-found: warn

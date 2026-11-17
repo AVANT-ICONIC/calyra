@@ -1,0 +1,2027 @@
+{
+  "accessibility_permission_trusted" : true,
+  "actual_os_keyboard_or_pointer_tested" : false,
+  "canonical_name_field_exposed_with_value" : true,
+  "element_count" : 221,
+  "events_posted" : false,
+  "focus_or_value_mutated" : false,
+  "macos_version" : "Version 15.8.2 (Build 24H232)",
+  "maximum_recursion_depth" : 22,
+  "permission_request_attempted" : false,
+  "role_counts" : {
+    "AXApplication" : 1,
+    "AXButton" : 5,
+    "AXCheckBox" : 1,
+    "AXGroup" : 25,
+    "AXHeading" : 1,
+    "AXLink" : 5,
+    "AXMenu" : 12,
+    "AXMenuBar" : 1,
+    "AXMenuBarItem" : 7,
+    "AXMenuItem" : 111,
+    "AXPopUpButton" : 1,
+    "AXScrollArea" : 1,
+    "AXScrollBar" : 1,
+    "AXSlider" : 1,
+    "AXStaticText" : 44,
+    "AXTextField" : 1,
+    "AXValueIndicator" : 1,
+    "AXWebArea" : 1,
+    "AXWindow" : 1
+  },
+  "sample_was_truncated" : false,
+  "schema" : "calyra.macos-native-accessibility-readonly.v1",
+  "target_app_pid" : 1912,
+  "tree" : [
+    {
+      "depth" : 0,
+      "index" : 1,
+      "role" : "AXApplication",
+      "role_description" : "application",
+      "title" : "CALYRA Stage A Reference"
+    },
+    {
+      "depth" : 1,
+      "index" : 2,
+      "role" : "AXWindow",
+      "role_description" : "standard window",
+      "title" : "CALYRA Stage A · System WKWebView"
+    },
+    {
+      "depth" : 2,
+      "enabled" : true,
+      "index" : 3,
+      "role" : "AXGroup",
+      "role_description" : "group"
+    },
+    {
+      "depth" : 3,
+      "index" : 4,
+      "role" : "AXGroup",
+      "role_description" : "group"
+    },
+    {
+      "depth" : 4,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 5,
+      "role" : "AXScrollArea",
+      "role_description" : "scroll area",
+      "title" : "",
+      "value" : ""
+    },
+    {
+      "depth" : 5,
+      "description" : "CALYRA | CSS Native Reference",
+      "enabled" : true,
+      "help" : "",
+      "index" : 6,
+      "role" : "AXWebArea",
+      "role_description" : "HTML content",
+      "title" : "",
+      "value" : ""
+    },
+    {
+      "depth" : 6,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 7,
+      "role" : "AXGroup",
+      "role_description" : "banner",
+      "title" : "",
+      "value" : ""
+    },
+    {
+      "depth" : 7,
+      "description" : "CALYRA home",
+      "enabled" : true,
+      "help" : "",
+      "index" : 8,
+      "role" : "AXLink",
+      "role_description" : "link",
+      "title" : "CALYRA home",
+      "value" : ""
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 9,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "CALYRA"
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 10,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "CSS NATIVE \/ REFERENCE"
+    },
+    {
+      "depth" : 7,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 11,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "ENGINE EVALUATION"
+    },
+    {
+      "depth" : 7,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 12,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "FIXTURE v0.1"
+    },
+    {
+      "depth" : 6,
+      "description" : "Reference fixtures",
+      "enabled" : true,
+      "help" : "",
+      "index" : 13,
+      "role" : "AXGroup",
+      "role_description" : "navigation",
+      "title" : "Reference fixtures",
+      "value" : ""
+    },
+    {
+      "depth" : 7,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 14,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "TEST SUITE"
+    },
+    {
+      "depth" : 7,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 15,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "01—04"
+    },
+    {
+      "depth" : 7,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 16,
+      "role" : "AXLink",
+      "role_description" : "link",
+      "title" : "01 Controls",
+      "value" : ""
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 17,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "01"
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 18,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "Controls"
+    },
+    {
+      "depth" : 7,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 19,
+      "role" : "AXLink",
+      "role_description" : "link",
+      "title" : "02 Responsive",
+      "value" : ""
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 20,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "02"
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 21,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "Responsive"
+    },
+    {
+      "depth" : 7,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 22,
+      "role" : "AXLink",
+      "role_description" : "link",
+      "title" : "03 Visual effects",
+      "value" : ""
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 23,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "03"
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 24,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "Visual effects"
+    },
+    {
+      "depth" : 7,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 25,
+      "role" : "AXLink",
+      "role_description" : "link",
+      "title" : "04 Interaction",
+      "value" : ""
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 26,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "04"
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 27,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "Interaction"
+    },
+    {
+      "depth" : 7,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 28,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "CANONICAL CSS"
+    },
+    {
+      "depth" : 7,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 29,
+      "role" : "AXGroup",
+      "role_description" : "group",
+      "title" : "",
+      "value" : ""
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 30,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "No frameworks."
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 31,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "No runtime assets."
+    },
+    {
+      "depth" : 6,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 32,
+      "role" : "AXGroup",
+      "role_description" : "main",
+      "title" : "",
+      "value" : ""
+    },
+    {
+      "depth" : 7,
+      "description" : "Controls, without compromise.",
+      "enabled" : true,
+      "help" : "",
+      "index" : 33,
+      "role" : "AXGroup",
+      "role_description" : "region",
+      "title" : "Controls, without compromise.",
+      "value" : ""
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 34,
+      "role" : "AXGroup",
+      "role_description" : "group",
+      "title" : "",
+      "value" : ""
+    },
+    {
+      "depth" : 9,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 35,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "01 \/ COMPONENT BEHAVIOR"
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 36,
+      "role" : "AXHeading",
+      "role_description" : "heading",
+      "title" : "Controls, without compromise.",
+      "value" : "1"
+    },
+    {
+      "depth" : 9,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 37,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "Controls, "
+    },
+    {
+      "depth" : 9,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 38,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "without compromise."
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 39,
+      "role" : "AXGroup",
+      "role_description" : "group",
+      "title" : "",
+      "value" : ""
+    },
+    {
+      "depth" : 9,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 40,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "Form semantics, focus order, hover and state. The browser reference that native renderers must actually match."
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 41,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "CONTROL SURFACE"
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 42,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "01—04"
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 43,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "Display name"
+    },
+    {
+      "depth" : 9,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 44,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "Display name"
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 45,
+      "role" : "AXTextField",
+      "role_description" : "text field",
+      "title" : "Display name",
+      "value" : "Alex Rivera"
+    },
+    {
+      "depth" : 9,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 46,
+      "role" : "AXGroup",
+      "role_description" : "group",
+      "title" : "",
+      "value" : ""
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 47,
+      "role" : "AXGroup",
+      "role_description" : "group",
+      "title" : "",
+      "value" : ""
+    },
+    {
+      "depth" : 9,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 48,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "Keyboard input \/ text metrics \/ caret"
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 49,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "Render priority"
+    },
+    {
+      "depth" : 9,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 50,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "Render priority"
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 51,
+      "role" : "AXPopUpButton",
+      "role_description" : "pop up button",
+      "title" : "Render priority",
+      "value" : "Balanced"
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 52,
+      "role" : "AXGroup",
+      "role_description" : "group",
+      "title" : "",
+      "value" : ""
+    },
+    {
+      "depth" : 9,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 53,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "Native select \/ focus \/ pointer"
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 54,
+      "role" : "AXGroup",
+      "role_description" : "group",
+      "title" : "",
+      "value" : ""
+    },
+    {
+      "depth" : 9,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 55,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "Material intensity"
+    },
+    {
+      "depth" : 9,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 56,
+      "role" : "AXGroup",
+      "role_description" : "output",
+      "title" : "64%",
+      "value" : ""
+    },
+    {
+      "depth" : 10,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 57,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "64%"
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 58,
+      "role" : "AXSlider",
+      "role_description" : "slider",
+      "title" : "Material intensity 64%",
+      "value" : "64"
+    },
+    {
+      "depth" : 9,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 59,
+      "role" : "AXValueIndicator",
+      "role_description" : "value indicator",
+      "title" : "",
+      "value" : "64"
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 60,
+      "role" : "AXGroup",
+      "role_description" : "group",
+      "title" : "",
+      "value" : ""
+    },
+    {
+      "depth" : 9,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 61,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "Range input \/ keyboard arrows \/ live output"
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 62,
+      "role" : "AXGroup",
+      "role_description" : "group",
+      "title" : "",
+      "value" : ""
+    },
+    {
+      "depth" : 9,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 63,
+      "role" : "AXGroup",
+      "role_description" : "group",
+      "title" : "",
+      "value" : ""
+    },
+    {
+      "depth" : 10,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 64,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "Enable effects"
+    },
+    {
+      "depth" : 9,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 65,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "Native checkbox with CSS presentation"
+    },
+    {
+      "depth" : 9,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 66,
+      "role" : "AXCheckBox",
+      "role_description" : "checkbox",
+      "title" : "Enable effects Native checkbox with CSS presentation",
+      "value" : "1"
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 67,
+      "role" : "AXButton",
+      "role_description" : "button",
+      "title" : "Apply settings",
+      "value" : ""
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 68,
+      "role" : "AXButton",
+      "role_description" : "button",
+      "title" : "Reset",
+      "value" : ""
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 69,
+      "role" : "AXGroup",
+      "role_description" : "output",
+      "title" : "Ready for input",
+      "value" : ""
+    },
+    {
+      "depth" : 9,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 70,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "Ready for input"
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 71,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "TYPE SAMPLE \/ SYSTEM"
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 72,
+      "role" : "AXGroup",
+      "role_description" : "group",
+      "title" : "",
+      "value" : ""
+    },
+    {
+      "depth" : 9,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 73,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "Aa "
+    },
+    {
+      "depth" : 9,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 74,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "Designing for every pixel."
+    },
+    {
+      "depth" : 8,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 75,
+      "role" : "AXGroup",
+      "role_description" : "group",
+      "title" : "",
+      "value" : ""
+    },
+    {
+      "depth" : 9,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 76,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "ABCDEFGHIJKLMNOPQRSTUVWXYZ "
+    },
+    {
+      "depth" : 9,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 77,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "0123456789"
+    },
+    {
+      "depth" : 7,
+      "description" : "One grid. Any viewport.",
+      "enabled" : true,
+      "help" : "",
+      "index" : 78,
+      "role" : "AXGroup",
+      "role_description" : "region",
+      "title" : "One grid. Any viewport.",
+      "value" : ""
+    },
+    {
+      "depth" : 7,
+      "description" : "The pixels have opinions.",
+      "enabled" : true,
+      "help" : "",
+      "index" : 79,
+      "role" : "AXGroup",
+      "role_description" : "region",
+      "title" : "The pixels have opinions.",
+      "value" : ""
+    },
+    {
+      "depth" : 7,
+      "description" : "Real interfaces respond.",
+      "enabled" : true,
+      "help" : "",
+      "index" : 80,
+      "role" : "AXGroup",
+      "role_description" : "region",
+      "title" : "Real interfaces respond.",
+      "value" : ""
+    },
+    {
+      "depth" : 6,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 81,
+      "role" : "AXGroup",
+      "role_description" : "content information",
+      "title" : "",
+      "value" : ""
+    },
+    {
+      "depth" : 7,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 82,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "CALYRA \/ FEASIBILITY LAB"
+    },
+    {
+      "depth" : 7,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 83,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "CSS COMPATIBILITY REFERENCE"
+    },
+    {
+      "depth" : 7,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 84,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "title" : "",
+      "value" : "NO PERFORMANCE CLAIMS"
+    },
+    {
+      "depth" : 5,
+      "description" : "",
+      "enabled" : true,
+      "help" : "",
+      "index" : 85,
+      "role" : "AXScrollBar",
+      "role_description" : "scroll bar",
+      "title" : "",
+      "value" : "0"
+    },
+    {
+      "depth" : 2,
+      "enabled" : true,
+      "index" : 86,
+      "role" : "AXButton",
+      "role_description" : "close button"
+    },
+    {
+      "depth" : 2,
+      "enabled" : true,
+      "help" : "this button also has an action to zoom the window",
+      "index" : 87,
+      "role" : "AXButton",
+      "role_description" : "full screen button"
+    },
+    {
+      "depth" : 3,
+      "index" : 88,
+      "role" : "AXGroup",
+      "role_description" : "group"
+    },
+    {
+      "depth" : 2,
+      "enabled" : true,
+      "index" : 89,
+      "role" : "AXButton",
+      "role_description" : "minimize button"
+    },
+    {
+      "depth" : 2,
+      "enabled" : true,
+      "index" : 90,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "value" : "CALYRA Stage A · System WKWebView"
+    },
+    {
+      "depth" : 1,
+      "enabled" : true,
+      "index" : 91,
+      "role" : "AXMenuBar",
+      "role_description" : "menu bar"
+    },
+    {
+      "depth" : 2,
+      "enabled" : true,
+      "index" : 92,
+      "role" : "AXMenuBarItem",
+      "role_description" : "menu bar item",
+      "title" : "Apple"
+    },
+    {
+      "depth" : 3,
+      "enabled" : true,
+      "index" : 93,
+      "role" : "AXMenu",
+      "role_description" : "menu"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 94,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "About This Mac"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 95,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "System Information"
+    },
+    {
+      "depth" : 4,
+      "enabled" : false,
+      "index" : 96,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 97,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "System Settings…, 1 update"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 98,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "App Store"
+    },
+    {
+      "depth" : 4,
+      "enabled" : false,
+      "index" : 99,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 100,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Recent Items"
+    },
+    {
+      "depth" : 5,
+      "enabled" : true,
+      "index" : 101,
+      "role" : "AXMenu",
+      "role_description" : "menu"
+    },
+    {
+      "depth" : 6,
+      "enabled" : false,
+      "index" : 102,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Applications"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 103,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "CALYRA Stage A Reference"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 104,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Show “CALYRA Stage A Reference” in Finder"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 105,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Installer"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 106,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Show “Installer” in Finder"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 107,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "System Settings"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 108,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Show “System Settings” in Finder"
+    },
+    {
+      "depth" : 6,
+      "enabled" : false,
+      "index" : 109,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 6,
+      "enabled" : false,
+      "index" : 110,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Documents"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 111,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "AnkaGuestAddons.pkg"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 112,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Show “AnkaGuestAddons.pkg” in Finder"
+    },
+    {
+      "depth" : 6,
+      "enabled" : false,
+      "index" : 113,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 6,
+      "enabled" : false,
+      "index" : 114,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Servers"
+    },
+    {
+      "depth" : 6,
+      "enabled" : false,
+      "index" : 115,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 116,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Clear Menu"
+    },
+    {
+      "depth" : 4,
+      "enabled" : false,
+      "index" : 117,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 118,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Force Quit…"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 119,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Force Quit CALYRA Stage A Reference"
+    },
+    {
+      "depth" : 4,
+      "enabled" : false,
+      "index" : 120,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 121,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Sleep"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 122,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Restart…"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 123,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Restart"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 124,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Shut Down…"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 125,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Shut Down"
+    },
+    {
+      "depth" : 4,
+      "enabled" : false,
+      "index" : 126,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 127,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Lock Screen"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 128,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Log Out Anka…"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 129,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Log Out Anka"
+    },
+    {
+      "depth" : 4,
+      "enabled" : false,
+      "index" : 130,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 2,
+      "enabled" : true,
+      "index" : 131,
+      "role" : "AXMenuBarItem",
+      "role_description" : "menu bar item",
+      "title" : "CALYRA Stage A Reference"
+    },
+    {
+      "depth" : 3,
+      "enabled" : true,
+      "index" : 132,
+      "role" : "AXMenu",
+      "role_description" : "menu"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 133,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "About CALYRA Stage A Reference"
+    },
+    {
+      "depth" : 4,
+      "enabled" : false,
+      "index" : 134,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 135,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Services"
+    },
+    {
+      "depth" : 5,
+      "enabled" : true,
+      "index" : 136,
+      "role" : "AXMenu",
+      "role_description" : "menu"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 137,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Activity Monitor"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 138,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Allocations & Leaks"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 139,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "File Activity"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 140,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "System Trace"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 141,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Time Profile Active Application"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 142,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Time Profile App Under Mouse"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 143,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Time Profile Entire System"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 144,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Toggle Instruments Recording"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 145,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Services Settings…"
+    },
+    {
+      "depth" : 4,
+      "enabled" : false,
+      "index" : 146,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 147,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Hide CALYRA Stage A Reference"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 148,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Hide Others"
+    },
+    {
+      "depth" : 4,
+      "enabled" : false,
+      "index" : 149,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 150,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Quit CALYRA Stage A Reference"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 151,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Quit and Keep Windows"
+    },
+    {
+      "depth" : 2,
+      "enabled" : true,
+      "index" : 152,
+      "role" : "AXMenuBarItem",
+      "role_description" : "menu bar item",
+      "title" : "File"
+    },
+    {
+      "depth" : 3,
+      "enabled" : true,
+      "index" : 153,
+      "role" : "AXMenu",
+      "role_description" : "menu"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 154,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Close Window"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 155,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Close All"
+    },
+    {
+      "depth" : 2,
+      "enabled" : true,
+      "index" : 156,
+      "role" : "AXMenuBarItem",
+      "role_description" : "menu bar item",
+      "title" : "Edit"
+    },
+    {
+      "depth" : 3,
+      "enabled" : true,
+      "index" : 157,
+      "role" : "AXMenu",
+      "role_description" : "menu"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 158,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Undo"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 159,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Redo"
+    },
+    {
+      "depth" : 4,
+      "enabled" : false,
+      "index" : 160,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 161,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Cut"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 162,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Copy"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 163,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Paste"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 164,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Select All"
+    },
+    {
+      "depth" : 4,
+      "enabled" : false,
+      "index" : 165,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 166,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "AutoFill"
+    },
+    {
+      "depth" : 5,
+      "enabled" : true,
+      "index" : 167,
+      "role" : "AXMenu",
+      "role_description" : "menu"
+    },
+    {
+      "depth" : 6,
+      "enabled" : false,
+      "index" : 168,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Contact…"
+    },
+    {
+      "depth" : 6,
+      "enabled" : false,
+      "index" : 169,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Passwords…"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 170,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Start Dictation…"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 171,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Emoji & Symbols"
+    },
+    {
+      "depth" : 2,
+      "enabled" : true,
+      "index" : 172,
+      "role" : "AXMenuBarItem",
+      "role_description" : "menu bar item",
+      "title" : "View"
+    },
+    {
+      "depth" : 3,
+      "enabled" : true,
+      "index" : 173,
+      "role" : "AXMenu",
+      "role_description" : "menu"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 174,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Toggle Full Screen"
+    },
+    {
+      "depth" : 2,
+      "enabled" : true,
+      "index" : 175,
+      "role" : "AXMenuBarItem",
+      "role_description" : "menu bar item",
+      "title" : "Window"
+    },
+    {
+      "depth" : 3,
+      "enabled" : true,
+      "index" : 176,
+      "role" : "AXMenu",
+      "role_description" : "menu"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 177,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Minimize"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 178,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Minimize All"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 179,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Zoom"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 180,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Zoom All"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 181,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Fill"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 182,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Center"
+    },
+    {
+      "depth" : 4,
+      "enabled" : false,
+      "index" : 183,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 184,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Move & Resize"
+    },
+    {
+      "depth" : 5,
+      "enabled" : true,
+      "index" : 185,
+      "role" : "AXMenu",
+      "role_description" : "menu"
+    },
+    {
+      "depth" : 6,
+      "enabled" : false,
+      "index" : 186,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Halves"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 187,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Left"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 188,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Right"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 189,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Top"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 190,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Bottom"
+    },
+    {
+      "depth" : 6,
+      "enabled" : false,
+      "index" : 191,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 6,
+      "enabled" : false,
+      "index" : 192,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Quarters"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 193,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Top Left"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 194,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Top Right"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 195,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Bottom Left"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 196,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Bottom Right"
+    },
+    {
+      "depth" : 6,
+      "enabled" : false,
+      "index" : 197,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 6,
+      "enabled" : false,
+      "index" : 198,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Arrange"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 199,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Left & Right"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 200,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Left & Quarters"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 201,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Right & Left"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 202,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Right & Quarters"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 203,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Top & Bottom"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 204,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Top & Quarters"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 205,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Bottom & Top"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 206,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Bottom & Quarters"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 207,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Quarters"
+    },
+    {
+      "depth" : 6,
+      "enabled" : false,
+      "index" : 208,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 6,
+      "enabled" : false,
+      "index" : 209,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Return to Previous Size"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 210,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Full Screen Tile"
+    },
+    {
+      "depth" : 5,
+      "enabled" : true,
+      "index" : 211,
+      "role" : "AXMenu",
+      "role_description" : "menu"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 212,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Left of Screen"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 213,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Right of Screen"
+    },
+    {
+      "depth" : 4,
+      "enabled" : false,
+      "index" : 214,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 215,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Remove Window from Set"
+    },
+    {
+      "depth" : 4,
+      "enabled" : false,
+      "index" : 216,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 217,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Close Window"
+    },
+    {
+      "depth" : 4,
+      "enabled" : false,
+      "index" : 218,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 219,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "CALYRA Stage A · System WKWebView"
+    },
+    {
+      "depth" : 2,
+      "enabled" : true,
+      "index" : 220,
+      "role" : "AXMenuBarItem",
+      "role_description" : "menu bar item",
+      "title" : "Help"
+    },
+    {
+      "depth" : 3,
+      "enabled" : true,
+      "index" : 221,
+      "role" : "AXMenu",
+      "role_description" : "menu"
+    }
+  ],
+  "voiceover_screenreader_tested" : false
+}

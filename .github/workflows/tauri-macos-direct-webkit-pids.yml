@@ -1,0 +1,187 @@
+name: CALYRA macOS Tauri native WebKit process IDs direct proof
+
+# Targeted research build. The normal Stage A app does not include private API.
+# Native selectors are queried from the live WKWebView object, not from ps diffs.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/tauri-macos-direct-webkit-pids.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  direct-webkit-pids:
+    runs-on: macos-15
+    timeout-minutes: 45
+    env:
+      CARGO_BUILD_JOBS: '3'
+      CARGO_TERM_COLOR: never
+      RUST_BACKTRACE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/reference-fixtures
+      - name: Verify original CALYRA source and opt-in diagnostic isolation
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/macos-direct-webkit-pids
+          OUT=evidence/macos-direct-webkit-pids
+          python3 adapters/tauri-reference/verify_source.py | tee "$OUT/original-source.json"
+          grep -Fq '"pass": true' "$OUT/original-source.json"
+          python3 - <<'PY'
+          from pathlib import Path
+          cargo=Path('adapters/tauri-reference/src-tauri/Cargo.toml').read_text()
+          main=Path('adapters/tauri-reference/src-tauri/src/main.rs').read_text()
+          assert 'stage-a-process-pids = []' in cargo
+          assert '#[cfg(feature = "stage-a-process-pids")]' in main
+          assert '#[cfg(not(any(feature = "stage-a-js-probe", feature = "stage-a-process-pids")))]' in main
+          assert '#[cfg(all(feature = "stage-a-js-probe", feature = "stage-a-process-pids"))]' in main
+          assert 'invoke_handler' not in main
+          print('PASS: separate opt-in diagnostic; default Tauri host remains bridge-free')
+          PY
+          shasum -a 256 fixtures/index.html fixtures/reference.css fixtures/reference.js \
+            adapters/tauri-reference/src-tauri/src/stage_a_process_pids.rs \
+            adapters/tauri-reference/src-tauri/src/main.rs \
+            adapters/tauri-reference/src-tauri/Cargo.toml \
+            > "$OUT/source-sha256.txt"
+          sw_vers | tee "$OUT/macos-version.txt"
+          test "$(uname -m)" = arm64
+
+      - name: Build actual macOS WKWebView with research-only process PID feature
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$GITHUB_WORKSPACE/evidence/macos-direct-webkit-pids"
+          python3 adapters/tauri-reference/prepare_macos_icon.py > "$OUT/app-icon.log"
+          cd adapters/tauri-reference
+          npm ci --no-audit --no-fund > "$OUT/npm-ci.log" 2>&1
+          ./node_modules/.bin/tauri --version | tee "$OUT/tauri-version.txt"
+          npm run build:macos -- --debug --features stage-a-process-pids -- --locked \
+            2>&1 | tee "$OUT/native-build.log"
+          git diff --exit-code -- src-tauri/Cargo.lock package-lock.json
+          APP="$(find src-tauri/target/debug/bundle/macos -maxdepth 1 -name '*.app' -type d -print -quit)"
+          test -n "$APP"
+          EXE="$APP/Contents/MacOS/calyra-tauri-reference"
+          test -x "$EXE"
+          lipo -archs "$EXE" | tee "$OUT/architecture.txt"
+          grep -qw arm64 "$OUT/architecture.txt"
+          printf '%s\n' "$PWD/$EXE" > "$OUT/research-executable-path.txt"
+          shasum -a 256 "$EXE" > "$OUT/research-executable-sha256.txt"
+
+      - name: Query actual live WKWebView WebContent and network PIDs
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$GITHUB_WORKSPACE/evidence/macos-direct-webkit-pids"
+          EXE="$(cat "$OUT/research-executable-path.txt")"
+          test -x "$EXE"
+          export CALYRA_STAGE_A_PID_DIR="$OUT"
+          "$EXE" > "$OUT/native-app.log" 2>&1 &
+          PID=$!
+          printf '%s\n' "$PID" > "$OUT/live-app-pid.txt"
+          trap 'kill "$PID" 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do
+            test -s "$OUT/actual-wkwebview-process-pids.json" && break
+            if ! kill -0 "$PID" 2>/dev/null; then
+              cat "$OUT/native-app.log"
+              echo 'NATIVE PROCESS EXITED BEFORE PID CALLBACK'
+              exit 2
+            fi
+            sleep 1
+          done
+          test -s "$OUT/actual-wkwebview-process-pids.json" || {
+            cat "$OUT/native-app.log"; echo 'NO LIVE WEBVIEW PROCESS-PID CALLBACK'; exit 3;
+          }
+          ps -A -o pid=,ppid=,rss=,vsz=,comm= \
+            | grep -E 'calyra-tauri-reference|com.apple.WebKit.(WebContent|Networking|GPU)' \
+            | tee "$OUT/relevant-process-snapshot.txt"
+          python3 - "$OUT/actual-wkwebview-process-pids.json" "$PID" <<'PY'
+          import json,subprocess,sys
+          from pathlib import Path
+          path=Path(sys.argv[1]); pid=int(sys.argv[2])
+          doc=json.loads(path.read_text())
+          assert doc['schema']=='calyra.macos-native-wkwebview-pids.v1'
+          assert doc['tauri_ui_process_pid']==pid,doc
+          assert doc['private_diagnostic_only'] is True
+          assert doc['canonical_html_css_js_unmodified'] is True
+          webpid=doc['webkit_webcontent_pid']
+          assert isinstance(webpid,int) and webpid>0,doc
+          def live_name(p):
+            ps=subprocess.run(['ps','-p',str(p),'-o','comm='],capture_output=True,text=True)
+            assert ps.returncode==0,(p,ps.stderr)
+            return ps.stdout.strip()
+          webname=live_name(webpid)
+          assert webname.endswith('com.apple.WebKit.WebContent'),webname
+          netpid=doc['webkit_network_pid']
+          if netpid is not None:
+            assert isinstance(netpid,int) and netpid>0,doc
+            netname=live_name(netpid)
+            assert netname.endswith('com.apple.WebKit.Networking'),netname
+          gpupid=doc['webkit_gpu_pid']
+          if gpupid is not None:
+            assert isinstance(gpupid,int) and gpupid>0
+            assert 'WebKit' in live_name(gpupid)
+          print('PASS genuine WKWebView WebContent PID:',webpid,webname)
+          print('Native network PID:',netpid,'GPU PID:',gpupid)
+          print('This proves explicit WebContent ownership, NOT unique total RAM.')
+          PY
+          printf '%s\n' "$PID" | tee "$OUT/ui-process-responsibility-scope.txt"
+          clang -std=c11 -Wall -Wextra -Werror -O2 \
+            harness/macos_process_metadata.c -lproc -o "$OUT/native-process-metadata"
+          python3 - "$OUT/actual-wkwebview-process-pids.json" "$PID" \
+            > "$OUT/selected-process-pids.txt" <<'PY'
+          import json,sys
+          doc=json.load(open(sys.argv[1]))
+          pids={int(sys.argv[2]),doc['webkit_webcontent_pid'],
+                doc['webkit_network_pid'],doc['webkit_gpu_pid']}
+          print('\n'.join(str(p) for p in sorted(p for p in pids if p)))
+          PY
+          "$OUT/native-process-metadata" < "$OUT/selected-process-pids.txt" \
+            | tee "$OUT/native-owned-process-footprint.tsv"
+          kill -0 "$PID"
+
+      - name: Archive only actually verified native PID evidence
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=evidence/macos-direct-webkit-pids
+          DEST=docs/evidence/macos-wkwebview-direct-process-ids
+          mkdir -p "$DEST"
+          cp -p "$OUT"/{original-source.json,source-sha256.txt,macos-version.txt,app-icon.log,tauri-version.txt,native-build.log,architecture.txt,research-executable-sha256.txt,native-app.log,live-app-pid.txt,actual-wkwebview-process-pids.json,relevant-process-snapshot.txt,selected-process-pids.txt,native-owned-process-footprint.tsv} "$DEST"/
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          root=Path('docs/evidence/macos-wkwebview-direct-process-ids')
+          files={p.name:hashlib.sha256(p.read_bytes()).hexdigest()
+                 for p in root.iterdir() if p.is_file()}
+          (root/'evidence-sha256.json').write_text(
+              json.dumps(files,indent=2,sort_keys=True)+'\n')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f "$DEST"/
+          git diff --cached --quiet && exit 0
+          git commit -m "test(evidence): archive direct native WKWebView-owned WebContent process identity"
+          git fetch origin feat/reference-fixtures
+          git rebase origin/feat/reference-fixtures
+          git push origin HEAD:refs/heads/feat/reference-fixtures
+
+      - name: Record scope
+        if: always()
+        shell: bash
+        run: |
+          echo '### CALYRA direct native macOS WKWebView helper ownership' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Private WKWebView selectors are compiled only under opt-in research feature. Normal app unchanged.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Only validated alive WebContent/Networking/GPU PIDs may be attributed. No network PID guarantee, memory totals, OS input or browserless performance claim.' >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-macos-direct-webkit-process-ids
+          path: evidence/macos-direct-webkit-pids/
+          retention-days: 14
+          if-no-files-found: warn

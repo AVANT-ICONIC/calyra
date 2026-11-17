@@ -1,0 +1,124 @@
+{
+  "schema": "calyra.exploratory-webkitgtk-blitz-diff.v1",
+  "input_state": "controls initial, selected value balanced, motion off",
+  "viewport_css_px": [
+    1060,
+    800
+  ],
+  "total_pixels": 848000,
+  "comparison_method": "per-channel absolute RGB difference; changed if max channel >= 12",
+  "changed_rgb_pixels_at_12": 51944,
+  "changed_fraction_at_12": 0.061255,
+  "exact_match_pixels": 778478,
+  "exact_match_fraction": 0.918017,
+  "mean_abs_channel_difference": 4.619758,
+  "regions": {
+    "header": {
+      "box": [
+        0,
+        0,
+        1060,
+        85
+      ],
+      "pixels": 90100,
+      "changed_rgb_pixels_at_12": 1555,
+      "changed_fraction": 0.017259,
+      "mean_abs_channel_difference": 1.181532
+    },
+    "sidebar": {
+      "box": [
+        0,
+        85,
+        258,
+        800
+      ],
+      "pixels": 184470,
+      "changed_rgb_pixels_at_12": 1809,
+      "changed_fraction": 0.009806,
+      "mean_abs_channel_difference": 0.752307
+    },
+    "main_intro": {
+      "box": [
+        258,
+        85,
+        1060,
+        450
+      ],
+      "pixels": 292730,
+      "changed_rgb_pixels_at_12": 10900,
+      "changed_fraction": 0.037236,
+      "mean_abs_channel_difference": 2.917296
+    },
+    "control_surface": {
+      "box": [
+        258,
+        450,
+        1060,
+        800
+      ],
+      "pixels": 280700,
+      "changed_rgb_pixels_at_12": 37680,
+      "changed_fraction": 0.134236,
+      "mean_abs_channel_difference": 10.040403
+    },
+    "select_control": {
+      "box": [
+        670,
+        465,
+        1010,
+        525
+      ],
+      "pixels": 20400,
+      "changed_rgb_pixels_at_12": 16257,
+      "changed_fraction": 0.796912,
+      "mean_abs_channel_difference": 20.566275
+    },
+    "range_control": {
+      "box": [
+        310,
+        585,
+        1010,
+        630
+      ],
+      "pixels": 31500,
+      "changed_rgb_pixels_at_12": 7787,
+      "changed_fraction": 0.247206,
+      "mean_abs_channel_difference": 37.97218
+    }
+  },
+  "source": {
+    "blitz": {
+      "engine": "Blitz/Stylo/Taffy/Vello CPU + Boa; experimental patched SelectData",
+      "upstream_commit": "4f61cffacee50fe4f944ebe9d0470d9a5d3997e0",
+      "producing_run": 43919838241,
+      "png_path": "docs/evidence/blitz-select-typography/typography-before.png",
+      "png_sha256": "485552ed102b35a3934fa3aeb0adac00bb974ef876f932a2a0c5fd374a39188a",
+      "generated_screenshot": "typography-before.png, initial label Balanced"
+    },
+    "webview": {
+      "engine": "Linux system WebKitGTK 2.52.6; GTK/X11",
+      "producing_run": 43930684985,
+      "png_path": "docs/evidence/system-webkitgtk-reference/webkitgtk-controls-1060x800-default-initial.png",
+      "png_sha256": "22b9bb1b3369bc3fd78773e580bcb57e306014eb9368bba1c8bbae27655cdbad",
+      "screenshot_backend": "webkit2gtk-native-snapshot-fallback"
+    },
+    "author_css_sha256": "04635269a8fbd790c87316a03c6469a157806201e58fd730212f632fc86b7b9c",
+    "author_js_sha256": "9d565203fc9c3450b0c61d7774cb2322b14ed3e3325926122b17f583e81cf3de",
+    "author_html_sha256": "aa9fa23b242f06be7dc5b760f0f8379ce750d8fe2cd67a977daf1a4ff1bd848a"
+  },
+  "derived_images": {
+    "raw_difference_path": "evidence/comparisons/webkitgtk-blitz-controls/controls-raw-rgb-diff.png",
+    "raw_difference_sha256": "132fcd99f6c429b5ab20af84c012bfe5b749ff4b008374617fa567a96fa5eea9",
+    "montage_path": "evidence/comparisons/webkitgtk-blitz-controls/controls-comparison-montage.png",
+    "montage_sha256": "cf83981a053d7485f2c7285bfacfaf94288f61cd68966f1768039d711ecfcb73"
+  },
+  "limits": [
+    "Different GitHub Actions jobs, no locked font file/OS font metrics baseline.",
+    "Same visual scene/viewport and source hashes, but different rendering/capture pipelines.",
+    "No color-management/antialiasing normalization or registration transforms.",
+    "Pixel matches include large unchanged dark backgrounds: NOT percentage CSS compatibility.",
+    "Region boxes are manually scoped diagnostic ROIs, not automatically detected controls.",
+    "No hardware GPU, OS input, macOS WKWebView, Tauri packaging or performance comparison.",
+    "Full interactive parity and cross-platform accessibility remain untested."
+  ]
+}

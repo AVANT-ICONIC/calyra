@@ -1,0 +1,159 @@
+name: CALYRA genuine macOS Tauri five-run resource census
+
+# Actual unchanged system-WKWebView .app, five sequential launches on one host.
+# Not a performance ranking, no browserless candidate, shared RSS counted.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/tauri-macos-resource-census.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  resource-census:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/reference-fixtures
+      - name: Fetch same original unchanged Tauri arm64 app
+        uses: actions/download-artifact@v4
+        with:
+          name: calyra-actual-tauri-macos-arm64-build
+          run-id: 43996164957
+          github-token: ${{ github.token }}
+          path: evidence/tauri-macos-resource/input
+
+      - name: Verify canonical sources and known binary artifact
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=evidence/tauri-macos-resource
+          python3 adapters/tauri-reference/verify_source.py \
+            | tee "$OUT/source-contract.json"
+          python3 -m py_compile harness/macos_tauri_resource_baseline.py
+          ZIP="$OUT/input/calyra-tauri-macos-arm64-debug.app.zip"
+          test -s "$ZIP"
+          EXPECTED="$(awk '{print $1}' "$OUT/input/bundle-zip-sha256.txt")"
+          ACTUAL="$(shasum -a 256 "$ZIP" | awk '{print $1}')"
+          test "$EXPECTED" = "$ACTUAL"
+          printf '%s\n' "$ACTUAL" > "$OUT/verified-app-zip-sha256.txt"
+          mkdir -p "$OUT/unpacked"
+          ditto -x -k "$ZIP" "$OUT/unpacked"
+          APP="$(find "$OUT/unpacked" -maxdepth 1 -name '*.app' -type d -print -quit)"
+          test -n "$APP"
+          EXE="$APP/Contents/MacOS/calyra-tauri-reference"
+          test -x "$EXE"
+          lipo -archs "$EXE" | tee "$OUT/executable-architecture.txt"
+          grep -qw arm64 "$OUT/executable-architecture.txt"
+          printf '%s\n' "$PWD/$EXE" > "$OUT/absolute-executable-path.txt"
+          shasum -a 256 "$EXE" harness/macos_tauri_resource_baseline.py \
+            adapters/tauri-reference/macos_native_window_probe.swift \
+            > "$OUT/source-executable-sha256.txt"
+          {
+            sw_vers
+            uname -m
+            python3 --version
+            swift --version
+          } | tee "$OUT/environment.txt"
+          test "$(uname -m)" = "arm64"
+
+      - name: Compile native CoreGraphics window probe once
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$GITHUB_WORKSPACE/evidence/tauri-macos-resource"
+          swiftc -O adapters/tauri-reference/macos_native_window_probe.swift \
+            -o "$OUT/native-window-inspector" \
+            > "$OUT/swift-build.log" 2>&1
+          test -x "$OUT/native-window-inspector"
+
+      - name: Capture five independent actual Tauri app/window RSS observations
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$GITHUB_WORKSPACE/evidence/tauri-macos-resource"
+          EXE="$(cat "$OUT/absolute-executable-path.txt")"
+          python3 harness/macos_tauri_resource_baseline.py \
+            "$EXE" "$OUT/native-window-inspector" "$OUT" \
+            | tee "$OUT/experiment.log"
+          python3 - <<'PY'
+          import hashlib,json,statistics
+          from pathlib import Path
+          p=Path('evidence/tauri-macos-resource')
+          result=json.loads((p/'result.json').read_text())
+          assert result['observation_count']==5
+          rows=result['trials']
+          assert len(rows)==5 and {x['trial'] for x in rows}==set(range(1,6))
+          assert all(x['app_alive_during_sample'] and
+                     x['actual_app_owned_window_id']>0 and
+                     x['parent_rss_kib']>0 for x in rows)
+          rss=[x['parent_rss_kib'] for x in rows]
+          assert result['parent_rss_kib_median']==statistics.median(rss)
+          for i in range(1,6):
+              assert (p/f'trial-{i}.json').is_file()
+              assert (p/f'trial-{i}-native-app.log').is_file()
+          assert result['unattributed_wkwebview_helpers_excluded_from_total']
+          assert result['no_matched_CPU_GPU_or_private_footprint_claim']
+          print('PASS: 5 native process/window snapshots, no false unique-memory claim')
+          PY
+
+      - name: Archive original five-run receipts to research branch
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=evidence/tauri-macos-resource
+          DEST=docs/evidence/tauri-macos-resource-census
+          mkdir -p "$DEST"
+          cp -p "$OUT"/{source-contract.json,verified-app-zip-sha256.txt,executable-architecture.txt,source-executable-sha256.txt,environment.txt,swift-build.log,experiment.log,result.json} "$DEST"/
+          cp -p "$OUT"/trial-*.json "$DEST"/
+          cp -p "$OUT"/trial-*-native-app.log "$DEST"/
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          p=Path('docs/evidence/tauri-macos-resource-census')
+          record={x.name:hashlib.sha256(x.read_bytes()).hexdigest()
+                  for x in p.iterdir() if x.is_file()}
+          (p/'original-file-sha256.json').write_text(
+              json.dumps(record,indent=2,sort_keys=True)+'\n')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f "$DEST"/
+          git diff --cached --quiet && exit 0
+          git commit -m "test(evidence): preserve five-run original macOS Tauri RSS census"
+          git fetch origin feat/reference-fixtures
+          git rebase origin/feat/reference-fixtures
+          git push origin HEAD:refs/heads/feat/reference-fixtures
+
+      - name: Honest benchmark limitations
+        if: always()
+        shell: bash
+        run: |
+          echo '### CALYRA native macOS Tauri five-run resource census' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Actual app/window checked in each trial. Parent RSS uses shared memory and excludes unattributed WKWebView helpers. No matched browserless comparison, CPU/GPU or private-memory ranking.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'First-window observation includes native inspection overhead, NOT first meaningful pixels or cold-start latency.' >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-macos-resource-five-run
+          path: |
+            evidence/tauri-macos-resource/source-contract.json
+            evidence/tauri-macos-resource/verified-app-zip-sha256.txt
+            evidence/tauri-macos-resource/executable-architecture.txt
+            evidence/tauri-macos-resource/source-executable-sha256.txt
+            evidence/tauri-macos-resource/environment.txt
+            evidence/tauri-macos-resource/swift-build.log
+            evidence/tauri-macos-resource/experiment.log
+            evidence/tauri-macos-resource/result.json
+            evidence/tauri-macos-resource/trial-*.json
+            evidence/tauri-macos-resource/trial-*-native-app.log
+            evidence/tauri-macos-resource/failed-trials.json
+          retention-days: 14
+          if-no-files-found: warn

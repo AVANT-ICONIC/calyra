@@ -1,0 +1,198 @@
+name: CALYRA macOS WKWebView XPC helper ownership census
+
+# Five actual original Tauri app launches; optional OS responsibility lookup.
+# The research-only private symbol is dynamically resolved, never required.
+# No engine ranking or whole-system unique-RAM claim.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/tauri-macos-webkit-attribution.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  process-attribution:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/reference-fixtures
+      - name: Check fail-closed ownership classification and source syntax
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/macos-webkit-attribution
+          python3 -m py_compile harness/macos_webkit_attribution.py
+          python3 -m unittest discover -s tests -p 'test_macos_webkit_attribution.py' -v \
+            2>&1 | tee evidence/macos-webkit-attribution/classification-tests.log
+          python3 adapters/tauri-reference/verify_source.py \
+            | tee evidence/macos-webkit-attribution/source-contract.json
+          grep -Fq '"pass": true' evidence/macos-webkit-attribution/source-contract.json
+
+      - name: Fetch exact previously verified unmodified macOS ARM64 Tauri app
+        uses: actions/download-artifact@v4
+        with:
+          name: calyra-actual-tauri-macos-arm64-build
+          run-id: 43996164957
+          github-token: ${{ github.token }}
+          path: evidence/macos-webkit-attribution/original-app-input
+
+      - name: Authenticate bundle and build native process inspectors
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$GITHUB_WORKSPACE/evidence/macos-webkit-attribution"
+          ZIP="$OUT/original-app-input/calyra-tauri-macos-arm64-debug.app.zip"
+          test -s "$ZIP"
+          EXPECTED="$(awk '{print $1}' "$OUT/original-app-input/bundle-zip-sha256.txt")"
+          ACTUAL="$(shasum -a 256 "$ZIP" | awk '{print $1}')"
+          test "$EXPECTED" = "$ACTUAL"
+          echo "$ACTUAL" > "$OUT/verified-original-app-zip-sha256.txt"
+          mkdir -p "$OUT/unpacked"
+          ditto -x -k "$ZIP" "$OUT/unpacked"
+          APP="$(find "$OUT/unpacked" -maxdepth 1 -name '*.app' -type d -print -quit)"
+          test -n "$APP"
+          EXE="$APP/Contents/MacOS/calyra-tauri-reference"
+          test -x "$EXE"
+          lipo -archs "$EXE" | tee "$OUT/app-architectures.txt"
+          grep -qw arm64 "$OUT/app-architectures.txt"
+          printf '%s\n' "$EXE" > "$OUT/original-app-binary-path.txt"
+          clang -std=c11 -Wall -Wextra -Werror -O2 \
+            harness/macos_process_metadata.c -lproc \
+            -o "$OUT/process-metadata"
+          swiftc -O adapters/tauri-reference/macos_native_window_probe.swift \
+            -o "$OUT/native-window-probe"
+          printf '%s\n' "$$" | "$OUT/process-metadata" \
+            | tee "$OUT/native-metadata-selftest.tsv"
+          python3 - "$OUT/native-metadata-selftest.tsv" <<'PY'
+          from pathlib import Path
+          import sys
+          lines=Path(sys.argv[1]).read_text().strip().splitlines()
+          assert len(lines)==2,lines
+          assert lines[0].split('\t')==[
+            'pid','responsible_pid','resident_bytes',
+            'physical_footprint_bytes','rusage_status'],lines[0]
+          assert len(lines[1].split('\t'))==5,lines[1]
+          print('PASS native metadata ABI and result grammar')
+          PY
+          shasum -a 256 "$EXE" \
+            harness/macos_process_metadata.c \
+            harness/macos_webkit_attribution.py \
+            harness/macos_tauri_resource_baseline.py \
+            adapters/tauri-reference/macos_native_window_probe.swift \
+            tests/test_macos_webkit_attribution.py \
+            > "$OUT/source-and-executable-sha256.txt"
+          {
+            sw_vers
+            uname -m
+            xcodebuild -version
+            python3 --version
+            clang --version
+          } | tee "$OUT/environment.txt"
+
+      - name: Five native macOS app windows with WebKit ownership and footprint sampling
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$GITHUB_WORKSPACE/evidence/macos-webkit-attribution"
+          EXE="$(cat "$OUT/original-app-binary-path.txt")"
+          python3 harness/macos_webkit_attribution.py \
+            "$EXE" "$OUT/native-window-probe" "$OUT/process-metadata" "$OUT" \
+            | tee "$OUT/experiment.log"
+          python3 - "$OUT/attribution-result.json" <<'PY'
+          import json,sys
+          from pathlib import Path
+          p=Path(sys.argv[1])
+          r=json.loads(p.read_text())
+          assert r['schema']=='calyra.macos-wkwebview-process-attribution.v1'
+          assert r['sample_count']==5
+          assert r['macos_apple_silicon_native_window_per_trial']
+          assert r['no_whole_app_unique_ram_claim']
+          assert r['not_matched_to_native_browserless_engine']
+          assert len(r['trials'])==5
+          seen=set()
+          for index,item in enumerate(r['trials'],start=1):
+            assert item['trial']==index
+            assert item['app_pid'] not in seen
+            seen.add(item['app_pid'])
+            assert item['app_owned_window_id']>0
+            assert item['parent_ps_rss_kib']>0
+            assert (p.parent/f'trial-{index}-attribution.json').is_file()
+            assigned=item['webkit']['confirmed']
+            unassigned=item['webkit']['new_unconfirmed']
+            preexisting=item['webkit']['preexisting_unassigned']
+            assert not ({x['pid'] for x in assigned} &
+                        {x['pid'] for x in unassigned+preexisting})
+            for helper in assigned:
+              assert helper['classification'] in (
+                  'confirmed_parent_lineage','confirmed_os_responsibility')
+              assert helper['new_since_baseline'] is True
+            for helper in unassigned:
+              assert helper['classification']=='new_temporal_correlation_only'
+          print('PASS: five real Mac windows, distinct PIDs, safe attribution boundaries')
+          print('WebKit confirmed counts:',r['webkit_confirmed_counts'])
+          print('WebKit unconfirmed counts:',r['webkit_new_unconfirmed_counts'])
+          print('No claimed total unique RAM or cross-engine performance ranking.')
+          PY
+
+      - name: Preserve original process-level evidence in research branch
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=evidence/macos-webkit-attribution
+          DEST=docs/evidence/macos-webkit-helper-attribution
+          mkdir -p "$DEST"
+          cp -p "$OUT"/{source-contract.json,classification-tests.log,verified-original-app-zip-sha256.txt,app-architectures.txt,native-metadata-selftest.tsv,source-and-executable-sha256.txt,environment.txt,experiment.log,attribution-result.json} "$DEST"/
+          cp -p "$OUT"/trial-*-attribution.json "$DEST"/
+          cp -p "$OUT"/trial-*-native-app.log "$DEST"/
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          p=Path('docs/evidence/macos-webkit-helper-attribution')
+          files={f.name:hashlib.sha256(f.read_bytes()).hexdigest()
+                 for f in p.iterdir() if f.is_file()}
+          (p/'original-file-sha256.json').write_text(
+              json.dumps(files,indent=2,sort_keys=True)+'\n')
+          print('Original diagnostic files archived:',len(files))
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f "$DEST"/
+          git diff --cached --quiet && exit 0
+          git commit -m "test(evidence): preserve five Mac WebKit process ownership censuses"
+          git fetch origin feat/reference-fixtures
+          git rebase origin/feat/reference-fixtures
+          git push origin HEAD:refs/heads/feat/reference-fixtures
+
+      - name: Report exact ownership and accounting limits
+        if: always()
+        shell: bash
+        run: |
+          echo '### CALYRA Mac WKWebView helper ownership, research diagnostic' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Only same-app responsible PID or real parent lineage count as confirmed. New-but-ambiguous helpers remain unassigned.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Private responsibility API is optional and unsupported for production. RSS counts shared pages; native per-process physical footprint is not a summed unique-app RAM metric.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'No browserless engine, matched GPU/CPU, first meaningful pixel timing or OS input tested.' >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-macos-webkit-ownership-census
+          path: |
+            evidence/macos-webkit-attribution/source-contract.json
+            evidence/macos-webkit-attribution/classification-tests.log
+            evidence/macos-webkit-attribution/verified-original-app-zip-sha256.txt
+            evidence/macos-webkit-attribution/app-architectures.txt
+            evidence/macos-webkit-attribution/native-metadata-selftest.tsv
+            evidence/macos-webkit-attribution/source-and-executable-sha256.txt
+            evidence/macos-webkit-attribution/environment.txt
+            evidence/macos-webkit-attribution/experiment.log
+            evidence/macos-webkit-attribution/attribution-result.json
+            evidence/macos-webkit-attribution/trial-*-attribution.json
+            evidence/macos-webkit-attribution/trial-*-native-app.log
+          retention-days: 14
+          if-no-files-found: warn

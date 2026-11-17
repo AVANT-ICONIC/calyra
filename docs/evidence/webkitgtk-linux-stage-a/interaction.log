@@ -1,0 +1,10 @@
+
+(webkitgtk_probe.py:3498): dbind-WARNING **: 18:45:41.128: AT-SPI: Error retrieving accessibility bus address: org.freedesktop.DBus.Error.ServiceUnknown: The name org.a11y.Bus was not provided by any .service files
+libEGL warning: DRI3 error: Could not get DRI3 device
+libEGL warning: Ensure your X server supports DRI3 to get accelerated rendering
+/home/runner/work/calyra/calyra/adapters/system-webview/webkitgtk_probe.py:271: DeprecationWarning: WebKit2.WebView.run_javascript is deprecated
+  self.web.run_javascript(expression, None, finished)
+/home/runner/work/calyra/calyra/adapters/system-webview/webkitgtk_probe.py:265: DeprecationWarning: WebKit2.WebView.run_javascript_finish is deprecated
+  js_result = view.run_javascript_finish(result)
+CALYRA_WEBKITGTK_REPORT=/home/runner/work/calyra/calyra/evidence/system-webview/linux-webkitgtk/interaction-webkitgtk.json
+CALYRA_WEBKITGTK_SUCCESS=true

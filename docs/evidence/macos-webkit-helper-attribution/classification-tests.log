@@ -1,0 +1,10 @@
+test_existing_target_process_fails_closed (test_macos_webkit_attribution.AttributionTests.test_existing_target_process_fails_closed) ... ok
+test_launchd_helper_confirmed_only_by_responsibility (test_macos_webkit_attribution.AttributionTests.test_launchd_helper_confirmed_only_by_responsibility) ... ok
+test_new_other_application_webkit_process_is_not_claimed (test_macos_webkit_attribution.AttributionTests.test_new_other_application_webkit_process_is_not_claimed) ... ok
+test_preexisting_webkit_process_never_assigned (test_macos_webkit_attribution.AttributionTests.test_preexisting_webkit_process_never_assigned) ... ok
+test_real_child_confirmed_without_private_api (test_macos_webkit_attribution.AttributionTests.test_real_child_confirmed_without_private_api) ... ok
+
+----------------------------------------------------------------------
+Ran 5 tests in 0.000s
+
+OK

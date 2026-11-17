@@ -1,0 +1,54 @@
+{
+  "schema": "calyra.webkitgtk-reference-probe.v1",
+  "engine_class": "linux-system-webview-backend-not-tauri",
+  "webkit_version": "2.52.6",
+  "fixture": "interaction",
+  "viewport_css_px": [
+    1060,
+    800
+  ],
+  "motion": "off",
+  "state": "menu-open",
+  "scripted_steps": [
+    "initial"
+  ],
+  "scripted_input_class": "javascript-dom-synthetic-not-os",
+  "states": {
+    "initial": {
+      "ready": "true",
+      "fixture": "interaction",
+      "motion": "off",
+      "active": [
+        "interaction"
+      ],
+      "selectedNav": 1,
+      "viewport": [
+        1060,
+        800
+      ],
+      "htmlScrollWidth": 1060,
+      "styles": {
+        "mainGrid": "grid",
+        "metricsGrid": "grid",
+        "selectedColor": "rgb(232, 233, 228)",
+        "glassBackdrop": "blur(20px) saturate(1.45)"
+      },
+      "priority": "balanced",
+      "menuExpanded": "true"
+    }
+  },
+  "captures": {
+    "initial": {
+      "path": "evidence/native-stage-a/system-webkitgtk/webkitgtk-interaction-1060x800-menu-open-initial.png",
+      "sha256": "b9a20269d31a8d6c700087d12d57258468c5bd5cb97e6ed254be8685b9143c71",
+      "bytes": 59266,
+      "backend": "gdk-x11-window-pixbuf"
+    }
+  },
+  "requested_local_paths": [
+    "/",
+    "/reference.css",
+    "/reference.js"
+  ],
+  "required_assets_observed": true
+}

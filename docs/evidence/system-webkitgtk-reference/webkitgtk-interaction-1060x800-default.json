@@ -1,0 +1,71 @@
+{
+  "schema": "calyra.adapter-result.v1",
+  "adapter": {
+    "id": "webkit2gtk-system-backend-reference",
+    "version": "2.52.6",
+    "kind": "system-webview"
+  },
+  "fixture": {
+    "name": "interaction",
+    "version": "0.1.0",
+    "width_css_px": 1060,
+    "height_css_px": 800,
+    "state": "default",
+    "motion": "off"
+  },
+  "source": {
+    "html_sha256": "aa9fa23b242f06be7dc5b760f0f8379ce750d8fe2cd67a977daf1a4ff1bd848a",
+    "css_sha256": "04635269a8fbd790c87316a03c6469a157806201e58fd730212f632fc86b7b9c",
+    "js_sha256": "9d565203fc9c3450b0c61d7774cb2322b14ed3e3325926122b17f583e81cf3de",
+    "css_modified": false,
+    "dom_patched": false,
+    "js_executed": true,
+    "external_network_used": false,
+    "adaptations": [
+      "Unmodified HTML/CSS/JS served verbatim from local HTTP only",
+      "Harness-only asynchronous WebKit JavaScript probes and synthetic DOM events",
+      "GDK pixels from an undecorated GTK3 WebKit2GTK desktop window"
+    ]
+  },
+  "environment": {
+    "os": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+    "architecture": "x86_64",
+    "python_version": "3.12.3"
+  },
+  "execution": {
+    "browser_engine": true,
+    "gpu_backed": false,
+    "interactive": true,
+    "render_backend": "WebKit2GTK-4.1 / GTK3 / X11 / virtual display; GPU not verified"
+  },
+  "capture": {
+    "success": true,
+    "page_count": 1,
+    "png_paths": [
+      "evidence/native-stage-a/system-webkitgtk/webkitgtk-interaction-1060x800-default-initial.png",
+      "evidence/native-stage-a/system-webkitgtk/webkitgtk-interaction-1060x800-default-menu_open.png"
+    ],
+    "pdf_path": null,
+    "pixel_scale": 1.0,
+    "measured_performance": false
+  },
+  "coverage": {
+    "pointer": "partial",
+    "keyboard": "partial",
+    "focus-order": "untested",
+    "scroll": "untested",
+    "aria-expanded": "untested",
+    "escape": "untested",
+    "input": "untested",
+    "grid": "untested"
+  },
+  "eligibility": "restricted",
+  "limitations": [
+    "Linux WebKitGTK system browser backend; NOT a packaged Tauri app or macOS WKWebView",
+    "Viewport/GTK screenshot tested, but OS user input, native accessibility, IME and keyboard traversal NOT tested",
+    "JS scripted click/keydown is not physical or synthetic OS-level input",
+    "Xvfb compositor may rasterize in software; no hardware GPU performance claim",
+    "Single smoke pass per scene; no repetitions, RSS/process tree, startup/idle metrics or comparative speed claim",
+    "CSS property support is not pixel-fidelity verification against Chromium"
+  ]
+}

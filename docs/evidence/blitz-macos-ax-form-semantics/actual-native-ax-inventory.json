@@ -1,0 +1,428 @@
+{
+  "accessibility_trusted" : true,
+  "canonical_field_role_matches" : {
+    "apply_settings" : false,
+    "display_name" : false,
+    "enable_effects" : false,
+    "material_intensity" : false,
+    "render_priority" : false,
+    "reset" : false
+  },
+  "events_posted" : false,
+  "focus_modified" : false,
+  "ime_tested" : false,
+  "macos" : "Version 15.8.2 (Build 24H232)",
+  "maximum_depth" : 22,
+  "node_count" : 50,
+  "read_only" : true,
+  "role_counts" : {
+    "AXApplication" : 1,
+    "AXButton" : 3,
+    "AXGroup" : 1,
+    "AXMenu" : 3,
+    "AXMenuBar" : 1,
+    "AXMenuBarItem" : 2,
+    "AXMenuItem" : 36,
+    "AXStaticText" : 1,
+    "AXWindow" : 1,
+    "unknown" : 1
+  },
+  "schema" : "calyra.macos-native-ax-inventory.v1",
+  "screen_reader_tested" : false,
+  "target_pid" : 21157,
+  "tree" : [
+    {
+      "depth" : 0,
+      "index" : 1,
+      "role" : "AXApplication",
+      "role_description" : "application",
+      "title" : "calyra_native_window"
+    },
+    {
+      "depth" : 1,
+      "index" : 2,
+      "role" : "AXWindow",
+      "role_description" : "standard window",
+      "subrole" : "AXStandardWindow",
+      "title" : "CALYRA | CSS Native Reference"
+    },
+    {
+      "depth" : 2,
+      "index" : 3,
+      "role" : "unknown"
+    },
+    {
+      "depth" : 2,
+      "enabled" : true,
+      "index" : 4,
+      "role" : "AXButton",
+      "role_description" : "close button",
+      "subrole" : "AXCloseButton"
+    },
+    {
+      "depth" : 2,
+      "enabled" : true,
+      "help" : "this button also has an action to zoom the window",
+      "index" : 5,
+      "role" : "AXButton",
+      "role_description" : "full screen button",
+      "subrole" : "AXFullScreenButton"
+    },
+    {
+      "depth" : 3,
+      "index" : 6,
+      "role" : "AXGroup",
+      "role_description" : "group"
+    },
+    {
+      "depth" : 2,
+      "enabled" : true,
+      "index" : 7,
+      "role" : "AXButton",
+      "role_description" : "minimize button",
+      "subrole" : "AXMinimizeButton"
+    },
+    {
+      "depth" : 2,
+      "enabled" : true,
+      "index" : 8,
+      "role" : "AXStaticText",
+      "role_description" : "text",
+      "value" : "CALYRA | CSS Native Reference"
+    },
+    {
+      "depth" : 1,
+      "enabled" : true,
+      "index" : 9,
+      "role" : "AXMenuBar",
+      "role_description" : "menu bar"
+    },
+    {
+      "depth" : 2,
+      "enabled" : true,
+      "index" : 10,
+      "role" : "AXMenuBarItem",
+      "role_description" : "menu bar item",
+      "title" : "Apple"
+    },
+    {
+      "depth" : 3,
+      "enabled" : true,
+      "index" : 11,
+      "role" : "AXMenu",
+      "role_description" : "menu"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 12,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "About This Mac"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 13,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "System Information"
+    },
+    {
+      "depth" : 4,
+      "enabled" : false,
+      "index" : 14,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 15,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "System Settings…, 1 update"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 16,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "App Store"
+    },
+    {
+      "depth" : 4,
+      "enabled" : false,
+      "index" : 17,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 18,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Force Quit…"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 19,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Force Quit calyra_native_window"
+    },
+    {
+      "depth" : 4,
+      "enabled" : false,
+      "index" : 20,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 21,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Sleep"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 22,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Restart…"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 23,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Restart"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 24,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Shut Down…"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 25,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Shut Down"
+    },
+    {
+      "depth" : 4,
+      "enabled" : false,
+      "index" : 26,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 27,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Lock Screen"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 28,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Log Out Anka…"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 29,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Log Out Anka"
+    },
+    {
+      "depth" : 4,
+      "enabled" : false,
+      "index" : 30,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 2,
+      "enabled" : true,
+      "index" : 31,
+      "role" : "AXMenuBarItem",
+      "role_description" : "menu bar item",
+      "title" : "calyra_native_window"
+    },
+    {
+      "depth" : 3,
+      "enabled" : true,
+      "index" : 32,
+      "role" : "AXMenu",
+      "role_description" : "menu"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 33,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "About calyra_native_window"
+    },
+    {
+      "depth" : 4,
+      "enabled" : false,
+      "index" : 34,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 35,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Services"
+    },
+    {
+      "depth" : 5,
+      "enabled" : true,
+      "index" : 36,
+      "role" : "AXMenu",
+      "role_description" : "menu"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 37,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Activity Monitor"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 38,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Allocations & Leaks"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 39,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "File Activity"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 40,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "System Trace"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 41,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Time Profile Active Application"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 42,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Time Profile App Under Mouse"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 43,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Time Profile Entire System"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 44,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Toggle Instruments Recording"
+    },
+    {
+      "depth" : 6,
+      "enabled" : true,
+      "index" : 45,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Services Settings…"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 46,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Hide calyra_native_window"
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 47,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Hide Others"
+    },
+    {
+      "depth" : 4,
+      "enabled" : false,
+      "index" : 48,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Show All"
+    },
+    {
+      "depth" : 4,
+      "enabled" : false,
+      "index" : 49,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : ""
+    },
+    {
+      "depth" : 4,
+      "enabled" : true,
+      "index" : 50,
+      "role" : "AXMenuItem",
+      "role_description" : "menu item",
+      "title" : "Quit calyra_native_window"
+    }
+  ],
+  "truncated" : false,
+  "values_modified" : false
+}

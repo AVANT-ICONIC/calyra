@@ -1,0 +1,69 @@
+{
+  "actual_patched_blitz_mac_window": true,
+  "all_changed_pixels_at_12": 12515,
+  "blitz_ax_role_counts": {
+    "AXApplication": 1,
+    "AXButton": 3,
+    "AXGroup": 1,
+    "AXMenu": 3,
+    "AXMenuBar": 1,
+    "AXMenuBarItem": 2,
+    "AXMenuItem": 36,
+    "AXStaticText": 1,
+    "AXWindow": 1,
+    "unknown": 1
+  },
+  "blitz_native_canonical_field_role_matches": {
+    "apply_settings": false,
+    "display_name": false,
+    "enable_effects": false,
+    "material_intensity": false,
+    "render_priority": false,
+    "reset": false
+  },
+  "browser_js_executed": false,
+  "css_compatibility_accepted": false,
+  "hardware_gpu_device_verified": false,
+  "macos_ax_accessibility_trusted": true,
+  "matched_performance_benchmark": false,
+  "native_dropdown_pointer_keyboard_tested": false,
+  "old_geometry": [
+    912,
+    740
+  ],
+  "original_html_css_js_modified": false,
+  "original_native_baseline_png_sha256": "b00bb80f0b4297ab8b2e9cac69af61a7704028564698c457d14efc5dfc7a1133",
+  "patched_geometry": [
+    912,
+    740
+  ],
+  "patched_native_mac_png_sha256": "2aced08e83345e5a8846229d02e21ebc5a0d6b16609935fbe45d81c9a45524e9",
+  "real_os_input_ime_tested": false,
+  "same_image_geometry": true,
+  "schema": "calyra.blitz-macos-select-ax-contrast.v1",
+  "select_region_changed_pixels_at_12": 12477,
+  "static_dom_adapted": true,
+  "tauri_native_ax_role_counts": {
+    "AXApplication": 1,
+    "AXButton": 5,
+    "AXCheckBox": 1,
+    "AXGroup": 25,
+    "AXHeading": 1,
+    "AXLink": 5,
+    "AXMenu": 12,
+    "AXMenuBar": 1,
+    "AXMenuBarItem": 7,
+    "AXMenuItem": 111,
+    "AXPopUpButton": 1,
+    "AXScrollArea": 1,
+    "AXScrollBar": 1,
+    "AXSlider": 1,
+    "AXStaticText": 44,
+    "AXTextField": 1,
+    "AXValueIndicator": 1,
+    "AXWebArea": 1,
+    "AXWindow": 1
+  },
+  "tauri_native_name_field_verified": true,
+  "upstream_commit": "4f61cffacee50fe4f944ebe9d0470d9a5d3997e0"
+}
