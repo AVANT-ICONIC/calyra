@@ -1,0 +1,10 @@
+{
+  "schema": "calyra.macos-native-wkwebview-pids.v1",
+  "tauri_ui_process_pid": 7593,
+  "webkit_webcontent_pid": 7596,
+  "webkit_network_pid": 7597,
+  "webkit_gpu_pid": null,
+  "source": "live Tauri WKWebView Objective-C runtime",
+  "private_diagnostic_only": true,
+  "canonical_html_css_js_unmodified": true
+}

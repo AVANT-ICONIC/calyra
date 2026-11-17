@@ -1,0 +1,57 @@
+{
+  "incomplete_network_or_gpu_identity": true,
+  "native_executable_sha256": "d8da5a8528627a6b7bb91428f63b88f3114ae88b164ff88b033bc12e486bb8e2",
+  "native_window_id": 49,
+  "physical_footprint_sum_bytes_diagnostic_only": 47453632,
+  "processes": {
+    "gpu": null,
+    "networking": {
+      "comm": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.Networking.xpc/Contents/MacOS/com.apple.WebKit.Networking",
+      "direct_wkwebview_pid": 7597,
+      "physical_footprint_bytes": 5293248,
+      "pid": 7597,
+      "ppid": 1,
+      "ps_cpu_percent_instantaneous": 0.0,
+      "resident_bytes": 19038208,
+      "responsible_pid": 931,
+      "role": "networking",
+      "rss_kib": 18592,
+      "rusage_status": "ok",
+      "vsz_kib": 431302448
+    },
+    "ui": {
+      "comm": "/Users/runner/work/calyra/calyra/adapters/tauri-reference/src-tauri/target/debug/bundle/macos/CALYRA Stage A Reference.app/Contents/MacOS/calyra-tauri-reference",
+      "direct_wkwebview_pid": 7593,
+      "physical_footprint_bytes": 17008896,
+      "pid": 7593,
+      "ppid": 6534,
+      "ps_cpu_percent_instantaneous": 0.0,
+      "resident_bytes": 86573056,
+      "responsible_pid": 931,
+      "role": "ui",
+      "rss_kib": 84544,
+      "rusage_status": "ok",
+      "vsz_kib": 415698480
+    },
+    "webcontent": {
+      "comm": "/System/Library/Frameworks/WebKit.framework/Versions/A/XPCServices/com.apple.WebKit.WebContent.xpc/Contents/MacOS/com.apple.WebKit.WebContent",
+      "direct_wkwebview_pid": 7596,
+      "physical_footprint_bytes": 25151488,
+      "pid": 7596,
+      "ppid": 1,
+      "ps_cpu_percent_instantaneous": 0.0,
+      "resident_bytes": 52543488,
+      "responsible_pid": 931,
+      "role": "webcontent",
+      "rss_kib": 51312,
+      "rusage_status": "ok",
+      "vsz_kib": 499616160
+    }
+  },
+  "rss_sum_kib_not_unique": 154448,
+  "sample_seconds_after_launch": 12.187,
+  "total_unique_application_memory_verified": false,
+  "trial": 5,
+  "ui_pid": 7593,
+  "verified_live_pid_identity_from_private_wkwebview_research_api": true
+}

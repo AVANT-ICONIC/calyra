@@ -1,0 +1,11 @@
+test_duplicate_process_ids_fail (test_macos_direct_pid_resource.DirectPidTest.test_duplicate_process_ids_fail) ... ok
+test_exact_real_webkit_process_names (test_macos_direct_pid_resource.DirectPidTest.test_exact_real_webkit_process_names) ... ok
+test_foreign_ui_pid_fails (test_macos_direct_pid_resource.DirectPidTest.test_foreign_ui_pid_fails) ... ok
+test_missing_webcontent_fails (test_macos_direct_pid_resource.DirectPidTest.test_missing_webcontent_fails) ... ok
+test_networking_optional_without_fake_zero (test_macos_direct_pid_resource.DirectPidTest.test_networking_optional_without_fake_zero) ... ok
+test_pid_from_wrong_process_fails (test_macos_direct_pid_resource.DirectPidTest.test_pid_from_wrong_process_fails) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.002s
+
+OK
