@@ -2,6 +2,23 @@
 
 **Scope:** real Tauri 2 desktop application using the **original CALYRA HTML/CSS/JS**. A live **Linux Tauri WebKitGTK** executable and its **real X11 window screenshot** have been built and verified. **The macOS ARM64 .app build, native process launch, and a real app-owned WKWebView first frame are verified; original JS event handlers have been validated inside a genuine WKWebView, but OS-delivered keyboard/pointer and IME remain unverified.** This is a restricted Stage A feasibility result, not a production release or speed benchmark.
 
+## Five same-machine directly attributed WKWebView resource trials (2026-11-17, NEWEST)
+
+[Native ARM64 CI #44008710566](https://github.com/AVANT-ICONIC/calyra/actions/runs/44008710566) **PASSED every step**, including **6/6 new strict direct-PID verification unit tests**, reproducible Rust/Tauri diagnostic-feature build, native CoreGraphics/Quartz app-window inspection, and five sequential independent app instances. Each instance's WKWebView returned its own WebContent and Networking PIDs using the private diagnostic selectors; the harness checked both against actual living macOS processes and captured libproc rusage info around **12 seconds after launch**. Original canonical CALYRA assets are unchanged.
+
+| Trial | UI PID | WebContent PID | Networking PID | UI RSS KiB | WebContent RSS KiB | Networking RSS KiB |
+|---|---:|---:|---:|---:|---:|---:|
+| 1 | 6536 | 6547 | 6550 | 79,168 | 51,040 | 18,560 |
+| 2 | 6712 | 6715 | 6716 | 83,744 | 44,208 | 15,088 |
+| 3 | 6945 | 6948 | 6949 | 84,384 | 43,984 | 15,104 |
+| 4 | 7194 | 7231 | 7236 | 84,336 | 44,400 | 15,088 |
+| 5 | 7593 | 7596 | 7597 | 84,544 | 51,312 | 18,592 |
+
+**Per-process RSS medians:** UI **84,336 KiB**, WebContent **44,400 KiB**, Networking **15,104 KiB**. **Median of five per-trial additive RSS values: 143,824 KiB (140.45 MiB).** The sum double-counts any shared pages and is **NOT a unique total-app RAM or physical system pressure estimate**. The per-process native physical footprint medians were UI **17,008,896 B**, WebContent **25,413,568 B**, Networking **5,227,776 B**; median of per-trial footprint sums ~**45.40 MiB**, also **not independently confirmed as a deduplicated total**. Native WebKit GPU selector was null in all trials; no GPU PID evidence exists and that does not imply the absence of GPU work.
+
+All **26 original files plus independent SHA-256 manifest** from actual Apple Silicon CI are [permanently archived](evidence/macos-wkwebview-direct-pid-five-run/), including six-unit-test logs, original native binary/source hashes and build logs, full original per-trial WKWebView PID callbacks, each native app log and each individual process resource JSON. Process identities are independently revalidated each trial, and stale result-file reuse is prevented by a unique trial directory. App-owned CGWindows were also verified for all five trials.
+
+**Experimental limits:** This is an intentionally **instrumented debug Tauri reference build**, not an optimized release and not the prior uninstrumented baseline. Objective-C private WebKit selectors are potentially unstable and must remain research-only, never a production dependency. No independent collection of other GPU/WindowServer allocations, no OS keyboard/pointer/IME or accessibility compliance, no comparable browserless rendering candidate, and no matched release-profile unique RAM/CPU/startup results. **OpenSpec 3.1/4.1/4.2 stay unchecked.**
 ## Direct native WebKit helper process identities (2026-11-17)
 
 An earlier five-run ownership census [#44007500896](https://github.com/AVANT-ICONIC/calyra/actions/runs/44007500896) **PASSED its actual native window/resource tests**, but **correctly attributed zero helper processes**. Using optional responsibility_get_pid_responsible_for_pid (private OS API), macOS returned the same CI runner responsible PID (922) for Tauri itself and new WebKit.WebContent/Networking processes. Temporal coincidences of 2/2/7/2/2 new helpers were not enough to identify individual ownership. The [original five-run raw evidence](evidence/macos-webkit-helper-attribution/) is preserved. The first attempted run [#44007387344](https://github.com/AVANT-ICONIC/calyra/actions/runs/44007387344) failed before measurement due to an absolute-path concatenation error; the corrected run is the only source for this finding.
