@@ -57,6 +57,19 @@ On the research branch, commit `778f3640dbb224f4bb139ae7fa2caef80f5f208a` change
 
 **Acceptance boundary:** a real arm64 macOS desktop bundle is now built and archived. No on-host WKWebView pixels, Tauri-hosted original JS semantics, OS keyboard/IME/accessibility, GPU or repeatable CPU/RAM measurements have been measured. OpenSpec **3.1, 4.1 and 4.2 remain unchecked**. Preserve the raw evidence and the draft PR; do not infer a browserless rendering advantage.
 
+## Verified original JavaScript inside genuine macOS Tauri WKWebView (2026-11-17, NEWEST)
+
+[Native Apple Silicon CI #44000680977](https://github.com/AVANT-ICONIC/calyra/actions/runs/44000680977) **PASSED all steps**, including actual Rust/Tauri opt-in-feature compilation, live execution and independent strict verification of **29/29 original DOM/JavaScript handler assertions**. Tauri invoked `eval_with_callback` only from an `on_page_load(PageLoadEvent::Finished)` callback inside its own OS WKWebView; those results returned to Rust and were saved as original raw callback records. No browser automation stand-in, Chromium driver or rewritten `reference.js`.
+
+- **Controls 15/15 PASS:** original `document.body.dataset.ready` and section state, initial input/select/range/output values, simulated slider `input` event and original listener, original Apply click status, original Reset click status, and full reset of name, select, range, output and checkbox.
+- **Interaction 14/14 PASS:** the SAME Tauri window navigated to the canonical `interaction` fixture (not an artificial hidden DOM test), with menu open/ARIA/focus, synthetic document Escape, focus restoration, command click/close, focus destination and scroll offset.
+- **Native WebKit origin:** `tauri://localhost/index.html?fixture=controls&motion=off` and `tauri://localhost/index.html?fixture=interaction&motion=off`; AppleWebKit/605.1.15 user agent; Mac CSS viewport **1024×653**, `devicePixelRatio=1`. This is deliberately not asserted to match 1060×800 Linux CSS viewport or prove pixel parity.
+- **Isolation:** `--features stage-a-js-probe` builds `stage_a_js_probe.rs` with a **test-only** Rust WKWebView callback; default Tauri app's `main.rs` retains original bridge-free behavior. No extra privileged IPC commands. Canonical HTML, CSS and JS SHA-256 remain unchanged.
+- **Archived original source-backed output:** [`docs/evidence/tauri-macos-native-js/`](evidence/tauri-macos-native-js/) contains the raw callback records, strict 29-test verifier summary, native app/build logs, runner/environment, SHA-256 source and executable digests and self-hashed archive manifest. CI wrote this to the feature branch with a non-force rebase/push after green verification. Artifact [#14291623001](https://github.com/AVANT-ICONIC/calyra/actions/runs/44000680977/artifacts/14291623001).
+- **Not proved:** actual OS-delivered physical keyboard or pointer, IME composition, screen-reader accessibility, hardware GPU, cold/warm startup benchmarks, whole-process/private-resident memory or native browserless alternatives. These tests use **synthetic DOM-dispatched events inside a real OS WKWebView**, not native input events.
+
+OpenSpec **3.1 remains unchecked** because full real OS input and source-defined reference acceptance are incomplete. **4.1/4.2 unchecked**. PR #2 remains DRAFT/UNMERGED on `feat/reference-fixtures`; `main` untouched.
+
 ## Archived live macOS WKWebView first frame (2026-11-17, NEWEST)
 
 The prior Mac app build's absolute-path Launch Services fix was independently verified in [native ARM64 CI #43996164957](https://github.com/AVANT-ICONIC/calyra/actions/runs/43996164957): all job steps passed; `open -n -a` returned 0; genuine Tauri executable PID 3944 remained alive after 5 seconds. The unsigned debug application artifact is [#14290436244](https://github.com/AVANT-ICONIC/calyra/actions/runs/43996164957/artifacts/14290436244).
