@@ -1,0 +1,197 @@
+name: CALYRA pinned Blitz native Apple Silicon Vello CPU paint
+
+# One-shot Stage A macOS compatibility experiment, NOT performance ranking.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/blitz-macos-arm64-cpu-proof.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  macos-blitz-original:
+    runs-on: macos-15
+    timeout-minutes: 55
+    env:
+      CARGO_BUILD_JOBS: '3'
+      CARGO_TERM_COLOR: never
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/reference-fixtures
+      - name: Verify canonical source and actual Apple Silicon runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=evidence/blitz-macos-cpu
+          mkdir -p "$OUT"
+          test "$(uname -m)" = arm64
+          { sw_vers; uname -m; xcodebuild -version; rustc --version; python3 --version; } \
+            | tee "$OUT/runner.txt"
+          python3 adapters/tauri-reference/verify_source.py | tee "$OUT/source-contract.json"
+          grep -Fq '"pass": true' "$OUT/source-contract.json"
+          shasum -a 256 fixtures/index.html fixtures/reference.css fixtures/reference.js \
+            native/blitz/run_stage_a.py native/blitz/prepare_static.py \
+            > "$OUT/source-sha256.txt"
+
+      - name: Install pinned native Rust and isolated image validator
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=evidence/blitz-macos-cpu
+          rustup toolchain install 1.91.0 --profile minimal \
+            > "$OUT/rustup.log" 2>&1
+          rustup default 1.91.0
+          rustc --version | tee "$OUT/rust-version.txt"
+          python3 -m venv "$RUNNER_TEMP/calyra-blitz-venv"
+          "$RUNNER_TEMP/calyra-blitz-venv/bin/pip" install \
+            --disable-pip-version-check --no-input Pillow jsonschema \
+            > "$OUT/python-dependencies.log" 2>&1
+
+      - name: Fetch exact known upstream Blitz 0.3.0-beta.4
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=evidence/blitz-macos-cpu
+          git clone --filter=blob:none https://github.com/DioxusLabs/blitz.git \
+            "$RUNNER_TEMP/calyra-blitz-upstream" \
+            > "$OUT/clone.log" 2>&1
+          git -C "$RUNNER_TEMP/calyra-blitz-upstream" checkout --detach \
+            4f61cffacee50fe4f944ebe9d0470d9a5d3997e0 \
+            > "$OUT/pinned-checkout.log" 2>&1
+          test "$(git -C "$RUNNER_TEMP/calyra-blitz-upstream" rev-parse HEAD)" = \
+            4f61cffacee50fe4f944ebe9d0470d9a5d3997e0
+          test -z "$(git -C "$RUNNER_TEMP/calyra-blitz-upstream" status --porcelain --untracked-files=no)"
+          shasum -a 256 "$RUNNER_TEMP/calyra-blitz-upstream/examples/screenshot.rs" \
+            "$RUNNER_TEMP/calyra-blitz-upstream/Cargo.lock" \
+            > "$OUT/upstream-source-sha256.txt"
+
+      - name: Compile real upstream optimized Mac arm64 screenshot executable and render Controls
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$GITHUB_WORKSPACE/evidence/blitz-macos-cpu"
+          set +e
+          "$RUNNER_TEMP/calyra-blitz-venv/bin/python" native/blitz/run_stage_a.py \
+            --source "$RUNNER_TEMP/calyra-blitz-upstream" \
+            --output "$OUT" --build --build-timeout 2450 \
+            --run-timeout 180 --fixture controls \
+            > "$OUT/controls-command.log" 2>&1
+          code=$?
+          set -e
+          cat "$OUT/controls-command.log"
+          echo "$code" > "$OUT/controls-exit-code.txt"
+          test "$code" -eq 0 || { echo 'BLOCKED real native macOS Blitz build/paint'; exit "$code"; }
+          EXE="$RUNNER_TEMP/calyra-blitz-upstream/target/release/examples/screenshot"
+          test -x "$EXE"
+          file "$EXE" | tee "$OUT/native-binary-file.txt"
+          lipo -archs "$EXE" | tee "$OUT/native-archs.txt"
+          grep -qw arm64 "$OUT/native-archs.txt"
+          shasum -a 256 "$EXE" > "$OUT/native-executable-sha256.txt"
+
+      - name: Render Dashboard, Visual and Interaction on same actual Mac
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT="$GITHUB_WORKSPACE/evidence/blitz-macos-cpu"
+          for scene in dashboard visual interaction; do
+            set +e
+            "$RUNNER_TEMP/calyra-blitz-venv/bin/python" native/blitz/run_stage_a.py \
+              --source "$RUNNER_TEMP/calyra-blitz-upstream" \
+              --output "$OUT" --fixture "$scene" --run-timeout 180 \
+              > "$OUT/$scene-command.log" 2>&1
+            code=$?
+            set -e
+            echo "$code" > "$OUT/$scene-exit-code.txt"
+            cat "$OUT/$scene-command.log"
+          done
+
+      - name: Independently validate original Mac CPU frames and strict adapter boundary
+        shell: bash
+        run: |
+          set -euo pipefail
+          "$RUNNER_TEMP/calyra-blitz-venv/bin/python" - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          from PIL import Image
+          out=Path('evidence/blitz-macos-cpu')
+          success=[]
+          for fixture in ('controls','dashboard','visual','interaction'):
+            p=out/f'blitz-{fixture}-result.json'
+            if not p.exists():
+              continue
+            d=json.loads(p.read_text())
+            if not d['capture']['success']:
+              print('BLOCKED:',fixture,d['limitations'][-1])
+              continue
+            assert d['source']['css_modified'] is False
+            assert d['source']['dom_patched'] is True
+            assert d['source']['js_executed'] is False
+            assert d['execution']['gpu_backed'] is False
+            assert d['execution']['interactive'] is False
+            assert d['eligibility']=='restricted'
+            png=out/f'blitz-{fixture}-viewport.png'
+            with Image.open(png) as im:
+              assert im.size==(1060,800)
+              samples=list(im.convert('RGB').resize((80,80)).getdata())
+              assert len(set(samples))>=20,fixture
+            provenance=json.loads((out/f'blitz-{fixture}-provenance.json').read_text())
+            assert provenance['upstream_commit']=='4f61cffacee50fe4f944ebe9d0470d9a5d3997e0'
+            assert provenance['image']['normalized_sha256']==hashlib.sha256(png.read_bytes()).hexdigest()
+            success.append(fixture)
+          assert 'controls' in success,'Native Mac Blitz Controls never rendered'
+          report={'schema':'calyra.blitz-macos-static-cpu.v1','passed_fixtures':success,
+                  'blitz_source_unpatched':True,'canonical_css_unmodified':True,
+                  'static_dom_adapted':True,'original_js_executed':False,
+                  'gpu_rendering_proven':False,'os_input_proven':False,
+                  'native_window_proven':False,
+                  'same_hardware_tauri_ram_speed_comparison':False,
+                  'full_open_spec_4_2_done':False}
+          (out/'validated-summary.json').write_text(json.dumps(report,indent=2)+'\n')
+          print('PASS real native Apple Silicon Blitz Vello CPU fixtures:',success)
+          PY
+
+      - name: Archive authentic native macOS evidence on research branch
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEST=docs/evidence/blitz-macos-arm64-cpu
+          OUT=evidence/blitz-macos-cpu
+          mkdir -p "$DEST"
+          cp -p "$OUT"/*.txt "$OUT"/*.log "$OUT"/*.json "$OUT"/*.png "$DEST"/
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          root=Path('docs/evidence/blitz-macos-arm64-cpu')
+          files={f.name:hashlib.sha256(f.read_bytes()).hexdigest()
+                 for f in root.iterdir() if f.is_file()}
+          (root/'original-file-sha256.json').write_text(json.dumps(files,indent=2,sort_keys=True)+'\n')
+          print('Archived verified source/log/image files:',len(files))
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f "$DEST"/
+          git diff --cached --quiet && exit 0
+          git commit -m "test(evidence): archive real native Mac ARM64 Blitz CPU fixture frames"
+          git fetch origin feat/reference-fixtures
+          git rebase origin/feat/reference-fixtures
+          git push origin HEAD:refs/heads/feat/reference-fixtures
+
+      - name: Report the actual confidence boundary
+        if: always()
+        shell: bash
+        run: |
+          echo '### CALYRA real Apple Silicon Blitz Vello CPU preflight' >> "$GITHUB_STEP_SUMMARY"
+          echo 'Native binary + nonblank Vello CPU PNG means Mac CPU render; adapted DOM with unchanged original CSS, JS not executed.' >> "$GITHUB_STEP_SUMMARY"
+          echo 'NOT a live native Blitz window, keyboard/a11y proof, GPU proof, or functionally matched Tauri memory/speed benchmark.' >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-blitz-macos-vello-cpu
+          path: evidence/blitz-macos-cpu/
+          retention-days: 14
+          if-no-files-found: warn
