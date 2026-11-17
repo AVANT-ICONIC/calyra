@@ -50,7 +50,7 @@ jobs:
           lipo -archs "$APP/Contents/MacOS/calyra-tauri-reference" \
             | tee "$OUT/native-archs.txt"
           grep -qw arm64 "$OUT/native-archs.txt"
-          printf '%s\n' "$PWD/$APP" > "$OUT/absolute-app-path.txt"
+          printf '%s\n' "$APP" > "$OUT/absolute-app-path.txt"
           swiftc -O adapters/tauri-reference/macos_ax_readonly_probe.swift \
             -o "$OUT/ax-readonly"
           swiftc -O adapters/tauri-reference/macos_native_window_probe.swift \
