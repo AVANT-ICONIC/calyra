@@ -1,0 +1,26 @@
+{
+  "actual_os_user_input_tested": false,
+  "changed_pixels_threshold_12": 802,
+  "diff_bbox": [
+    434,
+    604,
+    761,
+    616
+  ],
+  "first_native_current": 64,
+  "hardware_gpu_tested": false,
+  "html_default_remains": 64,
+  "images_sha256": {
+    "range-after-18.png": "c6e446cca8d31286157030be4b5e47abfc64ce7dad90917f19e0f195bdcee2ea",
+    "range-before-64.png": "476f4eaf95aa6cf0645f8d7dddc8e271f399a7a07896dc3b7f62b62099cb1979",
+    "range-live-pixel-diff.png": "e33a63f53a12f1f7d919d8dcc53f156b4039f06625d3b31f27666da027c7cc0f"
+  },
+  "one_script_document": true,
+  "original_html_css_js_unchanged": true,
+  "original_javascript_executed": true,
+  "range_drag_keyboard_tested": false,
+  "real_renderer": "AnyRender / Vello CPU",
+  "same_range_dom_node": true,
+  "schema": "calyra.blitz-range-live-same-document-vello-cpu.v1",
+  "second_native_current": 18
+}
