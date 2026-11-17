@@ -1,0 +1,17 @@
+{
+  "app_window_id": 28,
+  "app_window_owner_pid": 1497,
+  "frame_probe_commit": "11b367a9fa598890853ff2986a985f1ad341d50e",
+  "producing_artifact_id": 14289913955,
+  "producing_run": "https://github.com/AVANT-ICONIC/calyra/actions/runs/43996877529",
+  "schema": "calyra.macos-tauri-frame-archive.v1",
+  "screenshot_sha256": "fe0ba545fa469f84211ab79aebbe90d1df8d7fc6e2a940336c8292c26f110d24",
+  "source_app_artifact_id": 14290436244,
+  "source_app_build_commit": "778f3640dbb224f4bb139ae7fa2caef80f5f208a",
+  "source_app_build_run": "https://github.com/AVANT-ICONIC/calyra/actions/runs/43996164957",
+  "verified_hardware_gpu": false,
+  "verified_matched_cpu_or_ram_benchmark": false,
+  "verified_native_macos_app_owned_window_pixels": true,
+  "verified_original_javascript_inside_tauri": false,
+  "verified_trusted_os_keyboard_or_pointer": false
+}
