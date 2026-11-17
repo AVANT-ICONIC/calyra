@@ -1,0 +1,24 @@
+{
+  "actual_app_owned_window_id": 47,
+  "app_alive_during_sample": true,
+  "app_pid": 2089,
+  "descendant_rss_sum_kib_not_unique": 84720,
+  "first_window_observed_ms_including_probe_overhead": 416,
+  "original_executable_sha256": "d67321b7b5f2d9026be66bd9c30fee892288ea538731a42c7647c0df452688a2",
+  "os_descendants_including_parent": [
+    {
+      "comm": "/Users/runner/work/calyra/calyra/evidence/tauri-macos-resource/unpacked/CALYRA Stage A Reference.app/Contents/MacOS/calyra-tauri-reference",
+      "pid": 2089,
+      "ppid": 1688,
+      "ps_cpu_percent_instantaneous": 0.0,
+      "rss_kib": 84720,
+      "vsz_kib": 415680560
+    }
+  ],
+  "parent_instantaneous_ps_cpu_percent": 0.0,
+  "parent_rss_kib": 84720,
+  "parent_vsz_kib": 415680560,
+  "sample_at_seconds_after_launch": 12.161,
+  "trial": 4,
+  "webkit_processes_not_attributed": true
+}

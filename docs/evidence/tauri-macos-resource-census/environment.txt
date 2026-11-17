@@ -1,0 +1,7 @@
+ProductName:		macOS
+ProductVersion:		15.8.2
+BuildVersion:		24H232
+arm64
+Python 3.15.2
+Apple Swift version 6.1.2 (swiftlang-6.1.2.1.2 clang-1700.0.13.5)
+Target: arm64-apple-macosx15.0
