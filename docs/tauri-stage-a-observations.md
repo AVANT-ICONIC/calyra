@@ -1,6 +1,6 @@
 # CALYRA: actual Tauri 2 desktop shell feasibility (2026-11-16)
 
-**Scope:** real Tauri 2 desktop application using the **original CALYRA HTML/CSS/JS**. A live **Linux Tauri WebKitGTK** executable and its **real X11 window screenshot** have been built and verified. **The macOS ARM64 .app build is verified; WKWebView runtime, first frame and JS execution are not yet verified.** This is a restricted Stage A feasibility result, not a production release or speed benchmark.
+**Scope:** real Tauri 2 desktop application using the **original CALYRA HTML/CSS/JS**. A live **Linux Tauri WebKitGTK** executable and its **real X11 window screenshot** have been built and verified. **The macOS ARM64 .app build, native process launch, and a real app-owned WKWebView first frame are verified; original JS interaction and OS input inside that app are not yet verified.** This is a restricted Stage A feasibility result, not a production release or speed benchmark.
 
 ## Source and trust boundary
 
@@ -57,11 +57,23 @@ On the research branch, commit `778f3640dbb224f4bb139ae7fa2caef80f5f208a` change
 
 **Acceptance boundary:** a real arm64 macOS desktop bundle is now built and archived. No on-host WKWebView pixels, Tauri-hosted original JS semantics, OS keyboard/IME/accessibility, GPU or repeatable CPU/RAM measurements have been measured. OpenSpec **3.1, 4.1 and 4.2 remain unchecked**. Preserve the raw evidence and the draft PR; do not infer a browserless rendering advantage.
 
+## Archived live macOS WKWebView first frame (2026-11-17, NEWEST)
+
+The prior Mac app build's absolute-path Launch Services fix was independently verified in [native ARM64 CI #43996164957](https://github.com/AVANT-ICONIC/calyra/actions/runs/43996164957): all job steps passed; `open -n -a` returned 0; genuine Tauri executable PID 3944 remained alive after 5 seconds. The unsigned debug application artifact is [#14290436244](https://github.com/AVANT-ICONIC/calyra/actions/runs/43996164957/artifacts/14290436244).
+
+A separately implemented **prebuilt-app**, no-Rust-rebuild macOS proof then ran in [CI #43996877529](https://github.com/AVANT-ICONIC/calyra/actions/runs/43996877529), which **PASSED**. Real macOS 15.8.2 arm64 host: exact original bundle ZIP hash and unmodified fixture hashes checked, real app process **PID 1497** located, CoreGraphics found its foreground normal layer-0 window **CGWindow ID 28**, and `screencapture -x -l 28` captured **the actual on-screen Tauri WKWebView Controls UI**. Original PNG **1136×793** (display-scale screenshot of an app window listed as 1024×681 window units), SHA-256 **`fe0ba545fa469f84211ab79aebbe90d1df8d7fc6e2a940336c8292c26f110d24`**. Native AppKit pixel validation accepted 40 quantized distinct colors across 1,444 sampled interior pixels. Direct human image inspection further confirms visible CALYRA title bar, sidebar, Controls heading and original text/select/range UI. **This is real WKWebView pixels in the Tauri host**, not standalone WebKitGTK, Chrome or a mocked screenshot.
+
+[Independent archival CI #43997275993](https://github.com/AVANT-ICONIC/calyra/actions/runs/43997275993) **PASSED** exact PNG SHA, PNG dimensions, owner PID/window ID, original source hashes and architecture verification, then committed all **10 byte-exact original screenshot/build/window evidence files** plus `provenance.json` to [permanent feature-branch archive](evidence/tauri-macos-wkwebview-first-frame/). The earlier [archival run #43997214282](https://github.com/AVANT-ICONIC/calyra/actions/runs/43997214282) passed evidence verification but failed staging because `docs/evidence` is gitignored; its corrected successor force-added **only** this evidence directory. Preserved original Git screenshot blob SHA: `8078a5780e4c98ca239c3c372980bd179c5c05c0`.
+
+**What this proves:** an ARM64 Tauri app packages, launches and visibly paints canonical CALYRA controls in its actual macOS system WKWebView. **What it does not prove:** the original page JS event handlers executing correctly inside this Tauri host, physical OS keyboard/pointer/IME/accessibility, GPU path, quantitative CSS fidelity compared at identical viewport/font settings, repeated same-machine CPU/RAM/speed, or a browserless rendering advantage. The single 1136×793 Mac screenshot cannot be directly compared as pixel parity to the 1060×800 Linux reference without matching viewport/scale/pixel policy.
+
+Keep existing OpenSpec **3.1, 4.1, 4.2 UNCHECKED** until their full functional/measurement acceptance is satisfied. Keep draft PR #2 unmerged and `main` untouched.
+
 ## Decision
 
 - **Verified:** original source unchanged; pinned Tauri 2 dependencies; real native Linux Tauri compile/link/start; verified real X11 GTK/WebKitGTK window pixels; safe archival of genuine source and image evidence.
-- **Not verified:** WKWebView first frame on macOS, Tauri-hosted JavaScript semantics on Linux, real OS keyboard/pointer, IME/accessibility, hardware GPU, color-managed visual parity, five repeated matched memory/CPU/startup samples.
+- **Not verified:** Tauri-hosted JavaScript semantics on macOS or Linux, real OS keyboard/pointer, IME/accessibility, hardware GPU, color-managed visual parity, five repeated matched memory/CPU/startup samples.
 - **OpenSpec task 3.1:** **UNCHECKED**, since macOS WKWebView path is a required target and original JavaScript correctness inside actual Tauri runtime needs verification. **4.1 and 4.2:** **UNCHECKED**.
-- **Next productive check:** use the now-confirmed real macOS ARM64 runner to validate the corrected launch probe, then instrument an actual WKWebView frame/JS interaction and controlled resource measurement. No runtime or performance result is yet established. A browserless speed advantage cannot be concluded from this evidence.
+- **Next productive check:** validate original fixture JavaScript behavior inside the actual Tauri WKWebView and trusted OS input, then repeat controlled resource measurements on matched hardware. The macOS first-frame gate is complete; functional and performance gates are not. A browserless speed advantage cannot be concluded from this evidence.
 
 **Repository constraint:** work only on `feat/reference-fixtures`, preserve existing OpenSpec `establish-native-css-feasibility` and PR #2 DRAFT/UNMERGED. Never merge to `main` as a side effect of this evidence.
