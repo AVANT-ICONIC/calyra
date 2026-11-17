@@ -1,6 +1,6 @@
 # CALYRA: actual Tauri 2 desktop shell feasibility (2026-11-16)
 
-**Scope:** real Tauri 2 desktop application using the **original CALYRA HTML/CSS/JS**. A live **Linux Tauri WebKitGTK** executable and its **real X11 window screenshot** have been built and verified. **macOS WKWebView and macOS .app are not yet verified.** This is a restricted Stage A feasibility result, not a production release or speed benchmark.
+**Scope:** real Tauri 2 desktop application using the **original CALYRA HTML/CSS/JS**. A live **Linux Tauri WebKitGTK** executable and its **real X11 window screenshot** have been built and verified. **The macOS ARM64 .app build is verified; WKWebView runtime, first frame and JS execution are not yet verified.** This is a restricted Stage A feasibility result, not a production release or speed benchmark.
 
 ## Source and trust boundary
 
@@ -31,7 +31,7 @@ A separate lightweight PIL verifier recomputed direct absolute RGB differences. 
 
 ## macOS ARM64 gate remains open
 
-[Actual macOS 15 ARM64 workflow #43936544580](https://github.com/AVANT-ICONIC/calyra/actions/runs/43936544580) initially remained queued **15 minutes and was cancelled without an allocated macOS runner or any job steps**. It did not reach Checkout/Rust or attempt compilation. One targeted retry was requested (attempt 2); only report a macOS `.app` or WKWebView runtime after a run genuinely builds and records that evidence.
+[Original macOS 15 ARM64 workflow #43936544580](https://github.com/AVANT-ICONIC/calyra/actions/runs/43936544580) initially remained queued **15 minutes and was cancelled without an allocated macOS runner or any job steps**. It did not reach Checkout/Rust or attempt compilation. One targeted retry was requested (attempt 2); only report a macOS `.app` or WKWebView runtime after a run genuinely builds and records that evidence.
 
 The [macOS bundle workflow](../.github/workflows/tauri-macos-arm64-reference.yml) would produce an unsigned debug `.app` if a runner is assigned and the build succeeds. An app bundle alone does **not** establish successful first frame, macOS `innerWidth` parity, user input, accessibility, IME, GPU behavior or comparative startup/memory performance. The actual target remains Apple Silicon WKWebView on the same hardware as eligible native engines.
 
@@ -47,11 +47,21 @@ error: proc macro panicked
 
 This was a missing conventional **Tauri macro icon**, not a verified macOS platform blocker. `prepare_macos_icon.py` now creates deterministic default `icons/icon.png` alongside the existing `icons/icon.icns`, byte-identical to the original generated PNG. Independent [source/icon preflight #43942204867](https://github.com/AVANT-ICONIC/calyra/actions/runs/43942204867) **PASSED** actual 1024×1024 PNG header, byte equality, and original source hashes. Updated macOS CI uses pinned `npm ci` and Tauri `--locked` build, and checks both icons explicitly: [corrected macOS run #43941982471](https://github.com/AVANT-ICONIC/calyra/actions/runs/43941982471). **Do not represent that run as a working `.app` or macOS WKWebView without verifying its final result.** Failed original logs retained.
 
+## Actual Apple Silicon bundle success and correctly classified smoke failure (2026-11-17)
+
+The corrected [actual Tauri macOS build #43941982471](https://github.com/AVANT-ICONIC/calyra/actions/runs/43941982471), job `133561611527`, ran on **macOS-15 arm64**: `npm ci`, locked Tauri/Rust compilation, and native macOS `.app` bundling all **PASSED**. Tauri reported **26.82 MiB** for the debug `CALYRA Stage A Reference.app`. A separate successful inspection step read `Contents/Info.plist`, found the real executable and confirmed `arm64` with Apple's `lipo` tool. The original 18-file archive including the zipped unsigned `.app`, source/lock hashes, bundle report and launch log is at [artifact #14263945995](https://github.com/AVANT-ICONIC/calyra/actions/runs/43941982471/artifacts/14263945995).
+
+**The job as a whole FAILED** in the optional launch probe, not compilation: `open -a` was passed `adapters/tauri-reference/.../CALYRA Stage A Reference.app`, a relative path containing slashes, and macOS Launch Services returned `Unable to find application named ...`. The shell's inherited `-e` also prevented the intended best-effort exit-code report. This does **not** demonstrate a runtime crash or a WKWebView failure.
+
+On the research branch, commit `778f3640dbb224f4bb139ae7fa2caef80f5f208a` changes the smoke check to resolve the `.app` absolute path, use `open -n -a`, and capture the return code and matching process names without misclassifying the separate compiled bundle. The workflow change triggers a further runner attempt; **its result is unverified at the time this report is written**.
+
+**Acceptance boundary:** a real arm64 macOS desktop bundle is now built and archived. No on-host WKWebView pixels, Tauri-hosted original JS semantics, OS keyboard/IME/accessibility, GPU or repeatable CPU/RAM measurements have been measured. OpenSpec **3.1, 4.1 and 4.2 remain unchecked**. Preserve the raw evidence and the draft PR; do not infer a browserless rendering advantage.
+
 ## Decision
 
 - **Verified:** original source unchanged; pinned Tauri 2 dependencies; real native Linux Tauri compile/link/start; verified real X11 GTK/WebKitGTK window pixels; safe archival of genuine source and image evidence.
-- **Not verified:** actual macOS Tauri build and `.app`, WKWebView first frame on macOS, Tauri-hosted JavaScript semantics on Linux, real OS keyboard/pointer, IME/accessibility, hardware GPU, color-managed visual parity, five repeated matched memory/CPU/startup samples.
+- **Not verified:** WKWebView first frame on macOS, Tauri-hosted JavaScript semantics on Linux, real OS keyboard/pointer, IME/accessibility, hardware GPU, color-managed visual parity, five repeated matched memory/CPU/startup samples.
 - **OpenSpec task 3.1:** **UNCHECKED**, since macOS WKWebView path is a required target and original JavaScript correctness inside actual Tauri runtime needs verification. **4.1 and 4.2:** **UNCHECKED**.
-- **Next productive check:** acquire a working macOS ARM64 runner or authorized local macOS execution; only then test real `.app` / WKWebView frame, behavior, and performance. A browserless speed advantage cannot be concluded from this evidence.
+- **Next productive check:** use the now-confirmed real macOS ARM64 runner to validate the corrected launch probe, then instrument an actual WKWebView frame/JS interaction and controlled resource measurement. No runtime or performance result is yet established. A browserless speed advantage cannot be concluded from this evidence.
 
 **Repository constraint:** work only on `feat/reference-fixtures`, preserve existing OpenSpec `establish-native-css-feasibility` and PR #2 DRAFT/UNMERGED. Never merge to `main` as a side effect of this evidence.
