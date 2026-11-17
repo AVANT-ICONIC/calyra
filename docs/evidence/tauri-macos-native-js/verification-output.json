@@ -1,0 +1,36 @@
+{
+  "canonical_fixture_sha256": {
+    "index.html": "aa9fa23b242f06be7dc5b760f0f8379ce750d8fe2cd67a977daf1a4ff1bd848a",
+    "reference.css": "04635269a8fbd790c87316a03c6469a157806201e58fd730212f632fc86b7b9c",
+    "reference.js": "9d565203fc9c3450b0c61d7774cb2322b14ed3e3325926122b17f583e81cf3de"
+  },
+  "hardware_gpu_verified": false,
+  "matched_memory_benchmark_verified": false,
+  "results": {
+    "controls": {
+      "callback_sha256": "e043120a37931633f3ef8cfd82f483c3a8561f8684172af526892c3698dc2f79",
+      "device_pixel_ratio": 1,
+      "native_app_origin": "tauri://localhost/index.html?fixture=controls&motion=off",
+      "original_js_handler_assertions_passed": 15,
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)",
+      "viewport_css_px": [
+        1024,
+        653
+      ]
+    },
+    "interaction": {
+      "callback_sha256": "e71804cee2dbc156400bf0807b2b916459b5f7c4fe0953ca8fee2ae3c4045ca4",
+      "device_pixel_ratio": 1,
+      "native_app_origin": "tauri://localhost/index.html?fixture=interaction&motion=off",
+      "original_js_handler_assertions_passed": 14,
+      "user_agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko)",
+      "viewport_css_px": [
+        1024,
+        653
+      ]
+    }
+  },
+  "schema": "calyra.macos-native-wkwebview-js-verified.v1",
+  "trusted_os_input_verified": false,
+  "verified_native_eval_callback": true
+}

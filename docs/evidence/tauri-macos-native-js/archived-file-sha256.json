@@ -1,0 +1,15 @@
+{
+  "actual-app-pid.txt": "846c4106ae411ebb507b3115c77ffda3b6763ef68813ac280b3598d711a42d40",
+  "architecture.txt": "c1669e1d8edca98769c37d494b76442a1d6e5ffffd7b4da1fb63aef8ebaf6f01",
+  "controls-native-eval.json": "e043120a37931633f3ef8cfd82f483c3a8561f8684172af526892c3698dc2f79",
+  "interaction-native-eval.json": "e71804cee2dbc156400bf0807b2b916459b5f7c4fe0953ca8fee2ae3c4045ca4",
+  "native-app.log": "2305f444ba362d81092a0b213dfa21226651e297a0b02fba0ed0c9e1fef84bf3",
+  "native-build.log": "ae8a55f30a59850045d83a6d6579ffe9512afb999314665049d561b0ecc83aec",
+  "native-executable-sha256.txt": "7d8aa11e87a35080c93751be51881af6c0416f32ed9668c6cb6fb5c329736092",
+  "runner.txt": "d2a4d4e6f1ae5350a6826b9a5a75e85fb59f2c60f3d4f6ddb6e573d3662fba1a",
+  "source-contract.json": "c4dc8997f17ffff6c7ac22ce2400596be3f3b0fa6eac3a37ed1b4085a66f367f",
+  "source-sha256.txt": "022214bd7cf16b402725888e2de9c9b026498a16881bb271b73a17fb5e82940a",
+  "tauri-version.txt": "9b3bfd97bdbbb1caca492a182482702522f4861cac9c38b60655010daaf0a7e3",
+  "validated-summary.json": "6d99df3feefa77a82f3ad225e47e48c401175226e9ba6078ed4ac77d9ce8dab4",
+  "verification-output.json": "6d99df3feefa77a82f3ad225e47e48c401175226e9ba6078ed4ac77d9ce8dab4"
+}
