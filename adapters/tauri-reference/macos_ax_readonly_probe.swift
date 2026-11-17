@@ -4,15 +4,15 @@
 import ApplicationServices
 import Foundation
 
-func get(_ element: AXUIElement, _ key: CFString) -> CFTypeRef? {
+func get(_ element: AXUIElement, _ key: String) -> CFTypeRef? {
     var result: CFTypeRef?
-    guard AXUIElementCopyAttributeValue(element, key, &result) == .success else {
+    guard AXUIElementCopyAttributeValue(element, key as CFString, &result) == .success else {
         return nil
     }
     return result
 }
 
-func text(_ element: AXUIElement, _ key: CFString) -> String? {
+func text(_ element: AXUIElement, _ key: String) -> String? {
     guard let result = get(element, key) else { return nil }
     if let value = result as? String {
         return String(value.prefix(250))
