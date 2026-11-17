@@ -1,0 +1,2 @@
+32e784484d36098d1720549d13e3767d2cd84a1d1f6bce727d4fcbb84f89bbc9  adapters/tauri-reference/macos_ax_readonly_probe.swift
+d9ee3d6b99b99c738a7a48749f2c968d5c3060a9d27539ad0f33733c12756bc7  adapters/tauri-reference/macos_native_window_probe.swift
