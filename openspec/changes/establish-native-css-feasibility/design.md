@@ -46,6 +46,14 @@ This section records **documentation evidence**, not CALYRA benchmark results or
 
 **Important:** RmlUi's missing Grid is a compatibility gap, not automatically a reason to exclude it from performance or adapter research. Never silently transform Grid into Flexbox and report direct compatibility. Electrobun's webview anchoring is not proof that its experimental GPU path itself runs in a webview.
 
+## Blitz macOS live native-window follow-up (research gate, 2026-11-17)
+
+Pinned upstream Blitz 0.3.0-beta.4 already has `blitz::launch_static_html(html: &str)`, using `blitz_shell::BlitzApplication` with `anyrender_vello::VelloWindowRenderer` and a winit-based event loop. Unlike `examples/screenshot.rs` (which uses `VelloCpuImageRenderer`), this launches a real native window. This is an **upstream source reading**, not proof of successful CALYRA macOS execution or hardware GPU.
+
+After Mac static CPU screenshot build is independently verified, create an **isolated upstream example** in the temporary pinned Git checkout that reads the deterministic `prepare_static.py` snapshot and calls `blitz::launch_static_html`. Do not modify tracked upstream engine source or canonical HTML/CSS/JS; disclose the same static DOM active-state adaptation, inline original stylesheet and omitted JS. Try an actual macOS arm64 native process, verify a CGWindow owned by the exact PID, capture the **real window** with `screencapture -l`, validate nonblank pixels and preserve exact runtime/build output. A working native window alone does not establish `GPU hardware accelerated`; device/adapter details require separate evidence. Absence of a window or a failed build is an explicit blocked result, not a substituted webview screenshot.
+
+Native accessibility/input semantics remain a separate gate: neither the static HTML fixture nor Blitz's `launch_static_html` implies original JS handlers run. Compare OS-owned window geometries only after matching viewport, pixel scale, font and content. **Never rank** a static Blender-free Blitz window against Tauri WKWebView in a single CPU/RAM/functional headline when capabilities or readiness states differ.
+
 ## Apple Silicon Blitz Vello-CPU compatibility slice (2026-11-17)
 
 Before measuring a putative native-renderer performance advantage, verify whether the exact pinned Blitz 0.3.0-beta.4 upstream `examples/screenshot.rs` compiles and renders CALYRA on the **same macOS ARM64 runner family** as the verified Tauri WKWebView baseline. Reuse `native/blitz/run_stage_a.py` and `prepare_static.py` with unchanged authored CSS and honest static-HTML adaptations (explicit JS omission and active fixture). Keep native Blitz executable headless Vello **CPU**, not a windowed/GPU/text-input backend. Verify the actual executable revision, original fixture digests, nonblank 1060×800 normalized screenshot and raw provenance; archive success or real native build blocker.
