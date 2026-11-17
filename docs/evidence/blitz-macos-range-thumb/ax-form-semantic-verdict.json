@@ -1,0 +1,220 @@
+{
+  "accessibility_actions_verified": false,
+  "all_six_fields_match": true,
+  "complete_html_aam_algorithm_implemented": false,
+  "expected_control_contract": {
+    "apply_settings": {
+      "role": "AXButton",
+      "title": "Apply settings",
+      "value": null
+    },
+    "display_name": {
+      "role": "AXTextField",
+      "title": "Display name",
+      "value": "Alex Rivera"
+    },
+    "enable_effects": {
+      "role": "AXCheckBox",
+      "title": "Enable effects Native checkbox with CSS presentation",
+      "value": "1"
+    },
+    "material_intensity": {
+      "role": "AXSlider",
+      "title": "Material intensity 64%",
+      "value": "64"
+    },
+    "render_priority": {
+      "role": "AXPopUpButton",
+      "title": "Render priority",
+      "value": "Balanced"
+    },
+    "reset": {
+      "role": "AXButton",
+      "title": "Reset",
+      "value": null
+    }
+  },
+  "from_actual_native_blitz_process": true,
+  "input_ime_pointer_keyboard_tested": false,
+  "matched_fields": 6,
+  "native_range_painted_but_no_os_input": true,
+  "observed_roles_and_values": [
+    {
+      "depth": 2,
+      "index": 3,
+      "role": "AXGroup",
+      "role_description": "group"
+    },
+    {
+      "depth": 3,
+      "index": 4,
+      "role": "AXGroup",
+      "role_description": "group"
+    },
+    {
+      "depth": 6,
+      "index": 7,
+      "role": "AXGroup",
+      "role_description": "group"
+    },
+    {
+      "depth": 6,
+      "index": 13,
+      "role": "AXGroup",
+      "role_description": "group",
+      "title": "Reference fixtures"
+    },
+    {
+      "depth": 7,
+      "index": 28,
+      "role": "AXGroup",
+      "role_description": "group"
+    },
+    {
+      "depth": 6,
+      "index": 30,
+      "role": "AXGroup",
+      "role_description": "group"
+    },
+    {
+      "depth": 7,
+      "index": 31,
+      "role": "AXGroup",
+      "role_description": "group",
+      "title": "Controls, without compromise."
+    },
+    {
+      "depth": 9,
+      "index": 33,
+      "role": "AXGroup",
+      "role_description": "group"
+    },
+    {
+      "depth": 8,
+      "index": 34,
+      "role": "AXGroup",
+      "role_description": "group"
+    },
+    {
+      "depth": 8,
+      "index": 38,
+      "role": "AXTextField",
+      "role_description": "text field",
+      "title": "Display name",
+      "value": "Alex Rivera"
+    },
+    {
+      "depth": 8,
+      "index": 40,
+      "role": "AXPopUpButton",
+      "role_description": "pop up button",
+      "title": "Render priority",
+      "value": "Balanced"
+    },
+    {
+      "depth": 9,
+      "index": 42,
+      "role": "AXGroup",
+      "role_description": "group"
+    },
+    {
+      "depth": 8,
+      "index": 43,
+      "role": "AXSlider",
+      "role_description": "slider",
+      "title": "Material intensity 64%",
+      "value": "64"
+    },
+    {
+      "depth": 10,
+      "index": 46,
+      "role": "AXGroup",
+      "role_description": "group"
+    },
+    {
+      "depth": 9,
+      "index": 48,
+      "role": "AXCheckBox",
+      "role_description": "checkbox",
+      "title": "Enable effects Native checkbox with CSS presentation",
+      "value": "1"
+    },
+    {
+      "depth": 8,
+      "index": 49,
+      "role": "AXButton",
+      "role_description": "button",
+      "title": "Apply settings"
+    },
+    {
+      "depth": 8,
+      "index": 50,
+      "role": "AXButton",
+      "role_description": "button",
+      "title": "Reset"
+    },
+    {
+      "depth": 8,
+      "index": 51,
+      "role": "AXGroup",
+      "role_description": "group"
+    },
+    {
+      "depth": 8,
+      "index": 53,
+      "role": "AXGroup",
+      "role_description": "group"
+    },
+    {
+      "depth": 6,
+      "index": 56,
+      "role": "AXGroup",
+      "role_description": "group"
+    },
+    {
+      "depth": 2,
+      "index": 60,
+      "role": "AXButton",
+      "role_description": "close button"
+    },
+    {
+      "depth": 2,
+      "index": 61,
+      "role": "AXButton",
+      "role_description": "full screen button"
+    },
+    {
+      "depth": 3,
+      "index": 62,
+      "role": "AXGroup",
+      "role_description": "group"
+    },
+    {
+      "depth": 4,
+      "index": 63,
+      "role": "AXGroup",
+      "role_description": "group"
+    },
+    {
+      "depth": 2,
+      "index": 64,
+      "role": "AXButton",
+      "role_description": "minimize button"
+    }
+  ],
+  "original_js_executed_in_window": false,
+  "range_value_is_attribute_derived_only": false,
+  "range_value_lives_in_dom_range_data": true,
+  "read_only": true,
+  "real_os_ax_tree_after_activation": true,
+  "required_field_matches": {
+    "apply_settings": true,
+    "display_name": true,
+    "enable_effects": true,
+    "material_intensity": true,
+    "render_priority": true,
+    "reset": true
+  },
+  "schema": "calyra.blitz-macos-native-ax-form-semantics.v1",
+  "total_fields": 6
+}

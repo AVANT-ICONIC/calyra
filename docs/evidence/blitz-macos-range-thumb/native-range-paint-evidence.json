@@ -1,0 +1,17 @@
+{
+  "baseline_native_mac_sha256": "2aced08e83345e5a8846229d02e21ebc5a0d6b16609935fbe45d81c9a45524e9",
+  "changed_pixels_at_12": 1105,
+  "is_browser_compatible_slider": false,
+  "live_same_document_value_transition_tested": false,
+  "os_pointer_keyboard_drag_tested": false,
+  "range_native_mac_sha256": "a6a4b2ce3413e926f16dcd243c68136cdbef7a6c0428655bf01804fce3de5db3",
+  "range_roi_xyxy": [
+    270,
+    593,
+    827,
+    630
+  ],
+  "same_real_window_geometry": true,
+  "schema": "calyra.native-macos-range-paint-contrast.v1",
+  "thumb_visual_inspection_required": true
+}
