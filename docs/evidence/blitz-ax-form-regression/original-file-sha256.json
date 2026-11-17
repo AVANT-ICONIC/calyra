@@ -1,0 +1,18 @@
+{
+  "apt.log": "e9de1cfce5d3d7aeabdc3de06c06a09d5fcbefa4494ea2a7aa5c25f1cd128d2f",
+  "ax-form-patch.log": "dfeb583ab040c1dec9c1026f843a77d0998227f38d3f45260a80d5551598a351",
+  "checkout.log": "ae30b3b514470a1872085e448452f77289fa547501c499a7a01956925adfcf0a",
+  "clone.log": "2dad5ea25a9bd9284499c99dad9bbe614a1b08aa9f967d01382e0b1c3a9b5a0f",
+  "exact-upstream-ax-experiment.patch": "654a64b3f553874aa053146e3a397b97f6bbb4b1cee06bfc572f587b90ec3d22",
+  "host.txt": "b3bc1746b272a0377c1befe628a33a6a942cebb473bffc3451660786006b269a",
+  "native-rust-test.log": "f98166bc0e1ee77edef0a5cdb8e30719926818a4c2caff200a024d24a7efa8ff",
+  "native-test-exit-code.txt": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+  "patch-order.txt": "0fccaf8640ef3717ec688551021cf770a19b6a77efdf77e29983d95108716040",
+  "pinned-cargo-lock-sha256.txt": "d8423c865ec0e63ba437abb7d582e570340ed99a04810abffd892d5cd6256321",
+  "regression-verdict.txt": "8fabd30a6981f4c563865236d61356aa7e6e51c8195cb9a8796be5e2d9700c80",
+  "rust-version.txt": "573e0f05fa50b8b397383b890dd59ba38c60ec17d2820525f51f1ff9b534cfde",
+  "rustup.log": "659c8e4fcec516a679c99856a3a7958a4895360552e89bc564d53ed2d8e86847",
+  "select-patch.log": "9625cf6d12c5266f98f4a56776336ce51bd27bb5023578b9a8e60f2e0c9c1533",
+  "verified-source-sha256.txt": "51fa63bc9ba2756ec4815ed8da2e4f1cd43f1b2506d233f1fa0a37fa09eb422d",
+  "verified-source.json": "280dd6a3760171a992c9bec55b31571459b0eeb6aa0cbb63a63e47baa0bef04c"
+}
