@@ -1,7 +1,24 @@
-# CALYRA: actual Tauri 2 desktop shell feasibility (2026-11-16)
+# CALYRA: actual Tauri 2 desktop shell feasibility (updated 2026-11-17)
 
-**Scope:** real Tauri 2 desktop application using the **original CALYRA HTML/CSS/JS**. A live **Linux Tauri WebKitGTK** executable and its **real X11 window screenshot** have been built and verified. **The macOS ARM64 .app build, native process launch, and a real app-owned WKWebView first frame are verified; original JS interaction and OS input inside that app are not yet verified.** This is a restricted Stage A feasibility result, not a production release or speed benchmark.
+**Scope:** real Tauri 2 desktop application using the **original CALYRA HTML/CSS/JS**. A live **Linux Tauri WebKitGTK** executable and its **real X11 window screenshot** have been built and verified. **The macOS ARM64 .app build, native process launch, and a real app-owned WKWebView first frame are verified; original JS event handlers have been validated inside a genuine WKWebView, but OS-delivered keyboard/pointer and IME remain unverified.** This is a restricted Stage A feasibility result, not a production release or speed benchmark.
 
+## Direct native WebKit helper process identities (2026-11-17)
+
+An earlier five-run ownership census [#44007500896](https://github.com/AVANT-ICONIC/calyra/actions/runs/44007500896) **PASSED its actual native window/resource tests**, but **correctly attributed zero helper processes**. Using optional responsibility_get_pid_responsible_for_pid (private OS API), macOS returned the same CI runner responsible PID (922) for Tauri itself and new WebKit.WebContent/Networking processes. Temporal coincidences of 2/2/7/2/2 new helpers were not enough to identify individual ownership. The [original five-run raw evidence](evidence/macos-webkit-helper-attribution/) is preserved. The first attempted run [#44007387344](https://github.com/AVANT-ICONIC/calyra/actions/runs/44007387344) failed before measurement due to an absolute-path concatenation error; the corrected run is the only source for this finding.
+
+To resolve identity directly, a **new, opt-in, macOS-only diagnostic build** uses Tauri's real with_webview handle to query WKWebView's **private _webProcessIdentifier**, WKWebsiteDataStore's **private _networkProcessIdentifier**, and optional **_gpuProcessIdentifier** using Objective-C dynamic selectors. These are genuine upstream WebKit internal selectors (used by WebKit's own MiniBrowser), NOT supported public APIs. They are **compile-time excluded** from normal CALYRA builds. The ordinary reference app and canonical authored fixture HTML/CSS/JS stay byte-for-byte unchanged; no extra privileged IPC surface is created.
+
+**[Direct native Mac ARM64 CI #44008089167](https://github.com/AVANT-ICONIC/calyra/actions/runs/44008089167) PASSED**: the real Tauri app returned process identifiers from its own running WKWebView, and the test independently matched those exact PIDs to executing system WebKit binaries. Original [JSON/process table/libproc outputs and SHA-256 provenance](evidence/macos-wkwebview-direct-process-ids/) were committed on the research branch.
+
+| Verified process | PID | ps RSS (bytes) | libproc resident (bytes) | libproc physical footprint (bytes) |
+|---|---:|---:|---:|---:|
+| Tauri UI process | 4184 | 86,114,304 | 86,130,688 | 17,041,664 |
+| WKWebView-owned WebContent | 4198 | 52,740,096 | 52,740,096 | 27,625,408 |
+| WKWebView-owned Networking | 4202 | 18,874,368 | 18,874,368 | 5,309,632 |
+
+Note: 84,096 KiB ps RSS for the main process equals 86,114,304 bytes, slightly different from libproc's 86,130,688 bytes because they were sampled at different moments. This is not a data inconsistency. **UI + WebContent + Networking libproc resident values sum arithmetically to 157,745,152 bytes (150.44 MiB)**. However RSS includes shared mappings and is **not a unique application RAM footprint**. The 47.66 MiB arithmetic sum of native per-process phys_footprint is a different metric, likewise not independently validated as a unique application budget. WebKit GPU PID was **null**; do not assume there was no system GPU work.
+
+**Evidence bounds:** one debug/research binary, one actual Tauri app window, original canonical content unmodified. A direct PID lookup identifies the WebContent and Networking processes on this machine at this moment; it does not prove identical PIDs or resource costs across runs or on other macOS versions. Private WebKit methods may disappear, change, or be disallowed and must never be required by the production library. No trusted OS keyboard/pointer, IME/a11y, matched optimized-build memory or browserless speed advantage established. OpenSpec tasks 3.1, 4.1 and 4.2 remain unchecked.
 ## Source and trust boundary
 
 The standalone [`adapters/tauri-reference/`](../adapters/tauri-reference/) implements a minimal system-WebView desktop host using `tauri::Builder::default().run(tauri::generate_context!())`, one native window, and direct `frontendDist="../../../fixtures"`. No Vite, HTML/CSS conversion, privileged Rust commands or replacement fixture sources.
