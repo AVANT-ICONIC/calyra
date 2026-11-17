@@ -1,4 +1,4 @@
-name: CALYRA pinned Blitz RangeData and native Boa JS value regressions v3
+name: CALYRA native live RangeData JS and two-frame Vello CPU pixel proof v4
 
 on:
   push:
@@ -36,6 +36,7 @@ jobs:
             native/blitz/experiments/apply_range_state_paint.py \
             native/blitz/experiments/range_state.rs \
             native/blitz/experiments/range_js_semantics.rs \
+            native/blitz/experiments/calyra_live_range_screenshot.rs \
             native/blitz/experiments/apply_readonly_select.py \
             native/blitz/experiments/select_state_readonly.rs \
             native/blitz/patches/document-event-chain.patch \
@@ -95,6 +96,8 @@ jobs:
           python3 native/blitz/experiments/apply_range_state_paint.py \
             --source "$RUNNER_TEMP/calyra-blitz-ax-regression" \
             | tee "$O/native-range-patch.log"
+          cp native/blitz/experiments/calyra_live_range_screenshot.rs \
+            "$RUNNER_TEMP/calyra-blitz-ax-regression/examples/calyra_live_range_screenshot.rs"
           cp native/blitz/experiments/range_js_semantics.rs \
             "$RUNNER_TEMP/calyra-blitz-ax-regression/packages/blitz-vibey-script/tests/calyra_range.rs"
           cp native/blitz/experiments/ax_form_semantics_regression.rs \
@@ -141,6 +144,76 @@ jobs:
           echo "3/3 actual Boa JS range DOM accessors PASS" \
             | tee "$O/native-boa-range-js-verdict.txt"
 
+      - name: Render true same-document native Vello CPU frames before/after Boa range value mutation
+        shell: bash
+        run: |
+          set -euo pipefail
+          O="$GITHUB_WORKSPACE/$OUT"
+          cd "$RUNNER_TEMP/calyra-blitz-ax-regression"
+          set +e
+          cargo build --locked --example calyra_live_range_screenshot -j 3 \
+            > "$O/native-range-live-build.log" 2>&1
+          code=$?
+          set -e
+          echo "$code" > "$O/native-range-live-build-exit-code.txt"
+          tail -n 100 "$O/native-range-live-build.log"
+          test "$code" -eq 0
+          test -x target/debug/examples/calyra_live_range_screenshot
+          export CALYRA_CANONICAL_HTML="$GITHUB_WORKSPACE/fixtures/index.html"
+          export CALYRA_CANONICAL_CSS="$GITHUB_WORKSPACE/fixtures/reference.css"
+          export CALYRA_CANONICAL_JS="$GITHUB_WORKSPACE/fixtures/reference.js"
+          export CALYRA_LIVE_RANGE_OUT="$O"
+          target/debug/examples/calyra_live_range_screenshot \
+            > "$O/native-range-live-frames.log" 2>&1
+          cat "$O/native-range-live-frames.log"
+          grep -Fq 'CALYRA_RANGE_SAME_DOCUMENT=true' "$O/native-range-live-frames.log"
+          grep -Fq 'CALYRA_RANGE_FINAL_VALUE=18' "$O/native-range-live-frames.log"
+          python3 -m venv "$RUNNER_TEMP/calyra-range-pillow"
+          "$RUNNER_TEMP/calyra-range-pillow/bin/pip" \
+            install --disable-pip-version-check Pillow \
+            > "$O/pillow-install.log" 2>&1
+          "$RUNNER_TEMP/calyra-range-pillow/bin/python" - <<'PY'
+          from PIL import Image,ImageChops
+          from pathlib import Path
+          import hashlib,json,os
+          out=Path(os.environ['CALYRA_LIVE_RANGE_OUT'])
+          before=out/'range-before-64.png'
+          after=out/'range-after-18.png'
+          assert before.is_file() and after.is_file()
+          with Image.open(before) as a,Image.open(after) as b:
+            assert a.size==b.size==(1060,800),(a.size,b.size)
+            difference=ImageChops.difference(a.convert('RGB'),b.convert('RGB'))
+            changed=sum(1 for p in difference.getdata() if max(p)>=12)
+            bbox=difference.getbbox()
+            difference.save(out/'range-live-pixel-diff.png')
+          assert changed >= 50,(changed,bbox)
+          assert bbox is not None and bbox[0]>=150 and bbox[2]<=1050,(changed,bbox)
+          assert bbox[1]>=400 and bbox[3]<=800,(changed,bbox)
+          assert bbox[3]-bbox[1]<=95,(changed,bbox)
+          result={
+            'schema':'calyra.blitz-range-live-same-document-vello-cpu.v1',
+            'real_renderer':'AnyRender / Vello CPU',
+            'one_script_document':True,
+            'same_range_dom_node':True,
+            'first_native_current':64,'second_native_current':18,
+            'html_default_remains':64,
+            'original_html_css_js_unchanged':True,
+            'original_javascript_executed':True,
+            'actual_os_user_input_tested':False,
+            'hardware_gpu_tested':False,
+            'range_drag_keyboard_tested':False,
+            'changed_pixels_threshold_12':changed,
+            'diff_bbox':bbox,
+            'images_sha256':{
+              p.name:hashlib.sha256(p.read_bytes()).hexdigest()
+              for p in (before,after,out/'range-live-pixel-diff.png')
+            },
+          }
+          (out/'range-live-paint-verdict.json').write_text(
+            json.dumps(result,indent=2,sort_keys=True)+'\n')
+          print('Native same-document 64 -> 18 slider pixel count:',changed,bbox)
+          PY
+
       - name: Preserve actual source-pinned test evidence
         if: success()
         shell: bash
@@ -149,7 +222,7 @@ jobs:
           DEST=docs/evidence/blitz-native-range-regression
           mkdir -p "$DEST"
           cp -p "$OUT"/*.json "$OUT"/*.txt "$OUT"/*.log "$OUT"/*.patch \
-            "$DEST"/
+            "$OUT"/*.png "$DEST"/
           python3 - <<'PY'
           import hashlib,json
           from pathlib import Path
@@ -172,7 +245,7 @@ jobs:
         if: always()
         shell: bash
         run: |
-          echo '### CALYRA: pinned native RangeData plus real Boa JS regression tests' >> "$GITHUB_STEP_SUMMARY"
+          echo '### CALYRA: pinned RangeData, native Boa JS and same-document Vello CPU pixels' >> "$GITHUB_STEP_SUMMARY"
           echo 'These Rust unit tests do not prove macOS AX output, keyboard/IME, pointer, native popups, or the complete HTML-AAM name algorithm.' >> "$GITHUB_STEP_SUMMARY"
       - uses: actions/upload-artifact@v4
         if: always()
@@ -183,5 +256,6 @@ jobs:
             evidence/blitz-native-range-regression/*.txt
             evidence/blitz-native-range-regression/*.log
             evidence/blitz-native-range-regression/*.patch
+            evidence/blitz-native-range-regression/*.png
           retention-days: 14
           if-no-files-found: warn
