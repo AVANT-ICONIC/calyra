@@ -1,6 +1,7 @@
 name: CALYRA real macOS WKWebView accessibility read-only probe
 
 # Genuine original uninstrumented Tauri app; read-only AX tree inspection.
+# Follow-up compile proof: bridge Swift String AX keys into CFString at native API.
 # No keyboard/mouse injection, no TCC changes, no privileged frontend bridge.
 on:
   push:
