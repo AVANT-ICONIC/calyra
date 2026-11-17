@@ -60,7 +60,7 @@ jobs:
           test -x "$EXE"
           lipo -archs "$EXE" | tee "$OUT/app-architectures.txt"
           grep -qw arm64 "$OUT/app-architectures.txt"
-          printf '%s\n' "$PWD/$EXE" > "$OUT/original-app-binary-path.txt"
+          printf '%s\n' "$EXE" > "$OUT/original-app-binary-path.txt"
           clang -std=c11 -Wall -Wextra -Werror -O2 \
             harness/macos_process_metadata.c -lproc \
             -o "$OUT/process-metadata"
