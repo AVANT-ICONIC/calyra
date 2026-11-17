@@ -148,19 +148,35 @@ jobs:
             > evidence/tauri-macos-arm64/bundle-zip-sha256.txt
           du -sk "$APP" | tee evidence/tauri-macos-arm64/bundle-disk-kib.txt
           codesign -dv "$APP" > evidence/tauri-macos-arm64/code-signing.log 2>&1 || true
-      - name: Best-effort launch actual macOS application; not a GUI acceptance gate
+      - name: Best-effort absolute-path Launch Services smoke; not a GUI acceptance gate
         shell: bash
         run: |
           set -uo pipefail
-          APP="$(cat evidence/tauri-macos-arm64/app-path.txt)"
+          APP_REL="$(cat evidence/tauri-macos-arm64/app-path.txt)"
+          # macOS "open -a" resolves application names or ABSOLUTE paths, not
+          # relative paths containing directory separators. The prior probe
+          # falsely failed before reaching the app for this exact reason.
+          APP="$(cd "$(dirname "$APP_REL")" && pwd -P)/$(basename "$APP_REL")"
+          test -d "$APP/Contents/MacOS"
           {
+            printf 'absolute_app_path=%s\n' "$APP"
             echo 'Attempting to launch real Tauri app through macOS Launch Services'
-            /usr/bin/open -a "$APP" 2>&1
-            echo "open_exit_code=$?"
+            # A smoke failure should not invalidate the separately verified
+            # native build. Always archive the attempted launch and exit code.
+            set +e
+            /usr/bin/open -n -a "$APP" 2>&1
+            OPEN_RC=$?
+            set -e
+            printf 'open_exit_code=%s\n' "$OPEN_RC"
             sleep 5
-            echo 'Observed matching process names (may be absent on CI WindowServer):'
+            echo 'Observed matching processes (may be absent on CI WindowServer):'
             pgrep -fl 'calyra-tauri-reference|CALYRA Stage A' || true
-            echo 'This is a diagnostic only: a successful open is NOT first-frame, WKWebView DOM, or trusted OS input verification.'
+            if [ "$OPEN_RC" -eq 0 ]; then
+              echo 'launch_services_request=accepted (not proof of a rendered WKWebView frame)'
+            else
+              echo 'launch_services_request=rejected (inspect OS error above)'
+            fi
+            echo 'This diagnostic does NOT verify first frame, WKWebView DOM, trusted input, GPU or memory.'
           } 2>&1 | tee evidence/tauri-macos-arm64/launch-attempt.log
           exit 0
       - name: Report constrained successful output
