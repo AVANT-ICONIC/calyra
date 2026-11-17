@@ -29,7 +29,7 @@
   },
   "schema" : "calyra.macos-native-ax-inventory.v1",
   "screen_reader_tested" : false,
-  "target_pid" : 12379,
+  "target_pid" : 21157,
   "tree" : [
     {
       "depth" : 0,

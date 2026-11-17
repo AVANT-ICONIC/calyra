@@ -37,7 +37,7 @@
     912,
     740
   ],
-  "patched_native_mac_png_sha256": "60806304a2c85d3d76173c082f12eb342f9c8bd3cbd74234a27a5a3f9bf1a330",
+  "patched_native_mac_png_sha256": "2aced08e83345e5a8846229d02e21ebc5a0d6b16609935fbe45d81c9a45524e9",
   "real_os_input_ime_tested": false,
   "same_image_geometry": true,
   "schema": "calyra.blitz-macos-select-ax-contrast.v1",

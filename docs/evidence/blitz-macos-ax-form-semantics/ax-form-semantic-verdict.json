@@ -1,6 +1,6 @@
 {
   "accessibility_actions_verified": false,
-  "all_six_fields_match": false,
+  "all_six_fields_match": true,
   "complete_html_aam_algorithm_implemented": false,
   "expected_control_contract": {
     "apply_settings": {
@@ -36,7 +36,7 @@
   },
   "from_actual_native_blitz_process": true,
   "input_ime_pointer_keyboard_tested": false,
-  "matched_fields": 5,
+  "matched_fields": 6,
   "observed_roles_and_values": [
     {
       "depth": 2,
@@ -135,7 +135,7 @@
       "index": 48,
       "role": "AXCheckBox",
       "role_description": "checkbox",
-      "title": "Enable effectsNative checkbox with CSS presentation",
+      "title": "Enable effects Native checkbox with CSS presentation",
       "value": "1"
     },
     {
@@ -208,7 +208,7 @@
   "required_field_matches": {
     "apply_settings": true,
     "display_name": true,
-    "enable_effects": false,
+    "enable_effects": true,
     "material_intensity": true,
     "render_priority": true,
     "reset": true
