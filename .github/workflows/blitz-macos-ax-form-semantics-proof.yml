@@ -1,4 +1,4 @@
-name: CALYRA real macOS native AccessKit form-name and value experiment
+name: CALYRA native macOS AX six-field name/value and CSS block-label proof
 
 # New one-shot experiment reuses Linux-tested source-pinned SelectData patches.
 # The original CALYRA CSS/JS/HTML stay byte-for-byte unchanged.
@@ -377,6 +377,24 @@ jobs:
           git fetch origin feat/reference-fixtures
           git rebase origin/feat/reference-fixtures
           git push origin HEAD:refs/heads/feat/reference-fixtures
+
+      - name: Enforce actual six-of-six macOS AX field contracts after archiving evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          p=Path('docs/evidence/blitz-macos-ax-form-semantics/ax-form-semantic-verdict.json')
+          x=json.loads(p.read_text())
+          assert x['schema']=='calyra.blitz-macos-native-ax-form-semantics.v1'
+          assert x['total_fields']==6
+          assert x['matched_fields']==6,(x['matched_fields'],x['required_field_matches'])
+          assert x['all_six_fields_match'] is True
+          assert x['read_only'] is True
+          assert x['range_value_is_attribute_derived_only'] is True
+          print('PASS: 6/6 actual native macOS AX role/title/value pairs')
+          PY
 
       - name: Output honest native semantics verdict
         if: always()
