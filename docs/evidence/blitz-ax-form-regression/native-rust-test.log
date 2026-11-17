@@ -3,349 +3,349 @@
     Updating git repository `https://github.com/DioxusLabs/taffy`
     Updating git repository `https://github.com/lapce/floem`
  Downloading crates ...
-  Downloaded cfg-if v1.0.5
+  Downloaded adler2 v2.0.1
   Downloaded arrayref v0.3.9
-  Downloaded autocfg v1.5.1
-  Downloaded cfg_aliases v0.2.2
-  Downloaded arrayvec v0.7.8
-  Downloaded form_urlencoded v1.2.2
-  Downloaded futures-io v0.3.34
-  Downloaded bitflags v2.13.2
-  Downloaded icu_casemap_data v2.3.0
-  Downloaded heck v0.5.0
-  Downloaded longest-increasing-subsequence v0.1.0
-  Downloaded byteorder v1.5.0
   Downloaded async-trait v0.1.92
-  Downloaded borsh v1.8.1
-  Downloaded new_debug_unreachable v1.0.6
-  Downloaded anyhow v1.0.104
-  Downloaded base64 v0.23.1
-  Downloaded pkg-config v0.3.34
-  Downloaded konst_macro_rules v0.2.19
-  Downloaded allocator-api2 v0.2.21
-  Downloaded font-types v0.12.7
-  Downloaded dioxus-stores-macro v0.8.0-alpha.3
-  Downloaded enumset v1.1.14
-  Downloaded dioxus-history v0.8.0-alpha.3
-  Downloaded dioxus-core-template v0.8.0-alpha.3
-  Downloaded foldhash v0.2.0
-  Downloaded dtoa-short v0.3.5
-  Downloaded js-sys v0.3.106
-  Downloaded dioxus-document v0.8.0-alpha.3
-  Downloaded darling_macro v0.20.11
-  Downloaded dunce v1.0.5
-  Downloaded dioxus-web v0.8.0-alpha.3
-  Downloaded proc-macro2 v1.0.107
-  Downloaded fearless_simd_macros v0.1.0
-  Downloaded fastrand v2.5.0
-  Downloaded fdeflate v0.3.7
-  Downloaded dioxus-devtools v0.8.0-alpha.3
-  Downloaded enumset_derive v0.15.0
-  Downloaded fnv v1.0.7
-  Downloaded cursor-icon v1.2.0
-  Downloaded proc-macro2-diagnostics v0.10.1
-  Downloaded equivalent v1.0.2
+  Downloaded cfg_aliases v0.2.2
+  Downloaded darling_macro v0.21.3
+  Downloaded cssparser-macros v0.7.1
+  Downloaded futures-task v0.3.34
+  Downloaded futures-macro v0.3.34
+  Downloaded precomputed-hash v0.1.1
   Downloaded ppv-lite86 v0.2.21
-  Downloaded dioxus-signals v0.8.0-alpha.3
-  Downloaded fontique v0.13.0
-  Downloaded gif v0.14.2
-  Downloaded fontdb v0.24.0
-  Downloaded flate2 v1.1.10
-  Downloaded simd-adler32 v0.3.10
-  Downloaded fearless_simd v1.1.0
-  Downloaded sharded-slab v0.1.7
-  Downloaded stable_deref_trait v1.2.1
-  Downloaded quote v1.0.47
-  Downloaded smol_str v0.3.6
-  Downloaded lazy_static v1.5.1
-  Downloaded rustc-hash v1.1.0
-  Downloaded serde_core v1.0.229
-  Downloaded regex-syntax v0.8.11
-  Downloaded serde_json v1.0.151
-  Downloaded stylo_static_prefs v0.24.0
-  Downloaded sledgehammer_bindgen_macro v0.6.5
-  Downloaded smallbitvec v2.6.1
-  Downloaded serde v1.0.229
-  Downloaded skrifa v0.49.0
-  Downloaded stylo_dom v0.24.0
-  Downloaded simplecss v0.2.2
-  Downloaded semver v1.0.28
-  Downloaded strum v0.28.0
-  Downloaded string_cache_codegen v0.11.2
-  Downloaded slotmap v1.1.1
-  Downloaded icu_provider v2.3.1
-  Downloaded yeslogic-fontconfig-sys v6.0.1
-  Downloaded sledgehammer_bindgen v0.6.0
-  Downloaded zmij v1.0.23
-  Downloaded thiserror-impl v2.0.21
-  Downloaded yoke v0.8.3
-  Downloaded tendril v0.5.1
-  Downloaded stylo_traits v0.24.0
-  Downloaded stylo_atoms v0.24.0
-  Downloaded png v0.18.1
-  Downloaded parley v0.13.0
-  Downloaded toml v1.1.8+spec-1.1.0
-  Downloaded zune-jpeg v0.5.15
-  Downloaded synstructure v0.13.2
-  Downloaded zune-core v0.5.3
-  Downloaded unicode-ident v1.0.26
-  Downloaded wasm-bindgen-futures v0.4.79
-  Downloaded zlib-rs v0.6.8
-  Downloaded tiny-skia-path v0.12.0
-  Downloaded warnings-macro v0.2.0
-  Downloaded image v0.25.10
-  Downloaded zerofrom-derive v0.1.8
-  Downloaded weezl v0.1.12
-  Downloaded writeable v0.6.4
-  Downloaded xml5ever v0.40.0
-  Downloaded zerovec-derive v0.11.6
-  Downloaded vello_common v0.4.0
-  Downloaded zerovec v0.11.8
-  Downloaded winnow v1.0.4
-  Downloaded tracing-subscriber v0.3.23
-  Downloaded zerotrie v0.2.5
-  Downloaded url v2.5.8
-  Downloaded syn v3.0.6
-  Downloaded wasm-bindgen-macro-support v0.2.129
-  Downloaded winnow v0.7.15
-  Downloaded icu_normalizer v2.3.0
-  Downloaded vello_cpu v0.4.0
-  Downloaded read-fonts v0.46.0
-  Downloaded typenum v1.20.1
-  Downloaded unicode-segmentation v1.13.3
-  Downloaded test-that v0.6.0
-  Downloaded tracing v0.1.44
-  Downloaded syn v2.0.119
-  Downloaded zerocopy v0.8.62
-  Downloaded wasm-bindgen v0.2.129
-  Downloaded uuid v1.27.0
-  Downloaded pxfm v0.1.30
-  Downloaded harfrust v0.15.0
-  Downloaded libc v0.2.189
-  Downloaded wasm-streams v0.5.0
-  Downloaded walkdir v2.5.0
-  Downloaded tungstenite v0.29.0
-  Downloaded toml_parser v1.1.5+spec-1.1.0
-  Downloaded tinystr v0.8.4
-  Downloaded web_atoms v0.3.0
-  Downloaded web-sys v0.3.106
-  Downloaded web-time v1.1.0
-  Downloaded version_check v0.9.5
-  Downloaded tracing-core v0.1.36
-  Downloaded tracing-attributes v0.1.31
-  Downloaded toml_writer v1.1.3+spec-1.1.0
-  Downloaded toml_datetime v1.1.2+spec-1.1.0
-  Downloaded tinyvec v1.13.3
-  Downloaded synstructure v0.14.0
-  Downloaded stylo_derive v0.24.0
-  Downloaded static_assertions v1.1.0
-  Downloaded zerofrom v0.1.8
-  Downloaded yoke-derive v0.8.4
-  Downloaded wasm-bindgen-shared v0.2.129
-  Downloaded wasm-bindgen-macro v0.2.129
-  Downloaded warnings v0.2.1
+  Downloaded raw-window-handle v0.6.2
+  Downloaded rand_core v0.9.5
+  Downloaded same-file v1.0.6
+  Downloaded rustc_version v0.4.1
+  Downloaded rustversion v1.0.23
+  Downloaded strum_macros v0.28.0
   Downloaded unicode-xid v0.2.6
-  Downloaded unicode-script v0.5.8
-  Downloaded to_shmem v0.8.0
-  Downloaded test-that-macro v0.6.0
-  Downloaded string_cache v0.11.0
-  Downloaded utf8_iter v1.0.4
-  Downloaded svgtypes v0.16.2
-  Downloaded stylo_malloc_size_of v0.24.0
-  Downloaded thin-vec v0.2.21
-  Downloaded unicode-vo v0.1.0
-  Downloaded unicode-bidi v0.3.18
-  Downloaded uluru v3.1.0
-  Downloaded thread_local v1.1.10
-  Downloaded subsecond-types v0.8.0-alpha.3
-  Downloaded rayon v1.12.0
+  Downloaded static_assertions v1.1.0
+  Downloaded web_atoms v0.3.0
+  Downloaded yoke-derive v0.8.4
+  Downloaded yeslogic-fontconfig-sys v6.0.1
+  Downloaded yoke v0.8.3
+  Downloaded zmij v1.0.23
+  Downloaded uuid v1.27.0
+  Downloaded vello_cpu v0.4.0
+  Downloaded wasm-bindgen-macro-support v0.2.129
+  Downloaded harfrust v0.15.0
+  Downloaded zune-core v0.5.3
+  Downloaded usvg v0.50.0
+  Downloaded url v2.5.8
+  Downloaded winnow v1.0.4
+  Downloaded winnow v0.7.15
+  Downloaded typenum v1.20.1
+  Downloaded tracing-subscriber v0.3.23
+  Downloaded zerofrom-derive v0.1.8
+  Downloaded tracing v0.1.44
+  Downloaded zerovec-derive v0.11.6
+  Downloaded libc v0.2.189
+  Downloaded syn v2.0.119
+  Downloaded zerofrom v0.1.8
+  Downloaded icu_normalizer v2.3.0
+  Downloaded stylo v0.24.0
+  Downloaded unicode-segmentation v1.13.3
+  Downloaded image v0.25.10
+  Downloaded tungstenite v0.29.0
+  Downloaded zlib-rs v0.6.8
+  Downloaded zune-jpeg v0.5.15
+  Downloaded vello_common v0.4.0
+  Downloaded test-that v0.6.0
+  Downloaded syn v3.0.6
   Downloaded moxcms v0.8.1
   Downloaded kurbo v0.13.1
-  Downloaded xmlwriter v0.1.0
-  Downloaded void v1.0.2
-  Downloaded stylo v0.24.0
-  Downloaded usvg v0.50.0
-  Downloaded to_shmem_derive v0.3.0
-  Downloaded libm v0.2.16
-  Downloaded idna v1.1.0
   Downloaded icu_properties_data v2.3.0
+  Downloaded xml5ever v0.40.0
+  Downloaded wasm-bindgen v0.2.129
+  Downloaded unicode-bidi v0.3.18
+  Downloaded web-sys v0.3.106
+  Downloaded tracing-attributes v0.1.31
+  Downloaded toml v1.1.8+spec-1.1.0
+  Downloaded png v0.18.1
+  Downloaded parley v0.13.0
+  Downloaded libm v0.2.16
   Downloaded itertools v0.14.0
   Downloaded hashbrown v0.17.1
-  Downloaded rand v0.8.8
-  Downloaded futures-util v0.3.34
-  Downloaded subsecond v0.8.0-alpha.3
-  Downloaded memchr v2.8.3
-  Downloaded indexmap v2.14.2
   Downloaded xxhash-rust v0.8.19
-  Downloaded thiserror v2.0.21
-  Downloaded slab v0.4.12
-  Downloaded rand v0.9.5
-  Downloaded keyboard-types v0.8.3
+  Downloaded xmlwriter v0.1.0
+  Downloaded writeable v0.6.4
+  Downloaded weezl v0.1.12
+  Downloaded wasm-streams v0.5.0
+  Downloaded wasm-bindgen-futures v0.4.79
+  Downloaded tracing-core v0.1.36
+  Downloaded toml_datetime v1.1.2+spec-1.1.0
+  Downloaded tinystr v0.8.4
+  Downloaded svgtypes v0.16.2
+  Downloaded memchr v2.8.3
+  Downloaded js-sys v0.3.106
+  Downloaded idna v1.1.0
   Downloaded icu_properties v2.3.0
-  Downloaded icu_locale_core v2.3.0
   Downloaded http v1.5.0
-  Downloaded siphasher v1.0.4
+  Downloaded wasm-bindgen-shared v0.2.129
+  Downloaded wasm-bindgen-macro v0.2.129
+  Downloaded warnings-macro v0.2.0
+  Downloaded warnings v0.2.1
+  Downloaded walkdir v2.5.0
+  Downloaded void v1.0.2
+  Downloaded version_check v0.9.5
+  Downloaded utf8_iter v1.0.4
+  Downloaded unicode-vo v0.1.0
+  Downloaded unicode-script v0.5.8
+  Downloaded uluru v3.1.0
+  Downloaded toml_writer v1.1.3+spec-1.1.0
+  Downloaded to_shmem_derive v0.3.0
+  Downloaded icu_segmenter_data v2.3.0
+  Downloaded to_shmem v0.8.0
+  Downloaded tiny-skia-path v0.12.0
+  Downloaded thread_local v1.1.10
+  Downloaded thiserror-impl v2.0.21
+  Downloaded test-that-macro v0.6.0
+  Downloaded tendril v0.5.1
+  Downloaded synstructure v0.14.0
+  Downloaded subsecond-types v0.8.0-alpha.3
+  Downloaded subsecond v0.8.0-alpha.3
+  Downloaded stylo_traits v0.24.0
+  Downloaded stylo_static_prefs v0.24.0
+  Downloaded stylo_malloc_size_of v0.24.0
+  Downloaded stylo_dom v0.24.0
+  Downloaded stylo_derive v0.24.0
+  Downloaded icu_segmenter v2.3.0
+  Downloaded stylo_atoms v0.24.0
+  Downloaded zerovec v0.11.8
+  Downloaded string_cache v0.11.0
+  Downloaded strict-num v0.1.1
+  Downloaded skrifa v0.49.0
+  Downloaded read-fonts v0.46.0
+  Downloaded parley_engine v0.13.0
+  Downloaded zerotrie v0.2.5
+  Downloaded zerocopy v0.8.62
+  Downloaded keyboard-types v0.8.3
+  Downloaded indexmap v2.14.2
+  Downloaded icu_locale_core v2.3.0
+  Downloaded icu_collections v2.3.0
+  Downloaded html5ever v0.40.1
+  Downloaded web-time v1.1.0
+  Downloaded unicode-ident v1.0.26
+  Downloaded toml_parser v1.1.5+spec-1.1.0
+  Downloaded tinyvec v1.13.3
+  Downloaded thiserror v2.0.21
+  Downloaded thin-vec v0.2.21
+  Downloaded synstructure v0.13.2
+  Downloaded serde_json v1.0.151
+  Downloaded serde v1.0.229
   Downloaded selectors v0.43.0
+  Downloaded roxmltree v0.21.1
+  Downloaded roxmltree v0.20.0
+  Downloaded regex-automata v0.4.18
+  Downloaded pxfm v0.1.30
+  Downloaded pin-project v1.1.13
+  Downloaded parley_data v0.13.0
+  Downloaded parking_lot_core v0.9.12
+  Downloaded num-traits v0.2.19
   Downloaded miniz_oxide v0.9.1
   Downloaded miniz_oxide v0.8.9
   Downloaded log v0.4.34
   Downloaded konst v0.2.20
   Downloaded image-webp v0.2.4
-  Downloaded icu_collections v2.3.0
-  Downloaded strum_macros v0.28.0
-  Downloaded strict-num v0.1.1
-  Downloaded parley_engine v0.13.0
-  Downloaded roxmltree v0.21.1
-  Downloaded parking_lot_core v0.9.12
-  Downloaded num-traits v0.2.19
-  Downloaded pin-project-internal v1.1.13
-  Downloaded pin-project v1.1.13
-  Downloaded phf v0.14.0
-  Downloaded peniko v0.6.1
-  Downloaded parley_data v0.13.0
+  Downloaded icu_normalizer_data v2.3.0
+  Downloaded glifo v0.5.0
+  Downloaded gif v0.14.2
+  Downloaded getrandom v0.3.4
+  Downloaded stable_deref_trait v1.2.1
+  Downloaded smol_str v0.3.6
+  Downloaded smallvec v1.16.2
+  Downloaded slotmap v1.1.1
+  Downloaded sledgehammer_utils v0.3.1
+  Downloaded sledgehammer_bindgen v0.6.0
+  Downloaded slab v0.4.12
+  Downloaded simdutf8 v0.1.5
+  Downloaded sharded-slab v0.1.7
+  Downloaded servo_arc v0.6.0
+  Downloaded serde_derive v1.0.229
+  Downloaded serde_core v1.0.229
+  Downloaded serde-wasm-bindgen v0.6.5
+  Downloaded semver v1.0.28
+  Downloaded regex-syntax v0.8.11
+  Downloaded regex v1.13.1
+  Downloaded rayon v1.12.0
+  Downloaded pin-project-lite v0.2.17
+  Downloaded phf_shared v0.14.0
+  Downloaded phf_codegen v0.14.0
+  Downloaded parking_lot v0.12.5
   Downloaded once_cell v1.21.4
   Downloaded num-integer v0.1.47
   Downloaded memmap2 v0.9.11
-  Downloaded litemap v0.8.3
-  Downloaded httparse v1.10.1
-  Downloaded getrandom v0.3.4
-  Downloaded generational-box v0.8.0-alpha.3
-  Downloaded simdutf8 v0.1.5
-  Downloaded serde_derive v1.0.229
-  Downloaded serde-wasm-bindgen v0.6.5
-  Downloaded scopeguard v1.2.0
-  Downloaded rustversion v1.0.23
-  Downloaded regex v1.13.1
-  Downloaded phf_generator v0.14.0
-  Downloaded parlance v0.1.1
-  Downloaded parking_lot v0.12.5
-  Downloaded markup5ever v0.40.0
   Downloaded manganis-macro v0.8.0-alpha.3
+  Downloaded manganis-core v0.8.0-alpha.3
+  Downloaded litemap v0.8.3
+  Downloaded icu_provider v2.3.1
+  Downloaded icu_locale_fallback_data v2.3.0
+  Downloaded icu_casemap v2.3.0
+  Downloaded httparse v1.10.1
+  Downloaded generic-array v0.14.7
+  Downloaded futures-util v0.3.34
+  Downloaded fearless_simd v1.1.0
+  Downloaded strum v0.28.0
+  Downloaded string_cache_codegen v0.11.2
+  Downloaded sledgehammer_bindgen_macro v0.6.5
+  Downloaded siphasher v1.0.4
+  Downloaded simplecss v0.2.2
+  Downloaded simd-adler32 v0.3.10
+  Downloaded sha1 v0.10.7
+  Downloaded serde_spanned v1.1.2
+  Downloaded serde_repr v0.1.21
+  Downloaded send_wrapper v0.6.0
+  Downloaded scopeguard v1.2.0
+  Downloaded rustc-hash v2.1.3
+  Downloaded rustc-hash v1.1.0
+  Downloaded polycool v0.4.0
+  Downloaded pkg-config v0.3.34
+  Downloaded pin-project-internal v1.1.13
+  Downloaded phf_macros v0.14.0
+  Downloaded phf_generator v0.14.0
+  Downloaded phf v0.14.0
+  Downloaded percent-encoding v2.3.2
+  Downloaded peniko v0.6.1
+  Downloaded parley_emoji v0.13.0
+  Downloaded num_cpus v1.17.0
+  Downloaded num-derive v0.4.2
+  Downloaded new_debug_unreachable v1.0.6
+  Downloaded multiversion_no_op v1.0.0
+  Downloaded matchers v0.2.0
+  Downloaded markup5ever v0.40.0
+  Downloaded manganis v0.8.0-alpha.3
+  Downloaded malloc_size_of_derive v0.1.3
+  Downloaded longest-increasing-subsequence v0.1.0
   Downloaded lock_api v0.4.14
   Downloaded libloading v0.8.9
   Downloaded imagesize v0.15.0
-  Downloaded icu_casemap v2.3.0
-  Downloaded html5ever v0.40.1
-  Downloaded html-escape v0.2.15
-  Downloaded futures-task v0.3.34
-  Downloaded futures-channel v0.3.34
-  Downloaded smallvec v1.16.2
-  Downloaded sha1 v0.10.7
-  Downloaded send_wrapper v0.6.0
-  Downloaded rand_core v0.9.5
-  Downloaded quick-error v2.0.1
-  Downloaded polycool v0.4.0
-  Downloaded pin-project-lite v0.2.17
-  Downloaded phf_shared v0.14.0
-  Downloaded phf_macros v0.14.0
-  Downloaded phf_codegen v0.14.0
-  Downloaded num-derive v0.4.2
-  Downloaded matchers v0.2.0
-  Downloaded manganis-core v0.8.0-alpha.3
-  Downloaded idna_adapter v1.0.0
-  Downloaded rustc-hash v2.1.3
-  Downloaded parley_emoji v0.13.0
-  Downloaded rustc_version v0.4.1
-  Downloaded mime v0.3.17
-  Downloaded manganis v0.8.0-alpha.3
-  Downloaded linebender_resource_handle v0.1.1
-  Downloaded sledgehammer_utils v0.3.1
-  Downloaded serde_repr v0.1.21
-  Downloaded pico-args v0.5.0
-  Downloaded malloc_size_of_derive v0.1.3
-  Downloaded lazy-js-bundle v0.8.0-alpha.3
-  Downloaded futures-core v0.3.34
-  Downloaded roxmltree v0.20.0
-  Downloaded num_cpus v1.17.0
-  Downloaded icu_normalizer_data v2.3.0
-  Downloaded guillotiere v0.7.0
-  Downloaded glifo v0.5.0
-  Downloaded regex-automata v0.4.18
-  Downloaded rayon-core v1.13.0
-  Downloaded percent-encoding v2.3.2
-  Downloaded multiversion_no_op v1.0.0
-  Downloaded macro-string v0.1.4
-  Downloaded itoa v1.0.18
-  Downloaded futures-sink v0.3.34
-  Downloaded icu_locale_fallback_data v2.3.0
+  Downloaded icu_locale_fallback v2.3.0
   Downloaded gloo-timers v0.4.0
-  Downloaded generic-array v0.14.7
-  Downloaded servo_arc v0.6.0
-  Downloaded serde_spanned v1.1.2
-  Downloaded raw-window-handle v0.6.2
-  Downloaded const_format v0.2.36
-  Downloaded icu_segmenter_data v2.3.0
-  Downloaded rand_core v0.6.4
-  Downloaded same-file v1.0.6
-  Downloaded rand_chacha v0.9.0
-  Downloaded precomputed-hash v0.1.1
-  Downloaded potential_utf v0.1.6
   Downloaded encoding_rs v0.8.42
+  Downloaded smallbitvec v2.6.1
+  Downloaded pico-args v0.5.0
+  Downloaded macro-string v0.1.4
+  Downloaded lazy-js-bundle v0.8.0-alpha.3
+  Downloaded idna_adapter v1.0.0
+  Downloaded ident_case v1.0.1
+  Downloaded html-escape v0.2.15
+  Downloaded rayon-core v1.13.0
+  Downloaded rand v0.9.5
+  Downloaded rand v0.8.8
+  Downloaded mime v0.3.17
+  Downloaded linebender_resource_handle v0.1.1
+  Downloaded lazy_static v1.5.1
+  Downloaded guillotiere v0.7.0
+  Downloaded itoa v1.0.18
+  Downloaded icu_casemap_data v2.3.0
+  Downloaded heck v0.5.0
+  Downloaded konst_macro_rules v0.2.19
+  Downloaded fontdb v0.24.0
+  Downloaded rand_core v0.6.4
+  Downloaded rand_chacha v0.9.0
+  Downloaded quote v1.0.47
+  Downloaded quick-error v2.0.1
+  Downloaded proc-macro2-diagnostics v0.10.1
+  Downloaded proc-macro2 v1.0.107
+  Downloaded parlance v0.1.1
+  Downloaded fontique v0.13.0
+  Downloaded font-types v0.12.7
+  Downloaded flate2 v1.1.10
+  Downloaded euclid v0.22.14
+  Downloaded dtoa v1.0.11
+  Downloaded dioxus-web v0.8.0-alpha.3
+  Downloaded dioxus-stores v0.8.0-alpha.3
+  Downloaded dioxus-signals v0.8.0-alpha.3
+  Downloaded dioxus-rsx v0.8.0-alpha.3
+  Downloaded dioxus-interpreter-js v0.8.0-alpha.3
   Downloaded dioxus-html v0.8.0-alpha.3
+  Downloaded dioxus-document v0.8.0-alpha.3
+  Downloaded dioxus-core-macro v0.8.0-alpha.3
+  Downloaded dioxus-core v0.8.0-alpha.3
+  Downloaded dioxus v0.8.0-alpha.3
   Downloaded derive_more-impl v2.1.1
   Downloaded derive_more v2.1.1
   Downloaded darling_core v0.21.3
-  Downloaded color v0.3.3
-  Downloaded dioxus-rsx v0.8.0-alpha.3
-  Downloaded dioxus-const-vec v0.8.0-alpha.3
-  Downloaded core_detect v1.0.0
-  Downloaded dioxus-html-internal-macro v0.8.0-alpha.3
-  Downloaded dioxus-core-types v0.8.0-alpha.3
   Downloaded darling_core v0.20.11
-  Downloaded core_maths v0.1.1
-  Downloaded dlib v0.5.3
-  Downloaded darling_macro v0.21.3
-  Downloaded dioxus-logger v0.8.0-alpha.3
-  Downloaded dioxus-hooks v0.8.0-alpha.3
-  Downloaded dioxus-core v0.8.0-alpha.3
-  Downloaded dioxus-config-macros v0.8.0-alpha.3
-  Downloaded dioxus v0.8.0-alpha.3
   Downloaded cssparser v0.38.0
-  Downloaded crossbeam-deque v0.8.8
-  Downloaded icu_segmenter v2.3.0
-  Downloaded crc32fast v1.5.2
-  Downloaded convert_case v0.8.0
-  Downloaded const-serialize v0.8.0-alpha.3
+  Downloaded crossbeam-epoch v0.9.21
+  Downloaded const_format v0.2.36
+  Downloaded color v0.3.3
+  Downloaded bytes v1.12.1
+  Downloaded bumpalo v3.20.3
+  Downloaded borsh v1.8.1
+  Downloaded bitflags v2.13.2
+  Downloaded base64 v0.23.1
+  Downloaded aho-corasick v1.1.5
+  Downloaded futures-channel v0.3.34
   Downloaded fontconfig-parser v0.5.8
-  Downloaded euclid v0.22.14
+  Downloaded foldhash v0.2.0
+  Downloaded fdeflate v0.3.7
+  Downloaded fastrand v2.5.0
+  Downloaded enumset_derive v0.15.0
+  Downloaded enumset v1.1.14
   Downloaded either v1.19.0
   Downloaded displaydoc v0.2.7
-  Downloaded dioxus-stores v0.8.0-alpha.3
+  Downloaded dioxus-hooks v0.8.0-alpha.3
+  Downloaded dioxus-history v0.8.0-alpha.3
   Downloaded dioxus-devtools-types v0.8.0-alpha.3
-  Downloaded debug_timer v0.1.3
-  Downloaded crypto-common v0.1.7
-  Downloaded color_quant v1.1.0
-  Downloaded dioxus-core-macro v0.8.0-alpha.3
-  Downloaded darling v0.20.11
-  Downloaded cssparser-macros v0.7.1
-  Downloaded crossbeam-utils v0.8.23
-  Downloaded crossbeam-epoch v0.9.21
+  Downloaded dioxus-core-template v0.8.0-alpha.3
   Downloaded digest v0.10.7
+  Downloaded darling v0.20.11
+  Downloaded crc32fast v1.5.2
+  Downloaded const-serialize v0.8.0-alpha.3
+  Downloaded bytemuck v1.25.2
+  Downloaded potential_utf v0.1.6
+  Downloaded generational-box v0.8.0-alpha.3
+  Downloaded futures-sink v0.3.34
+  Downloaded fnv v1.0.7
+  Downloaded float-cmp v0.9.0
+  Downloaded fearless_simd_macros v0.1.0
+  Downloaded equivalent v1.0.2
+  Downloaded dunce v1.0.5
+  Downloaded dtoa-short v0.3.5
+  Downloaded dlib v0.5.3
+  Downloaded dioxus-stores-macro v0.8.0-alpha.3
+  Downloaded dioxus-logger v0.8.0-alpha.3
+  Downloaded dioxus-html-internal-macro v0.8.0-alpha.3
+  Downloaded dioxus-devtools v0.8.0-alpha.3
+  Downloaded dioxus-core-types v0.8.0-alpha.3
+  Downloaded dioxus-const-vec v0.8.0-alpha.3
+  Downloaded dioxus-config-macros v0.8.0-alpha.3
+  Downloaded dioxus-config-macro v0.8.0-alpha.3
+  Downloaded dioxus-cli-config v0.8.0-alpha.3
+  Downloaded dioxus-asset-resolver v0.8.0-alpha.3
+  Downloaded debug_timer v0.1.3
   Downloaded data-url v0.3.2
   Downloaded darling v0.21.3
-  Downloaded adler2 v2.0.1
-  Downloaded cpufeatures v0.2.17
-  Downloaded dioxus-config-macro v0.8.0-alpha.3
-  Downloaded data-encoding v2.11.1
+  Downloaded cursor-icon v1.2.0
+  Downloaded crossbeam-utils v0.8.23
+  Downloaded crossbeam-deque v0.8.8
+  Downloaded convert_case v0.8.0
   Downloaded const-serialize-macro v0.8.0-alpha.3
-  Downloaded dioxus-interpreter-js v0.8.0-alpha.3
-  Downloaded dioxus-asset-resolver v0.8.0-alpha.3
-  Downloaded const_format_proc_macros v0.2.34
-  Downloaded dtoa v1.0.11
-  Downloaded dioxus-cli-config v0.8.0-alpha.3
-  Downloaded aho-corasick v1.1.5
-  Downloaded accesskit v0.25.1
-  Downloaded icu_locale_fallback v2.3.0
-  Downloaded futures-macro v0.3.34
+  Downloaded color_quant v1.1.0
+  Downloaded byteorder v1.5.0
   Downloaded bytemuck_derive v1.12.1
-  Downloaded bumpalo v3.20.3
-  Downloaded ident_case v1.0.1
-  Downloaded float-cmp v0.9.0
-  Downloaded bytes v1.12.1
-  Downloaded atomic_refcell v0.1.14
-  Downloaded byteorder-lite v0.1.0
-  Downloaded bytemuck v1.25.2
+  Downloaded core_detect v1.0.0
+  Downloaded const_format_proc_macros v0.2.34
+  Downloaded autocfg v1.5.1
+  Downloaded futures-io v0.3.34
+  Downloaded futures-core v0.3.34
+  Downloaded form_urlencoded v1.2.2
+  Downloaded data-encoding v2.11.1
+  Downloaded darling_macro v0.20.11
+  Downloaded crypto-common v0.1.7
+  Downloaded core_maths v0.1.1
+  Downloaded cfg-if v1.0.5
   Downloaded block-buffer v0.10.4
+  Downloaded byteorder-lite v0.1.0
+  Downloaded cpufeatures v0.2.17
+  Downloaded allocator-api2 v0.2.21
+  Downloaded accesskit v0.25.1
+  Downloaded atomic_refcell v0.1.14
+  Downloaded arrayvec v0.7.8
+  Downloaded anyhow v1.0.104
   Downloaded app_units v0.7.8
    Compiling proc-macro2 v1.0.107
    Compiling unicode-ident v1.0.26
@@ -360,44 +360,44 @@
    Compiling stable_deref_trait v1.2.1
    Compiling version_check v0.9.5
    Compiling once_cell v1.21.4
+   Compiling siphasher v1.0.4
    Compiling parking_lot_core v0.9.12
    Compiling scopeguard v1.2.0
-   Compiling siphasher v1.0.4
    Compiling lock_api v0.4.14
    Compiling parking_lot v0.12.5
    Compiling phf_shared v0.14.0
-   Compiling synstructure v0.14.0
    Compiling autocfg v1.5.1
    Compiling num-traits v0.2.19
+   Compiling synstructure v0.14.0
    Compiling bitflags v2.13.2
    Compiling log v0.4.34
    Compiling fastrand v2.5.0
    Compiling phf_generator v0.14.0
-   Compiling foldhash v0.2.0
-   Compiling rustversion v1.0.23
-   Compiling fnv v1.0.7
-   Compiling ident_case v1.0.1
-   Compiling memmap2 v0.9.11
    Compiling serde_derive v1.0.229
    Compiling zerofrom-derive v0.1.8
-   Compiling yoke-derive v0.8.4
    Compiling zerofrom v0.1.8
+   Compiling yoke-derive v0.8.4
    Compiling bytemuck_derive v1.12.1
    Compiling yoke v0.8.3
+   Compiling foldhash v0.2.0
+   Compiling ident_case v1.0.1
+   Compiling bytemuck v1.25.2
+   Compiling fnv v1.0.7
+   Compiling rustversion v1.0.23
+   Compiling memmap2 v0.9.11
    Compiling thiserror v2.0.21
    Compiling dioxus-const-vec v0.8.0-alpha.3
    Compiling zerovec-derive v0.11.6
-   Compiling bytemuck v1.25.2
    Compiling thiserror-impl v2.0.21
    Compiling libloading v0.8.9
-   Compiling memchr v2.8.3
    Compiling rustc-hash v2.1.3
+   Compiling memchr v2.8.3
    Compiling itoa v1.0.18
    Compiling zerovec v0.11.8
    Compiling displaydoc v0.2.7
    Compiling slotmap v1.1.1
-   Compiling allocator-api2 v0.2.21
    Compiling arrayvec v0.7.8
+   Compiling allocator-api2 v0.2.21
    Compiling equivalent v1.0.2
    Compiling hashbrown v0.17.1
    Compiling utf8_iter v1.0.4
@@ -405,113 +405,113 @@
    Compiling writeable v0.6.4
    Compiling euclid v0.22.14
    Compiling phf_macros v0.14.0
-   Compiling pin-project-lite v0.2.17
    Compiling precomputed-hash v0.1.1
+   Compiling pin-project-lite v0.2.17
    Compiling string_cache v0.11.0
-   Compiling phf v0.14.0
    Compiling tinystr v0.8.4
-   Compiling string_cache_codegen v0.11.2
+   Compiling phf v0.14.0
    Compiling tracing-attributes v0.1.31
+   Compiling string_cache_codegen v0.11.2
    Compiling tracing-core v0.1.36
    Compiling litemap v0.8.3
    Compiling simd-adler32 v0.3.10
    Compiling icu_locale_core v2.3.0
    Compiling potential_utf v0.1.6
-   Compiling polycool v0.4.0
    Compiling tracing v0.1.44
    Compiling zerotrie v0.2.5
+   Compiling polycool v0.4.0
    Compiling font-types v0.12.7
    Compiling proc-macro2-diagnostics v0.10.1
-   Compiling adler2 v2.0.1
    Compiling linebender_resource_handle v0.1.1
-   Compiling xxhash-rust v0.8.19
    Compiling crc32fast v1.5.2
    Compiling unicode-segmentation v1.13.3
+   Compiling xxhash-rust v0.8.19
+   Compiling adler2 v2.0.1
+   Compiling convert_case v0.8.0
    Compiling read-fonts v0.46.0
    Compiling icu_provider v2.3.1
-   Compiling convert_case v0.8.0
    Compiling kurbo v0.13.1
    Compiling darling_core v0.20.11
-   Compiling dioxus-core-template v0.8.0-alpha.3
    Compiling miniz_oxide v0.9.1
    Compiling darling_macro v0.20.11
+   Compiling dioxus-core-template v0.8.0-alpha.3
    Compiling icu_collections v2.3.0
    Compiling synstructure v0.13.2
    Compiling futures-core v0.3.34
-   Compiling dioxus-core-types v0.8.0-alpha.3
+   Compiling dtoa v1.0.11
    Compiling anyhow v1.0.104
    Compiling konst_macro_rules v0.2.19
-   Compiling dtoa v1.0.11
+   Compiling dioxus-core-types v0.8.0-alpha.3
    Compiling unicode-xid v0.2.6
    Compiling const_format_proc_macros v0.2.34
-   Compiling dtoa-short v0.3.5
    Compiling konst v0.2.20
+   Compiling dtoa-short v0.3.5
+   Compiling dioxus-rsx v0.8.0-alpha.3
    Compiling darling v0.20.11
    Compiling flate2 v1.1.10
-   Compiling dioxus-rsx v0.8.0-alpha.3
    Compiling subsecond-types v0.8.0-alpha.3
    Compiling color v0.3.3
    Compiling cssparser-macros v0.7.1
    Compiling futures-macro v0.3.34
    Compiling phf_codegen v0.14.0
+   Compiling futures-task v0.3.34
    Compiling crossbeam-utils v0.8.23
    Compiling libm v0.2.16
-   Compiling slab v0.4.12
-   Compiling futures-task v0.3.34
    Compiling icu_locale_fallback_data v2.3.0
+   Compiling slab v0.4.12
    Compiling futures-util v0.3.34
    Compiling web_atoms v0.3.0
    Compiling cssparser v0.38.0
-   Compiling dioxus-core-macro v0.8.0-alpha.3
    Compiling peniko v0.6.1
+   Compiling dioxus-core-macro v0.8.0-alpha.3
    Compiling subsecond v0.8.0-alpha.3
    Compiling const_format v0.2.36
    Compiling futures-channel v0.3.34
    Compiling miniz_oxide v0.8.9
    Compiling generational-box v0.8.0-alpha.3
    Compiling fdeflate v0.3.7
-   Compiling servo_arc v0.6.0
    Compiling thin-vec v0.2.21
+   Compiling servo_arc v0.6.0
    Compiling bytes v1.12.1
    Compiling derive_more-impl v2.1.1
-   Compiling longest-increasing-subsequence v0.1.0
-   Compiling crossbeam-epoch v0.9.21
-   Compiling icu_segmenter_data v2.3.0
-   Compiling icu_properties_data v2.3.0
-   Compiling smallbitvec v2.6.1
    Compiling winnow v1.0.4
-   Compiling toml_parser v1.1.5+spec-1.1.0
-   Compiling skrifa v0.49.0
+   Compiling smallbitvec v2.6.1
+   Compiling icu_segmenter_data v2.3.0
+   Compiling crossbeam-epoch v0.9.21
+   Compiling icu_properties_data v2.3.0
+   Compiling longest-increasing-subsequence v0.1.0
+   Compiling dioxus-core v0.8.0-alpha.3
    Compiling derive_more v2.1.1
    Compiling to_shmem v0.8.0
-   Compiling dioxus-core v0.8.0-alpha.3
+   Compiling skrifa v0.49.0
+   Compiling toml_parser v1.1.5+spec-1.1.0
    Compiling png v0.18.1
    Compiling to_shmem_derive v0.3.0
    Compiling pin-project-internal v1.1.13
-   Compiling serde_spanned v1.1.2
    Compiling toml_datetime v1.1.2+spec-1.1.0
-   Compiling crossbeam-deque v0.8.8
+   Compiling serde_spanned v1.1.2
    Compiling toml_writer v1.1.3+spec-1.1.0
-   Compiling rayon-core v1.13.0
    Compiling idna_adapter v1.0.0
    Compiling pkg-config v0.3.34
    Compiling percent-encoding v2.3.2
-   Compiling form_urlencoded v1.2.2
+   Compiling rayon-core v1.13.0
+   Compiling crossbeam-deque v0.8.8
    Compiling pin-project v1.1.13
-   Compiling idna v1.1.0
-   Compiling toml v1.1.8+spec-1.1.0
+   Compiling form_urlencoded v1.2.2
    Compiling yeslogic-fontconfig-sys v6.0.1
+   Compiling toml v1.1.8+spec-1.1.0
+   Compiling idna v1.1.0
    Compiling selectors v0.43.0
-   Compiling core_maths v0.1.1
    Compiling icu_locale_fallback v2.3.0
+   Compiling core_maths v0.1.1
    Compiling stylo_atoms v0.24.0
    Compiling app_units v0.7.8
    Compiling warnings-macro v0.2.0
    Compiling same-file v1.0.6
-   Compiling void v1.0.2
    Compiling icu_normalizer_data v2.3.0
-   Compiling stylo_malloc_size_of v0.24.0
+   Compiling void v1.0.2
    Compiling warnings v0.2.1
+   Compiling stylo_malloc_size_of v0.24.0
    Compiling walkdir v2.5.0
    Compiling icu_segmenter v2.3.0
    Compiling icu_properties v2.3.0
@@ -519,9 +519,9 @@
    Compiling url v2.5.8
    Compiling harfrust v0.15.0
    Compiling http v1.5.0
-   Compiling keyboard-types v0.8.3
    Compiling dlib v0.5.3
    Compiling encoding_rs v0.8.42
+   Compiling keyboard-types v0.8.3
    Compiling darling_core v0.21.3
    Compiling generic-array v0.14.7
    Compiling float-cmp v0.9.0
@@ -538,41 +538,41 @@
    Compiling tendril v0.5.1
    Compiling parlance v0.1.1
    Compiling thread_local v1.1.10
-   Compiling icu_casemap_data v2.3.0
-   Compiling tinyvec v1.13.3
+   Compiling core_detect v1.0.0
+   Compiling rand_core v0.6.4
+   Compiling multiversion_no_op v1.0.0
    Compiling weezl v0.1.12
+   Compiling pxfm v0.1.30
+   Compiling zerocopy v0.8.62
+   Compiling typenum v1.20.1
+   Compiling serde_json v1.0.151
+   Compiling zune-core v0.5.3
+   Compiling atomic_refcell v0.1.14
+   Compiling tinyvec v1.13.3
+   Compiling icu_casemap_data v2.3.0
+   Compiling color_quant v1.1.0
+   Compiling simdutf8 v0.1.5
+   Compiling getrandom v0.3.4
    Compiling heck v0.5.0
    Compiling raw-window-handle v0.6.2
    Compiling arrayref v0.3.9
-   Compiling zune-core v0.5.3
-   Compiling rand_core v0.6.4
-   Compiling quick-error v2.0.1
-   Compiling typenum v1.20.1
-   Compiling atomic_refcell v0.1.14
-   Compiling serde_json v1.0.151
-   Compiling getrandom v0.3.4
-   Compiling multiversion_no_op v1.0.0
-   Compiling color_quant v1.1.0
-   Compiling simdutf8 v0.1.5
-   Compiling zerocopy v0.8.62
-   Compiling pxfm v0.1.30
    Compiling byteorder-lite v0.1.0
-   Compiling core_detect v1.0.0
+   Compiling quick-error v2.0.1
+   Compiling anyrender v0.14.0 (https://github.com/DioxusLabs/anyrender?rev=97d06af9fe8fe1c2cc5916c6d09fba10774d86a6#97d06af9)
    Compiling image-webp v0.2.4
    Compiling moxcms v0.8.1
-   Compiling gif v0.14.2
-   Compiling zune-jpeg v0.5.15
-   Compiling rand v0.8.8
-   Compiling anyrender v0.14.0 (https://github.com/DioxusLabs/anyrender?rev=97d06af9fe8fe1c2cc5916c6d09fba10774d86a6#97d06af9)
    Compiling tiny-skia-path v0.12.0
    Compiling strum_macros v0.28.0
+   Compiling gif v0.14.2
    Compiling fontdb v0.24.0
-   Compiling markup5ever v0.40.0
+   Compiling zune-jpeg v0.5.15
+   Compiling rand v0.8.8
    Compiling fontique v0.13.0
+   Compiling markup5ever v0.40.0
    Compiling stylo_traits v0.24.0
    Compiling icu_normalizer v2.3.0
-   Compiling darling v0.21.3
    Compiling rayon v1.12.0
+   Compiling darling v0.21.3
    Compiling itertools v0.14.0
    Compiling parley_data v0.13.0
    Compiling stylo_dom v0.24.0
@@ -582,115 +582,117 @@
    Compiling uluru v3.1.0
    Compiling roxmltree v0.21.1
    Compiling aho-corasick v1.1.5
+   Compiling num-derive v0.4.2
+   Compiling const-serialize-macro v0.8.0-alpha.3
    Compiling num-integer v0.1.47
    Compiling simplecss v0.2.2
-   Compiling const-serialize-macro v0.8.0-alpha.3
-   Compiling num-derive v0.4.2
    Compiling num_cpus v1.17.0
-   Compiling base64 v0.23.1
    Compiling regex-syntax v0.8.11
-   Compiling unicode-bidi v0.3.18
-   Compiling xmlwriter v0.1.0
-   Compiling data-url v0.3.2
-   Compiling unicode-vo v0.1.0
    Compiling pico-args v0.5.0
    Compiling unicode-script v0.5.8
+   Compiling xmlwriter v0.1.0
+   Compiling strum v0.28.0
+   Compiling parley_emoji v0.13.0
+   Compiling unicode-bidi v0.3.18
    Compiling static_assertions v1.1.0
+   Compiling mime v0.3.17
+   Compiling unicode-vo v0.1.0
    Compiling byteorder v1.5.0
    Compiling imagesize v0.15.0
-   Compiling parley_emoji v0.13.0
-   Compiling strum v0.28.0
-   Compiling mime v0.3.17
-   Compiling parley_engine v0.13.0
+   Compiling base64 v0.23.1
+   Compiling data-url v0.3.2
    Compiling regex-automata v0.4.18
    Compiling usvg v0.50.0
+   Compiling parley_engine v0.13.0
    Compiling enumset_derive v0.15.0
    Compiling image v0.25.10
    Compiling taffy v0.15.0 (https://github.com/DioxusLabs/taffy?rev=a3997d55bacd1fb6cd12fe31db0be15b20f91528#a3997d55)
+   Compiling uuid v1.27.0
    Compiling cursor-icon v1.2.0
    Compiling smol_str v0.3.6
-   Compiling uuid v1.27.0
-   Compiling accesskit v0.25.1
    Compiling blitz-traits v0.3.0-beta.4 (/home/runner/work/_temp/calyra-blitz-ax-regression/packages/blitz-traits)
-   Compiling ppv-lite86 v0.2.21
+   Compiling accesskit v0.25.1
    Compiling rand_core v0.9.5
-   Compiling enumset v1.1.14
+   Compiling ppv-lite86 v0.2.21
    Compiling icu_casemap v2.3.0
+   Compiling enumset v1.1.14
    Compiling parley v0.13.0
    Compiling block-buffer v0.10.4
    Compiling crypto-common v0.1.7
    Compiling dioxus-hooks v0.8.0-alpha.3
    Compiling dioxus-html-internal-macro v0.8.0-alpha.3
-   Compiling serde_repr v0.1.21
    Compiling async-trait v0.1.92
+   Compiling serde_repr v0.1.21
    Compiling httparse v1.10.1
-   Compiling web-time v1.1.0
    Compiling debug_timer v0.1.3 (/home/runner/work/_temp/calyra-blitz-ax-regression/packages/debug_timer)
-   Compiling dioxus-cli-config v0.8.0-alpha.3
-   Compiling winnow v0.7.15
    Compiling html-escape v0.2.15
+   Compiling winnow v0.7.15
+   Compiling dioxus-cli-config v0.8.0-alpha.3
+   Compiling web-time v1.1.0
    Compiling dioxus-html v0.8.0-alpha.3
    Compiling digest v0.10.7
    Compiling const-serialize v0.8.0-alpha.3
    Compiling rand_chacha v0.9.0
    Compiling guillotiere v0.7.0
    Compiling fearless_simd_macros v0.1.0
-   Compiling lazy-js-bundle v0.8.0-alpha.3
    Compiling fearless_simd v1.1.0
    Compiling lazy_static v1.5.1
+   Compiling lazy-js-bundle v0.8.0-alpha.3
    Compiling cpufeatures v0.2.17
    Compiling sha1 v0.10.7
-   Compiling sharded-slab v0.1.7
    Compiling dioxus-document v0.8.0-alpha.3
+   Compiling sharded-slab v0.1.7
    Compiling rand v0.9.5
    Compiling manganis-core v0.8.0-alpha.3
    Compiling matchers v0.2.0
    Compiling macro-string v0.1.4
    Compiling data-encoding v2.11.1
+   Compiling vello_common v0.4.0
    Compiling dunce v1.0.5
    Compiling manganis-macro v0.8.0-alpha.3
    Compiling tungstenite v0.29.0
-   Compiling tracing-subscriber v0.3.23
-   Compiling vello_common v0.4.0
-   Compiling xml5ever v0.40.0
-   Compiling html5ever v0.40.1
    Compiling glifo v0.5.0
+   Compiling tracing-subscriber v0.3.23
+   Compiling html5ever v0.40.1
+   Compiling xml5ever v0.40.0
    Compiling dioxus-devtools-types v0.8.0-alpha.3
    Compiling dioxus-stores-macro v0.8.0-alpha.3
    Compiling dioxus-devtools v0.8.0-alpha.3
    Compiling dioxus-stores v0.8.0-alpha.3
-   Compiling vello_cpu v0.4.0
    Compiling dioxus-logger v0.8.0-alpha.3
    Compiling manganis v0.8.0-alpha.3
+   Compiling vello_cpu v0.4.0
    Compiling anyrender_svg v0.15.0 (https://github.com/DioxusLabs/anyrender?rev=97d06af9fe8fe1c2cc5916c6d09fba10774d86a6#97d06af9)
    Compiling regex v1.13.1
    Compiling dioxus-history v0.8.0-alpha.3
    Compiling dioxus-asset-resolver v0.8.0-alpha.3
    Compiling test-that-macro v0.6.0
-   Compiling debug_timer v0.1.3
    Compiling dioxus-config-macro v0.8.0-alpha.3
+   Compiling debug_timer v0.1.3
    Compiling dioxus-config-macros v0.8.0-alpha.3
    Compiling dioxus v0.8.0-alpha.3
-   Compiling anyrender_vello_cpu v0.18.0 (https://github.com/DioxusLabs/anyrender?rev=97d06af9fe8fe1c2cc5916c6d09fba10774d86a6#97d06af9)
    Compiling test-that v0.6.0
-   Compiling blitz-tests v0.3.0-beta.4 (/home/runner/work/_temp/calyra-blitz-ax-regression/tests/blitz-tests)
+   Compiling anyrender_vello_cpu v0.18.0 (https://github.com/DioxusLabs/anyrender?rev=97d06af9fe8fe1c2cc5916c6d09fba10774d86a6#97d06af9)
    Compiling stylo_taffy v0.3.0-beta.4 (/home/runner/work/_temp/calyra-blitz-ax-regression/packages/stylo_taffy)
    Compiling blitz-dom v0.3.0-beta.4 (/home/runner/work/_temp/calyra-blitz-ax-regression/packages/blitz-dom)
-   Compiling dioxus-native-dom v0.7.0 (/home/runner/work/_temp/calyra-blitz-ax-regression/packages/dioxus-native-dom)
    Compiling blitz-html v0.3.0-beta.4 (/home/runner/work/_temp/calyra-blitz-ax-regression/packages/blitz-html)
+   Compiling dioxus-native-dom v0.7.0 (/home/runner/work/_temp/calyra-blitz-ax-regression/packages/dioxus-native-dom)
    Compiling blitz-test-harness v0.3.0-beta.4 (/home/runner/work/_temp/calyra-blitz-ax-regression/packages/blitz-test-harness)
    Compiling blitz-paint v0.3.0-beta.4 (/home/runner/work/_temp/calyra-blitz-ax-regression/packages/blitz-paint)
-    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 39s
+   Compiling blitz-tests v0.3.0-beta.4 (/home/runner/work/_temp/calyra-blitz-ax-regression/tests/blitz-tests)
+    Finished `test` profile [unoptimized + debuginfo] target(s) in 1m 52s
      Running tests/all.rs (target/debug/deps/all-53175c34876cec10)
 
-running 7 tests
+running 9 tests
 test calyra_ax_form_semantics::calyra_ax_checkbox_enclosing_label_and_actual_checked_state ... ok
-test calyra_ax_form_semantics::calyra_ax_button_name_skips_aria_hidden_ornament ... ok
 test calyra_ax_form_semantics::calyra_ax_aria_labelledby_precedence_over_html_label ... ok
-test calyra_ax_form_semantics::calyra_ax_external_html_label_and_text_current_value ... ok
+test calyra_ax_form_semantics::calyra_ax_button_name_skips_aria_hidden_ornament ... ok
+test calyra_ax_form_semantics::calyra_ax_adjacent_inline_text_preserves_deliberate_concatenation ... ok
+test calyra_ax_form_semantics::calyra_ax_computed_block_css_inserts_name_word_boundary ... ok
 test calyra_ax_form_semantics::calyra_ax_explicit_aria_label_takes_priority_over_html_label ... ok
-test calyra_ax_form_semantics::calyra_ax_range_clamps_attribute_value_and_records_bounds ... ok
+test calyra_ax_form_semantics::calyra_ax_external_html_label_and_text_current_value ... ok
 test calyra_ax_form_semantics::calyra_ax_noneditable_selected_option_value_and_label ... ok
+test calyra_ax_form_semantics::calyra_ax_range_clamps_attribute_value_and_records_bounds ... ok
 
-test result: ok. 7 passed; 0 failed; 0 ignored; 0 measured; 362 filtered out; finished in 0.79s
+test result: ok. 9 passed; 0 failed; 0 ignored; 0 measured; 362 filtered out; finished in 0.15s
 

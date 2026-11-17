@@ -11,10 +11,10 @@ index 38da3b31..9b5b0f2e 100644
      word-spacing: initial;
      line-height: initial;
 diff --git a/packages/blitz-dom/src/accessibility.rs b/packages/blitz-dom/src/accessibility.rs
-index a60aa14f..54ee4a6d 100644
+index a60aa14f..553f76f7 100644
 --- a/packages/blitz-dom/src/accessibility.rs
 +++ b/packages/blitz-dom/src/accessibility.rs
-@@ -96,6 +96,122 @@ impl BaseDocument {
+@@ -96,6 +96,135 @@ impl BaseDocument {
          }
      }
  
@@ -30,7 +30,20 @@ index a60aa14f..54ee4a6d 100644
 +            NodeData::Element(..) | NodeData::AnonymousBlock(..) => {
 +                for child_id in &node.children {
 +                    if let Some(child) = self.get_node(*child_id) {
++                        // Compute actual rendered CSS block boundaries rather than
++                        // inserting spaces based on the HTML tag or fixture text.
++                        let is_block = child.display_style().is_some_and(|display|
++                            matches!(display.outside(),
++                                style::values::specified::box_::DisplayOutside::Block
++                                | style::values::specified::box_::DisplayOutside::TableCaption
++                                | style::values::specified::box_::DisplayOutside::InternalTable));
++                        if is_block && !out.text.is_empty() {
++                            out.break_word();
++                        }
 +                        self.calyra_ax_visible_text(child, out);
++                        if is_block && !out.text.is_empty() {
++                            out.break_word();
++                        }
 +                    }
 +                }
 +            }
@@ -137,7 +150,7 @@ index a60aa14f..54ee4a6d 100644
      fn referenced_dom_ids_to_node_ids<'a>(
          &'a self,
          nodes_reference: &'a str,
-@@ -151,7 +267,12 @@ impl BaseDocument {
+@@ -151,7 +280,12 @@ impl BaseDocument {
  
              if let Some(aria_label) = element_data.attr(local_name!("aria-label")) {
                  builder.set_label(aria_label);
