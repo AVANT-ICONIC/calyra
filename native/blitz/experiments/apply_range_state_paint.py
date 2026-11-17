@@ -196,9 +196,7 @@ fn create_checkbox_input(doc: &mut BaseDocument, input_element_id: NodeId) {""")
 }
 
 pub(super) fn get_checked(""",
-         """    let value = crate::dom::to_rust_string(
-        args.first().unwrap_or(&JsValue::undefined()), context)?;
-    let range_id = {
+         """    let range_id = {
         let ctx = dom_ctx(context)?;
         let id = this_node_id(this)?;
         let is_range = ctx.doc.borrow().get_node(id)
@@ -208,6 +206,11 @@ pub(super) fn get_checked(""",
         if is_range { Some(id) } else { None }
     };
     if let Some(id) = range_id {
+        // Only range requires explicit conversion here. The existing
+        // non-range attr_setter owns its own ToString conversion; calling
+        // it twice breaks side-effecting custom JavaScript value objects.
+        let value = crate::dom::to_rust_string(
+            args.first().unwrap_or(&JsValue::undefined()), context)?;
         let ctx = dom_ctx(context)?;
         ctx.doc.borrow_mut().calyra_set_range_current(id, &value);
         return Ok(JsValue::undefined());
