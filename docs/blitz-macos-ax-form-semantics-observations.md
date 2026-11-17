@@ -2,6 +2,27 @@
 
 **Date:** 2026-11-17. **Scope:** disposable pinned Blitz `0.3.0-beta.4` checkout, experimental noneditable `SelectData`, explicit AccessKit name/value adapter, log-only activation tracing. **Not full HTML-AAM, original JavaScript in native window or a production Accessibility release.**
 
+## Final native macOS six-field AX contract proof (newest)
+
+**[Actual macOS ARM64 CI #44034737377](https://github.com/AVANT-ICONIC/calyra/actions/runs/44034737377) PASSED ALL STEPS**, including a separate **enforced post-archive 6/6 test**. This is a **second, independently compiled native Mac runner instance**, not a retroactive upgrade of first 5/6 CI #44033572642. The exact same pinned upstream Blitz `4f61cffacee50fe4f944ebe9d0470d9a5d3997e0` plus an opt-in experimental native AX semantics adapter ran in a genuine arm64 winit/VelloWindowRenderer GUI, with a real owned CoreGraphics window and read-only trusted macOS `AXUIElement` tree.
+
+| Canonical control | Actual native macOS AX role | Actual native AX title | Actual native AX value | Strict contract |
+|---|---|---|---|---|
+| Display name | `AXTextField` | `Display name` | `Alex Rivera` | PASS |
+| Render priority | `AXPopUpButton` | `Render priority` | `Balanced` | PASS |
+| Material intensity | `AXSlider` | `Material intensity 64%` | `64` | PASS, **static attribute-derived only** |
+| Enable effects | `AXCheckBox` | `Enable effects Native checkbox with CSS presentation` | `1` | PASS |
+| Apply settings | `AXButton` | `Apply settings` | No value required | PASS |
+| Reset | `AXButton` | `Reset` | No value required | PASS |
+
+The native Mac test's independent verdict reports `matched_fields: 6`, `total_fields: 6`, `all_six_fields_match: true`. The same actual macOS app exposed **107 AX nodes after lazy activation**, with a correctly handled real `InitialTreeRequested` event and **182 generated internal AccessKit nodes**. **The native form-role/title/value comparison is real OS API output**, not internal Rust assertions or mocked fields. Authored `fixtures/index.html`, `fixtures/reference.css`, `fixtures/reference.js` remained unchanged and original JS was explicitly omitted from the static native GUI test.
+
+The sixth-field repair derives whitespace from **computed CSS block-level outside display** around descendants in an ordinary HTML label, while preserving intentional inline concatenation. The independent [Linux native regression CI #44034710357](https://github.com/AVANT-ICONIC/calyra/actions/runs/44034710357) passed **9/9 real Rust tests**, including both block-boundary and inline-preservation cases. This is no longer a CALYRA-only string tweak.
+
+**Permanent first-party evidence:** [40 original native Mac runner files plus SHA-256 manifest](evidence/blitz-macos-ax-form-semantics/), including [six-field OS AX verdict](evidence/blitz-macos-ax-form-semantics/ax-form-semantic-verdict.json), [actual native AX before/after census](evidence/blitz-macos-ax-form-semantics/actual-native-ax-hit-test-after.json), [real AccessKit event log](evidence/blitz-macos-ax-form-semantics/native-app.log), [screenshot](evidence/blitz-macos-ax-form-semantics/actual-patched-blitz-window.png) SHA-256 `2aced08e83345e5a8846229d02e21ebc5a0d6b16609935fbe45d81c9a45524e9`, full temporary upstream patch source and actual Mac compile logs. [17 original Linux native regression files plus SHA manifest](evidence/blitz-ax-form-regression/) preserve independent `9 passed, 0 failed` results.
+
+**Do not confuse this milestone with complete accessibility:** the synthetic static range value is not live user adjustment; the range thumb and drag remain missing. Native `ActionRequested` is still TODO; no verified VoiceOver, keyboard focus/action, actual OS pointer/IME, full HTML-AAM naming, original CALYRA JS in live native Blitz, GPU device proof, complete CSS parity or fair performance comparison. OpenSpec **3.1, 4.1 and 4.2 remain unchecked**; PR #2 remains draft, unmerged; `main` untouched.
+
 ## Actual first macOS Apple Accessibility evidence
 
 [Native Mac ARM64 CI #44033572642](https://github.com/AVANT-ICONIC/calyra/actions/runs/44033572642) **fully PASSED its source-pinned native diagnostic**, built genuine arm64 BlitzShell/winit/VelloWindowRenderer, ran the actual macOS window, and enumerated actual native AX roles/titles/values from the real process after async AccessKit activation. The original authored CALYRA HTML/CSS/JS were byte-identical and the static test snapshot explicitly omitted JavaScript.
