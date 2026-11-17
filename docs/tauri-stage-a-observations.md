@@ -57,6 +57,30 @@ On the research branch, commit `778f3640dbb224f4bb139ae7fa2caef80f5f208a` change
 
 **Acceptance boundary:** a real arm64 macOS desktop bundle is now built and archived. No on-host WKWebView pixels, Tauri-hosted original JS semantics, OS keyboard/IME/accessibility, GPU or repeatable CPU/RAM measurements have been measured. OpenSpec **3.1, 4.1 and 4.2 remain unchecked**. Preserve the raw evidence and the draft PR; do not infer a browserless rendering advantage.
 
+## Five original Apple Silicon app-owned-window RSS observations (2026-11-17, NEWEST)
+
+[Native macOS CI #44002257080](https://github.com/AVANT-ICONIC/calyra/actions/runs/44002257080) **PASSED end-to-end**. This reused the SHA-256-verified, unchanged normal Tauri .app from [build #43996164957](https://github.com/AVANT-ICONIC/calyra/actions/runs/43996164957) on an actual macos-15 ARM64 runner. The new harness/macos_tauri_resource_baseline.py launched the executable five separate times and required its own genuine CGWindow for each PID, using the compiled native window inspector.
+
+At approximately **12 seconds after each distinct launch**, one macOS ps snapshot recorded the **Tauri parent-process resident set**:
+
+| Trial | App PID | OS window ID | Parent RSS (KiB) |
+|---|---:|---:|---:|
+| 1 | 1690 | 23 | 79,552 |
+| 2 | 1754 | 32 | 84,528 |
+| 3 | 1876 | 40 | 85,056 |
+| 4 | 2089 | 47 | 84,720 |
+| 5 | 2239 | 54 | 86,320 |
+
+**Parent RSS median: 84,720 KiB**, range **79,552 to 86,320 KiB**. Exact original observations, native logs for all trials, source and executable SHA-256, environment, and manifest are committed to [the permanent evidence folder](evidence/tauri-macos-resource-census/). [CI artifact #14292403562](https://github.com/AVANT-ICONIC/calyra/actions/runs/44002257080/artifacts/14292403562) is a short-term duplicate.
+
+**Important:** ps RSS includes shared pages and is not private footprint. WKWebView WebContent, Networking and GPU helper processes are potentially not descendants of the app PID, and have **not been reliably attributed**. Therefore this is NOT total Tauri memory and NOT a matched benchmark against Blitz, Chromium or any other engine. CPU percent is instantaneous only. First window observations include inspection overhead, not first meaningful pixels or JavaScript readiness. These launches share a warmed CI host, so they are NOT controlled cold starts. OpenSpec task 4.2 remains unchecked.
+
+**Failed attempt #44001984660:** Cross-run artifact download received an improperly escaped GitHub Actions token expression and returned Bad credentials. Fix commit c9a2e96aa1206a699dee2c8bfeb725b19d012d67 corrected that workflow wiring; the separately successful run above is the actual verified resource evidence.
+
+## Apple Silicon OS-input permission preflight (2026-11-17)
+
+[Mac CI #44001280702](https://github.com/AVANT-ICONIC/calyra/actions/runs/44001280702) **PASSED** a prompt-free, event-free native inspection. AXIsProcessTrusted, CGPreflightPostEventAccess, CGPreflightListenEventAccess, and CGPreflightScreenCaptureAccess each returned true for that Swift runner process. [Original permission results](evidence/macos-os-input-preflight/preflight.json) are archived. **No actual OS mouse/keyboard events were posted or observed**, so OS input, IME and accessibility acceptance remain unverified. An unexecuted OS-injection draft was removed rather than left as apparent proof.
+
 ## Verified original JavaScript inside genuine macOS Tauri WKWebView (2026-11-17, NEWEST)
 
 [Native Apple Silicon CI #44000680977](https://github.com/AVANT-ICONIC/calyra/actions/runs/44000680977) **PASSED all steps**, including actual Rust/Tauri opt-in-feature compilation, live execution and independent strict verification of **29/29 original DOM/JavaScript handler assertions**. Tauri invoked `eval_with_callback` only from an `on_page_load(PageLoadEvent::Finished)` callback inside its own OS WKWebView; those results returned to Rust and were saved as original raw callback records. No browser automation stand-in, Chromium driver or rewritten `reference.js`.
