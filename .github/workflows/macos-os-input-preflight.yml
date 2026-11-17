@@ -1,0 +1,85 @@
+name: CALYRA macOS OS-input permission preflight (no prompts)
+
+# Small one-shot no-event preflight before attempting actual OS keyboard/pointer.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/macos-os-input-preflight.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  os-input-availability:
+    runs-on: macos-15
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/reference-fixtures
+      - name: Query non-interactive Accessibility and Quartz post-event permission
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p evidence/macos-os-input
+          {
+            sw_vers
+            uname -m
+            swift --version
+          } | tee evidence/macos-os-input/runner.txt
+          swift adapters/tauri-reference/macos_event_access_preflight.swift \
+            | tee evidence/macos-os-input/preflight.json
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+          data=json.loads(Path('evidence/macos-os-input/preflight.json').read_text())
+          assert data['schema']=='calyra.macos-real-os-input-preflight.v1'
+          assert data['permission_prompt_requested'] is False
+          assert data['events_posted'] is False
+          assert data['actual_input_delivered_to_tauri'] is False
+          assert data['physical_keyboard_or_mouse_tested'] is False
+          assert type(data['post_event_access']) is bool
+          assert type(data['accessibility_trusted']) is bool
+          assert data['os_event_injection_preflight_permitted'] is (
+            data['post_event_access'] and data['accessibility_trusted'])
+          print('PASS: real OS privilege status inspected; no event or permission prompt attempted.')
+          if not data['os_event_injection_preflight_permitted']:
+              print('BLOCKED: this hosted runner cannot be treated as a trusted OS input driver.')
+          else:
+              print('ELIGIBLE FOR EXPERIMENT: permission only, actual event delivery still unverified.')
+          PY
+          shasum -a 256 adapters/tauri-reference/macos_event_access_preflight.swift \
+            evidence/macos-os-input/preflight.json \
+            | tee evidence/macos-os-input/source-and-result-sha256.txt
+
+      - name: Archive exact raw host evidence on research branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEST=docs/evidence/macos-os-input-preflight
+          mkdir -p "$DEST"
+          cp -p evidence/macos-os-input/{preflight.json,runner.txt,source-and-result-sha256.txt} "$DEST"/
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f "$DEST"/
+          git diff --cached --quiet && exit 0
+          git commit -m "test(evidence): archive macOS OS-input permission preflight"
+          git fetch origin feat/reference-fixtures
+          git rebase origin/feat/reference-fixtures
+          git push origin HEAD:refs/heads/feat/reference-fixtures
+
+      - name: Report bounded outcome
+        if: always()
+        shell: bash
+        run: |
+          echo '### macOS OS-input capability preflight' >> "$GITHUB_STEP_SUMMARY"
+          echo 'This test checks TCC permissions for the runner Swift process without requesting permissions or posting input. Permission does not prove Tauri OS-event delivery.' >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-macos-os-input-preflight
+          path: evidence/macos-os-input/
+          retention-days: 14
+          if-no-files-found: warn
