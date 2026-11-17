@@ -1,0 +1,159 @@
+name: CALYRA pinned Blitz native AccessKit form semantics regression
+
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/blitz-ax-form-regression.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  isolated-native-form-ax-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 50
+    env:
+      CARGO_BUILD_JOBS: '3'
+      CARGO_TERM_COLOR: never
+      RUST_BACKTRACE: '1'
+      OUT: evidence/blitz-ax-form-regression
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: feat/reference-fixtures
+      - name: Record canonical source and pinned test adapters
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$OUT"
+          python3 adapters/tauri-reference/verify_source.py \
+            | tee "$OUT/verified-source.json"
+          grep -Fq '"pass": true' "$OUT/verified-source.json"
+          sha256sum fixtures/index.html fixtures/reference.css fixtures/reference.js \
+            native/blitz/experiments/apply_ax_form_semantics.py \
+            native/blitz/experiments/ax_form_semantics_regression.rs \
+            native/blitz/experiments/apply_readonly_select.py \
+            native/blitz/experiments/select_state_readonly.rs \
+            native/blitz/patches/document-event-chain.patch \
+            native/blitz/patches/plain-button-focus.patch \
+            native/blitz/patches/select-ua-display.patch \
+            native/blitz/patches/select-default-value.patch \
+            native/blitz/patches/select-state-accessors.patch \
+            native/blitz/patches/select-live-form-controls.patch \
+            > "$OUT/verified-source-sha256.txt"
+          { lsb_release -a || true; uname -m; rustc --version; } \
+            > "$OUT/host.txt" 2>&1
+      - name: Install toolchain and native dependencies
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y --no-install-recommends \
+            build-essential pkg-config libssl-dev libfontconfig-dev \
+            libx11-dev libxkbcommon-dev libwayland-dev libasound2-dev \
+            ca-certificates python3-venv > "$OUT/apt.log" 2>&1
+          rustup toolchain install 1.91.0 --profile minimal > "$OUT/rustup.log" 2>&1
+          rustup default 1.91.0
+          rustc --version | tee "$OUT/rust-version.txt"
+      - name: Exact pinned Blitz checkout with experimental patches only
+        shell: bash
+        run: |
+          set -euo pipefail
+          O="$GITHUB_WORKSPACE/$OUT"
+          git clone --filter=blob:none https://github.com/DioxusLabs/blitz.git \
+            "$RUNNER_TEMP/calyra-blitz-ax-regression" > "$O/clone.log" 2>&1
+          git -C "$RUNNER_TEMP/calyra-blitz-ax-regression" checkout --detach \
+            4f61cffacee50fe4f944ebe9d0470d9a5d3997e0 \
+            > "$O/checkout.log" 2>&1
+          test "$(git -C "$RUNNER_TEMP/calyra-blitz-ax-regression" rev-parse HEAD)" = \
+            4f61cffacee50fe4f944ebe9d0470d9a5d3997e0
+          test -z "$(git -C "$RUNNER_TEMP/calyra-blitz-ax-regression" status --porcelain --untracked-files=no)"
+          for patch in \
+            document-event-chain.patch plain-button-focus.patch \
+            select-ua-display.patch select-default-value.patch \
+            select-state-accessors.patch select-live-form-controls.patch; do
+            echo "$patch" >> "$O/patch-order.txt"
+            git -C "$RUNNER_TEMP/calyra-blitz-ax-regression" apply --check \
+              "$GITHUB_WORKSPACE/native/blitz/patches/$patch"
+            git -C "$RUNNER_TEMP/calyra-blitz-ax-regression" apply \
+              "$GITHUB_WORKSPACE/native/blitz/patches/$patch"
+          done
+          python3 native/blitz/experiments/apply_readonly_select.py \
+            --source "$RUNNER_TEMP/calyra-blitz-ax-regression" \
+            | tee "$O/select-patch.log"
+          cp native/blitz/experiments/select_state_readonly.rs \
+            "$RUNNER_TEMP/calyra-blitz-ax-regression/packages/blitz-vibey-script/src/dom/element/select_state.rs"
+          python3 native/blitz/experiments/apply_ax_form_semantics.py \
+            --source "$RUNNER_TEMP/calyra-blitz-ax-regression" \
+            | tee "$O/ax-form-patch.log"
+          cp native/blitz/experiments/ax_form_semantics_regression.rs \
+            "$RUNNER_TEMP/calyra-blitz-ax-regression/tests/blitz-tests/tests/calyra_ax_form_semantics.rs"
+          echo 'mod calyra_ax_form_semantics;' >> \
+            "$RUNNER_TEMP/calyra-blitz-ax-regression/tests/blitz-tests/tests/all.rs"
+          git -C "$RUNNER_TEMP/calyra-blitz-ax-regression" diff \
+            > "$O/exact-upstream-ax-experiment.patch"
+          test -s "$O/exact-upstream-ax-experiment.patch"
+          sha256sum "$RUNNER_TEMP/calyra-blitz-ax-regression/Cargo.lock" \
+            > "$O/pinned-cargo-lock-sha256.txt"
+      - name: Compile/run actual native Rust AccessKit regression
+        shell: bash
+        run: |
+          set -euo pipefail
+          O="$GITHUB_WORKSPACE/$OUT"
+          cd "$RUNNER_TEMP/calyra-blitz-ax-regression"
+          set +e
+          cargo test --locked -p blitz-tests --test all calyra_ax_ -- --nocapture \
+            > "$O/native-rust-test.log" 2>&1
+          code=$?
+          set -e
+          tail -n 160 "$O/native-rust-test.log"
+          echo "$code" > "$O/native-test-exit-code.txt"
+          test "$code" -eq 0
+          grep -Fq 'test result: ok. 7 passed; 0 failed' "$O/native-rust-test.log"
+          printf '%s\n' '7 source-pinned native AccessKit regression cases passed' \
+            | tee "$O/regression-verdict.txt"
+      - name: Preserve actual source-pinned test evidence
+        if: success()
+        shell: bash
+        run: |
+          set -euo pipefail
+          DEST=docs/evidence/blitz-ax-form-regression
+          mkdir -p "$DEST"
+          cp -p "$OUT"/*.json "$OUT"/*.txt "$OUT"/*.log "$OUT"/*.patch \
+            "$DEST"/
+          python3 - <<'PY'
+          import hashlib,json
+          from pathlib import Path
+          root=Path('docs/evidence/blitz-ax-form-regression')
+          files={p.name:hashlib.sha256(p.read_bytes()).hexdigest()
+                 for p in root.iterdir() if p.is_file()}
+          (root/'original-file-sha256.json').write_text(
+              json.dumps(files,indent=2,sort_keys=True)+'\n')
+          print('Preserved',len(files),'original Linux native regression records')
+          PY
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -f "$DEST"/
+          git diff --cached --quiet && exit 0
+          git commit -m "test(evidence): archive source-pinned Blitz AX form regression results"
+          git fetch origin feat/reference-fixtures
+          git rebase origin/feat/reference-fixtures
+          git push origin HEAD:refs/heads/feat/reference-fixtures
+      - name: State diagnostic scope without overclaiming
+        if: always()
+        shell: bash
+        run: |
+          echo '### CALYRA: pinned native form semantics regression' >> "$GITHUB_STEP_SUMMARY"
+          echo 'These Rust unit tests do not prove macOS AX output, keyboard/IME, pointer, native popups, or the complete HTML-AAM name algorithm.' >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-blitz-ax-form-rust-regression
+          path: |
+            evidence/blitz-ax-form-regression/*.json
+            evidence/blitz-ax-form-regression/*.txt
+            evidence/blitz-ax-form-regression/*.log
+            evidence/blitz-ax-form-regression/*.patch
+          retention-days: 14
+          if-no-files-found: warn
