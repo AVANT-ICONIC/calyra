@@ -1,0 +1,463 @@
+{
+  "actions_performed" : false,
+  "after" : {
+    "control_candidates" : [
+      {
+        "depth" : 2,
+        "index" : 3,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 3,
+        "index" : 4,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 6,
+        "index" : 7,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 6,
+        "index" : 13,
+        "role" : "AXGroup",
+        "role_description" : "group",
+        "title" : "Reference fixtures"
+      },
+      {
+        "depth" : 7,
+        "index" : 28,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 6,
+        "index" : 30,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 7,
+        "index" : 31,
+        "role" : "AXGroup",
+        "role_description" : "group",
+        "title" : "Controls, without compromise."
+      },
+      {
+        "depth" : 9,
+        "index" : 33,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 8,
+        "index" : 34,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 8,
+        "index" : 38,
+        "role" : "AXTextField",
+        "role_description" : "text field"
+      },
+      {
+        "depth" : 8,
+        "index" : 40,
+        "role" : "AXPopUpButton",
+        "role_description" : "pop up button"
+      },
+      {
+        "depth" : 9,
+        "index" : 42,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 8,
+        "index" : 43,
+        "role" : "AXSlider",
+        "role_description" : "slider"
+      },
+      {
+        "depth" : 10,
+        "index" : 46,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 9,
+        "index" : 48,
+        "role" : "AXCheckBox",
+        "role_description" : "checkbox"
+      },
+      {
+        "depth" : 8,
+        "index" : 49,
+        "role" : "AXButton",
+        "role_description" : "button"
+      },
+      {
+        "depth" : 8,
+        "index" : 50,
+        "role" : "AXButton",
+        "role_description" : "button"
+      },
+      {
+        "depth" : 8,
+        "index" : 51,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 8,
+        "index" : 53,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 6,
+        "index" : 56,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 2,
+        "index" : 60,
+        "role" : "AXButton",
+        "role_description" : "close button"
+      },
+      {
+        "depth" : 2,
+        "index" : 61,
+        "role" : "AXButton",
+        "role_description" : "full screen button"
+      },
+      {
+        "depth" : 3,
+        "index" : 62,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 4,
+        "index" : 63,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 2,
+        "index" : 64,
+        "role" : "AXButton",
+        "role_description" : "minimize button"
+      }
+    ],
+    "count" : 107,
+    "role_counts" : {
+      "AXApplication" : 1,
+      "AXButton" : 5,
+      "AXCheckBox" : 1,
+      "AXGroup" : 16,
+      "AXLink" : 5,
+      "AXMenu" : 3,
+      "AXMenuBar" : 1,
+      "AXMenuBarItem" : 2,
+      "AXMenuItem" : 36,
+      "AXPopUpButton" : 1,
+      "AXSlider" : 1,
+      "AXStaticText" : 5,
+      "AXTextField" : 1,
+      "AXUnknown" : 27,
+      "AXWindow" : 1,
+      "Heading" : 1
+    },
+    "truncated" : false
+  },
+  "before" : {
+    "control_candidates" : [
+      {
+        "depth" : 2,
+        "index" : 3,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 3,
+        "index" : 4,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 6,
+        "index" : 7,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 6,
+        "index" : 13,
+        "role" : "AXGroup",
+        "role_description" : "group",
+        "title" : "Reference fixtures"
+      },
+      {
+        "depth" : 7,
+        "index" : 28,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 6,
+        "index" : 30,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 7,
+        "index" : 31,
+        "role" : "AXGroup",
+        "role_description" : "group",
+        "title" : "Controls, without compromise."
+      },
+      {
+        "depth" : 9,
+        "index" : 33,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 8,
+        "index" : 34,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 8,
+        "index" : 38,
+        "role" : "AXTextField",
+        "role_description" : "text field"
+      },
+      {
+        "depth" : 8,
+        "index" : 40,
+        "role" : "AXPopUpButton",
+        "role_description" : "pop up button"
+      },
+      {
+        "depth" : 9,
+        "index" : 42,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 8,
+        "index" : 43,
+        "role" : "AXSlider",
+        "role_description" : "slider"
+      },
+      {
+        "depth" : 10,
+        "index" : 46,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 9,
+        "index" : 48,
+        "role" : "AXCheckBox",
+        "role_description" : "checkbox"
+      },
+      {
+        "depth" : 8,
+        "index" : 49,
+        "role" : "AXButton",
+        "role_description" : "button"
+      },
+      {
+        "depth" : 8,
+        "index" : 50,
+        "role" : "AXButton",
+        "role_description" : "button"
+      },
+      {
+        "depth" : 8,
+        "index" : 51,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 8,
+        "index" : 53,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 6,
+        "index" : 56,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 2,
+        "index" : 60,
+        "role" : "AXButton",
+        "role_description" : "close button"
+      },
+      {
+        "depth" : 2,
+        "index" : 61,
+        "role" : "AXButton",
+        "role_description" : "full screen button"
+      },
+      {
+        "depth" : 3,
+        "index" : 62,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 4,
+        "index" : 63,
+        "role" : "AXGroup",
+        "role_description" : "group"
+      },
+      {
+        "depth" : 2,
+        "index" : 64,
+        "role" : "AXButton",
+        "role_description" : "minimize button"
+      }
+    ],
+    "count" : 107,
+    "role_counts" : {
+      "AXApplication" : 1,
+      "AXButton" : 5,
+      "AXCheckBox" : 1,
+      "AXGroup" : 16,
+      "AXLink" : 5,
+      "AXMenu" : 3,
+      "AXMenuBar" : 1,
+      "AXMenuBarItem" : 2,
+      "AXMenuItem" : 36,
+      "AXPopUpButton" : 1,
+      "AXSlider" : 1,
+      "AXStaticText" : 5,
+      "AXTextField" : 1,
+      "AXUnknown" : 27,
+      "AXWindow" : 1,
+      "Heading" : 1
+    },
+    "truncated" : false
+  },
+  "events_posted" : false,
+  "focus_or_values_modified" : false,
+  "permission_request_attempted" : false,
+  "pid" : 24597,
+  "read_only_hit_tests" : [
+    {
+      "ax_error" : 0,
+      "child_count" : 1,
+      "fraction_x" : 0.20000000000000001,
+      "fraction_y" : 0.25,
+      "returned_element" : true,
+      "role" : "AXGroup",
+      "x" : 272,
+      "y" : 196
+    },
+    {
+      "ax_error" : 0,
+      "child_count" : 1,
+      "fraction_x" : 0.5,
+      "fraction_y" : 0.25,
+      "returned_element" : true,
+      "role" : "AXGroup",
+      "x" : 512,
+      "y" : 196
+    },
+    {
+      "ax_error" : 0,
+      "child_count" : 1,
+      "fraction_x" : 0.80000000000000004,
+      "fraction_y" : 0.25,
+      "returned_element" : true,
+      "role" : "AXGroup",
+      "x" : 752,
+      "y" : 196
+    },
+    {
+      "ax_error" : 0,
+      "child_count" : 1,
+      "fraction_x" : 0.20000000000000001,
+      "fraction_y" : 0.5,
+      "returned_element" : true,
+      "role" : "AXGroup",
+      "x" : 272,
+      "y" : 353
+    },
+    {
+      "ax_error" : 0,
+      "child_count" : 1,
+      "fraction_x" : 0.5,
+      "fraction_y" : 0.5,
+      "returned_element" : true,
+      "role" : "AXGroup",
+      "x" : 512,
+      "y" : 353
+    },
+    {
+      "ax_error" : 0,
+      "child_count" : 1,
+      "fraction_x" : 0.80000000000000004,
+      "fraction_y" : 0.5,
+      "returned_element" : true,
+      "role" : "AXGroup",
+      "x" : 752,
+      "y" : 353
+    },
+    {
+      "ax_error" : 0,
+      "child_count" : 1,
+      "fraction_x" : 0.20000000000000001,
+      "fraction_y" : 0.69999999999999996,
+      "returned_element" : true,
+      "role" : "AXGroup",
+      "x" : 272,
+      "y" : 478.60000610351562
+    },
+    {
+      "ax_error" : 0,
+      "child_count" : 1,
+      "fraction_x" : 0.5,
+      "fraction_y" : 0.69999999999999996,
+      "returned_element" : true,
+      "role" : "AXGroup",
+      "x" : 512,
+      "y" : 478.60000610351562
+    },
+    {
+      "ax_error" : 0,
+      "child_count" : 1,
+      "fraction_x" : 0.80000000000000004,
+      "fraction_y" : 0.69999999999999996,
+      "returned_element" : true,
+      "role" : "AXGroup",
+      "x" : 752,
+      "y" : 478.60000610351562
+    }
+  ],
+  "real_os_keyboard_pointer_tested" : false,
+  "samples" : 9,
+  "schema" : "calyra.macos-ax-lazy-activation.v1",
+  "trusted" : true,
+  "verified_live_cgwindow_bounds" : {
+    "height" : 628,
+    "width" : 800,
+    "x" : 112,
+    "y" : 39
+  },
+  "voiceover_tested" : false,
+  "window_id" : 24
+}
