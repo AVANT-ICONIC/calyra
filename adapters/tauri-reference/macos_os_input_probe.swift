@@ -13,9 +13,9 @@ func json(_ dictionary: [String: Any]) {
     print(String(data: data, encoding: .utf8)!)
 }
 
-func attribute(_ element: AXUIElement, _ key: String) -> AnyObject? {
+func attribute(_ element: AXUIElement, _ key: CFString) -> AnyObject? {
     var value: CFTypeRef?
-    let status = AXUIElementCopyAttributeValue(element, key as CFString, &value)
+    let status = AXUIElementCopyAttributeValue(element, key, &value)
     return status == .success ? value as AnyObject? : nil
 }
 
