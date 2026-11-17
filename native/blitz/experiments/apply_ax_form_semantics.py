@@ -23,7 +23,20 @@ HELPERS = r'''
             NodeData::Element(..) | NodeData::AnonymousBlock(..) => {
                 for child_id in &node.children {
                     if let Some(child) = self.get_node(*child_id) {
+                        // Compute actual rendered CSS block boundaries rather than
+                        // inserting spaces based on the HTML tag or fixture text.
+                        let is_block = child.display_style().is_some_and(|display|
+                            matches!(display.outside(),
+                                style::values::specified::box_::DisplayOutside::Block
+                                | style::values::specified::box_::DisplayOutside::TableCaption
+                                | style::values::specified::box_::DisplayOutside::InternalTable));
+                        if is_block && !out.text.is_empty() {
+                            out.break_word();
+                        }
                         self.calyra_ax_visible_text(child, out);
+                        if is_block && !out.text.is_empty() {
+                            out.break_word();
+                        }
                     }
                 }
             }
