@@ -1,0 +1,10 @@
+{
+  "accepted" : true,
+  "height" : 740,
+  "nonwhite_sampled_pixels" : 1332,
+  "pixel_gate_only_not_css_or_js_parity" : true,
+  "quantized_distinct_colors" : 44,
+  "sampled_pixels" : 1332,
+  "schema" : "calyra.macos-window-pixels.v1",
+  "width" : 912
+}

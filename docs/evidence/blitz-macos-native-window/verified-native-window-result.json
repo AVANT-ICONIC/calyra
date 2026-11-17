@@ -1,0 +1,18 @@
+{
+  "css_parity_to_tauri_verified": false,
+  "hardware_gpu_verified": false,
+  "html_active_state_adapted": true,
+  "memory_or_speed_advantage_verified": false,
+  "native_accessibility_verified": false,
+  "native_screenshot_pixels_nonblank": true,
+  "native_screenshot_sha256": "b00bb80f0b4297ab8b2e9cac69af61a7704028564698c457d14efc5dfc7a1133",
+  "observed_cgwindow_id": 23,
+  "original_blitz_pinned_commit": "4f61cffacee50fe4f944ebe9d0470d9a5d3997e0",
+  "original_javascript_executed": false,
+  "original_static_css_unchanged": true,
+  "os_keyboard_pointer_ime_verified": false,
+  "real_cgwindow_owned_by_native_blitz_pid": 8893,
+  "real_macos_arm64_native_blitz_executable": true,
+  "schema": "calyra.blitz-macos-real-window.v1",
+  "upstream_engine_files_unmodified": true
+}
