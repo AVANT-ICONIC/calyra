@@ -1,0 +1,112 @@
+name: CALYRA macOS app-owned window pixel probe (prebuilt arm64)
+
+# Isolated Stage A GUI probe. Reuse the proven arm64 .app instead of recompiling Rust.
+# One-shot push trigger; turn manual-only after archiving evidence.
+on:
+  push:
+    branches: [feat/reference-fixtures]
+    paths: [.github/workflows/tauri-macos-window-frame.yml]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  real-macos-window:
+    runs-on: macos-15
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - name: Fetch the exact previously verified macOS arm64 .app artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: calyra-actual-tauri-macos-arm64-build
+          run-id: 43996164957
+          github-token: ${{ github.token }}
+          path: evidence/tauri-macos-window-probe/input
+
+      - name: Verify exact prebuilt arm64 source and extract .app
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=evidence/tauri-macos-window-probe
+          INPUT="$OUT/input"
+          python3 adapters/tauri-reference/verify_source.py | tee "$OUT/canonical-source.json"
+          grep -Fq '"pass": true' "$OUT/canonical-source.json"
+          ZIP="$INPUT/calyra-tauri-macos-arm64-debug.app.zip"
+          test -s "$ZIP"
+          EXPECTED="$(awk '{print $1}' "$INPUT/bundle-zip-sha256.txt")"
+          ACTUAL="$(shasum -a 256 "$ZIP" | awk '{print $1}')"
+          test "$EXPECTED" = "$ACTUAL"
+          printf '%s\n' "$ACTUAL" > "$OUT/verified-original-zip-sha256.txt"
+          mkdir -p "$OUT/unpacked"
+          ditto -x -k "$ZIP" "$OUT/unpacked"
+          APP="$(find "$OUT/unpacked" -maxdepth 1 -name '*.app' -type d -print -quit)"
+          test -n "$APP"
+          test -f "$APP/Contents/Info.plist"
+          test -x "$APP/Contents/MacOS/calyra-tauri-reference"
+          lipo -archs "$APP/Contents/MacOS/calyra-tauri-reference" | tee "$OUT/archs.txt"
+          grep -qw arm64 "$OUT/archs.txt"
+          printf '%s\n' "$PWD/$APP" > "$OUT/absolute-app-path.txt"
+
+      - name: Launch real app, find its OS-owned window and capture raw native pixels
+        shell: bash
+        run: |
+          set -euo pipefail
+          OUT=evidence/tauri-macos-window-probe
+          # Preserve diagnostics even when WindowServer rejects capture.
+          exec > >(tee "$OUT/capture.log") 2>&1
+          APP="$(cat "$OUT/absolute-app-path.txt")"
+          echo "Mac host: $(sw_vers -productVersion) / $(uname -m)"
+          echo "App: $APP"
+          echo 'Launching archived Tauri app through Launch Services...'
+          /usr/bin/open -n -a "$APP"
+          sleep 8
+          PID="$(pgrep -f "$APP/Contents/MacOS/calyra-tauri-reference" | head -n 1 || true)"
+          test -n "$PID" || { echo 'BLOCKED: no live app process'; exit 2; }
+          ps -p "$PID" -o pid,comm | tee "$OUT/app-process.txt"
+          echo "owner_pid=$PID"
+          swift adapters/tauri-reference/macos_native_window_probe.swift windows "$PID" \
+            | tee "$OUT/app-owned-windows.json"
+          WIN="$(python3 -c 'import json,sys; w=json.load(open(sys.argv[1]))["visible_window_candidates"]; print(w[0]["window_id"] if w else "")' "$OUT/app-owned-windows.json")"
+          test -n "$WIN" || { echo 'BLOCKED: WindowServer returned no visible app-owned content window'; exit 3; }
+          echo "app_owned_window_id=$WIN"
+          /usr/sbin/screencapture -x -l "$WIN" "$OUT/tauri-macos-app-window.png"
+          test -s "$OUT/tauri-macos-app-window.png" || { echo 'BLOCKED: no screenshot bytes'; exit 4; }
+          swift adapters/tauri-reference/macos_native_window_probe.swift inspect \
+            "$OUT/tauri-macos-app-window.png" | tee "$OUT/native-window-pixel-report.json"
+          shasum -a 256 "$OUT/tauri-macos-app-window.png" \
+            | tee "$OUT/native-window-png-sha256.txt"
+          echo 'PASS: live PID + own visible WindowServer ID + nonblank native macOS screenshot.'
+          echo 'NOT VERIFIED: original JS semantics, pointer/keyboard input, CSS pixel parity, hardware GPU or performance.'
+
+      - name: Explicitly report boundary, including blocked native capture
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo '### CALYRA native macOS Tauri window first-frame probe'
+            echo 'Source: the exact app built in successful Mac arm64 CI #43996164957; no Rust recompilation.'
+            echo 'Capture success only if real app PID, app-owned CGWindow ID, screencapture bytes and pixel test all pass.'
+            echo 'A blocked capture does not invalidate the earlier successful native build and Launch Services test.'
+            echo 'Even a successful frame does NOT prove original JS, OS keyboard/IME, accessibility, GPU or CPU/RAM parity.'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: calyra-macos-real-window-pixel-probe
+          path: |
+            evidence/tauri-macos-window-probe/canonical-source.json
+            evidence/tauri-macos-window-probe/verified-original-zip-sha256.txt
+            evidence/tauri-macos-window-probe/archs.txt
+            evidence/tauri-macos-window-probe/absolute-app-path.txt
+            evidence/tauri-macos-window-probe/capture.log
+            evidence/tauri-macos-window-probe/app-process.txt
+            evidence/tauri-macos-window-probe/app-owned-windows.json
+            evidence/tauri-macos-window-probe/tauri-macos-app-window.png
+            evidence/tauri-macos-window-probe/native-window-pixel-report.json
+            evidence/tauri-macos-window-probe/native-window-png-sha256.txt
+          retention-days: 14
+          if-no-files-found: warn
